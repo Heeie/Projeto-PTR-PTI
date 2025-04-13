@@ -2,6 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Utilizador = require('../models/Utilizador.js');
 
+
+const utilizadorController = require('../controllers/UtilizadorController');
+
+router.post('/conta', utilizadorController.criarUtilizador);
+
+
+
+
 // Criar utilizador
 router.post('/utilizadores', async (req, res) => {
   try {
