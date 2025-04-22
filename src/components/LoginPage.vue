@@ -1,18 +1,6 @@
-
-<script>
-export default {
-  methods: {
-    goToHome() {
-      this.$router.push('/home'); // Redireciona para a página inicial
-    },
-  },
-};
-</script>
-
-
 <template>
   <div id="login">
-    <form > <!-- Impede o envio do formulário -->
+    <form @submit="goToHome"> <!-- Impede o envio do formulário padrão -->
       <div class="imgcontainer">
         <img src="/Images/smile.jpg" alt="Avatar" class="avatar">
         <h1>Login</h1>
@@ -25,21 +13,87 @@ export default {
         <label for="psw"><b>Password</b></label>
         <input type="password" v-model="password" placeholder="Enter Password" name="psw" required />
 
-        <button id="btnLogin" @click="goToHome" type="submit">Login</button>
+        <button id="btnLogin" type="submit">Login</button>
 
         <label>
-          <input type="checkbox" checked="checked" name="remember" /> Remember me
+          <input type="checkbox" checked="checked" name="remember" /> Lembrar-me
         </label>
       </div>
 
       <div class="container" style="background-color:#f1f1f1">
-        <button type="button" class="cancelbtn">Cancel</button>
-        <span class="create"><a href="#">Create a new User</a></span>
-        <span class="psw">Forgot <a href="#">password?</a></span>
+        <button type="button" class="cancelbtn">Cancelar</button>
+        <span class="create"><a href="#">Criar uma nova conta</a></span>
+        <span class="psw">Esqueceu a <a href="#">password?</a></span>
       </div>
     </form>
+
+    <!-- Exibição de Carregamento -->
+    <div v-if="loading">Carregando...</div>
   </div>
 </template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      username: '',
+      password: '',
+      users: [], // Lista de usuários
+      loading: true, // Para controlar o estado de carregamento
+    };
+  },
+  async created() {
+    try {
+      // Realizar a requisição para obter todos os usuários assim que o componente for criado
+      const response = await axios.get('http://localhost:3000/api/utilizadores');
+      this.users = response.data;  // Salvar os usuários na variável 'users'
+      console.log(this.users);
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+    } finally {
+      this.loading = false; // Alterar o estado para carregamento concluído
+    }
+  },
+  methods: {
+    async goToHome(event) {
+    event.preventDefault();  // Impede o envio do formulário padrão
+
+    if (this.loading) {
+      alert("Aguarde o carregamento dos dados.");
+      return;
+    }
+
+    try {
+      // Fazendo a requisição assíncrona para buscar o usuário pelo nome
+      const response = await axios.get(`http://localhost:3000/api/utilizadores/nome/${this.username}`);
+      
+      // Verificando se a resposta contém dados
+      if (response.data) {
+        const user = response.data;  // Armazenando o usuário encontrado
+        console.log('Usuário encontrado:', user);
+
+        // Verificar se o usuário existe e se a senha é correta
+        if (user.senha === this.password) {
+          // Se as credenciais forem válidas, redireciona para a página inicial
+          this.$router.push('/home');
+        } else {
+          // Se as credenciais não forem válidas, mostra um erro
+          alert('Usuário ou senha incorretos.');
+        }
+      } else {
+        alert('Usuário não encontrado.');
+      }
+    } catch (error) {
+      console.error("Erro ao verificar o usuário:", error);
+      alert('Usuário não encontrado ou erro na requisição.');
+    }
+  }
+
+  }
+};
+</script>
 
 
 <style scoped>

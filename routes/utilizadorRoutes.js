@@ -5,31 +5,53 @@ const Utilizador = require('../models/Utilizador.js');
 
 const utilizadorController = require('../controllers/UtilizadorController');
 
-router.post('/conta', utilizadorController.criarUtilizador);
+router.post('/', utilizadorController.criarUtilizador);
 
 
 
-
+//*
+// 
 // Criar utilizador
-router.post('/utilizadores', async (req, res) => {
-  try {
-    const novo = new Utilizador(req.body);
-    const salvo = await novo.save();
-    res.status(201).json(salvo);
-  } catch (err) {
-    res.status(400).json({ erro: err.message });
-  }
-});
+// router.post('/utilizadores', async (req, res) => {
+//  try {
+//    const novo = new Utilizador(req.body);
+//    const salvo = await novo.save();
+//    res.status(201).json(salvo);
+//  } catch (err) {
+//    res.status(400).json({ erro: err.message });
+//  }
+// });
+// 
+// 
+// */
 
-// Listar todos
-router.get('/utilizadores', async (req, res) => {
+// Buscar um utilizador pelo nome
+router.get('/utilizadores/nome/:nome', async (req, res) => {
   try {
-    const lista = await Utilizador.find();
-    res.json(lista);
+    const nome = req.params.nome;  // Pega o nome do parâmetro da URL
+    const utilizador = await Utilizador.findOne({ nome: nome });  // Busca um utilizador com o nome fornecido
+
+    if (!utilizador) {
+      return res.status(404).json({ mensagem: 'Utilizador não encontrado' });
+    }
+
+    res.json(utilizador);  // Retorna o utilizador encontrado
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
 });
+
+
+// Listar todos os utilizadores
+router.get('/utilizadores', async (req, res) => {
+  try {
+    const lista = await Utilizador.find();  // Retorna todos os usuários
+    res.json(lista);  // Retorna a lista de usuários
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 
 // Atualizar
 router.put('/utilizadores/:id', async (req, res) => {

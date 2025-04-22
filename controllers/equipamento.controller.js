@@ -3,7 +3,7 @@ const Equipamento = require("../models/Equipamento");
 
 exports.criarEquipamento = async (req, res) => {
   try {
-    const { nome, marca, modelo, estado, preco, loja_id, catalogo_id } = req.body;
+    const { nome, marca, modelo, estado, preco, loja_id, catalogo_id, imagem } = req.body;
 
     const equipamentoData = {
       nome,
@@ -11,17 +11,18 @@ exports.criarEquipamento = async (req, res) => {
       modelo,
       estado,
       preco,
+      imagem: imagem || '../public/Images/default.jpg' // Caminho padrão se não for enviado
     };
 
     // Só adiciona loja_id se for um ObjectId válido
-    if (loja_id && mongoose.Types.ObjectId.isValid(loja_id)) {
-      equipamentoData.loja_id = loja_id;
-    }
+    //if (loja_id && mongoose.Types.ObjectId.isValid(loja_id)) {
+    //  equipamentoData.loja_id = loja_id;
+    //}
 
     // Só adiciona catalogo_id se for um ObjectId válido
-    if (catalogo_id && mongoose.Types.ObjectId.isValid(catalogo_id)) {
-      equipamentoData.catalogo_id = catalogo_id;
-    }
+    //if (catalogo_id && mongoose.Types.ObjectId.isValid(catalogo_id)) {
+    //  equipamentoData.catalogo_id = catalogo_id;
+    //}
 
     const novoEquipamento = new Equipamento(equipamentoData);
     await novoEquipamento.save();

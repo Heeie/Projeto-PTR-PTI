@@ -52,6 +52,16 @@
             />
 
 
+            <!-- Adiciona depois do campo catálogo_id -->
+            <label for="imagem"><b>Imagem</b></label>
+            <input
+              type="file"
+              name="imagem"
+              accept="image/*"
+              @change="handleFileUpload"
+            />
+
+
             <!-- Preço -->
             <label for="preco"><b>Preço</b></label>
             <input
@@ -98,54 +108,62 @@
 export default {
   name: 'CriarEquipamento',
   data() {
-  return {
-    form: {
-      nome: '',
-      marca: '',
-      modelo: '',
-      estado: '',
-      preco: '',
-      loja_id: '',         // opcional agora, mas adiciona depois se quiser
-      catalogo_id: '',     // idem
-    },
-  };
-},
-
-  methods: {
-    async submitForm() {
-      try {
-        const response = await fetch('http://localhost:3000/api/equipamentos', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(this.form),
-        });
-
-        if (!response.ok) throw new Error('Erro ao registrar equipamento');
-
-        const data = await response.json();
-        console.log('Equipamento salvo no MongoDB:', data);
-
-        alert('Equipamento registrado com sucesso!');
-
-        // Limpa o formulário
-        this.form = {
-          nome: '',
-          marca: '',
-          modelo: '',
-          estado: '',
-          preco: '',
-          loja_id: '',
-          catalogo_id: ''
-        };
-      } catch (error) {
-        console.error('Erro:', error);
-        alert('Erro ao registrar equipamento.');
-      }
-    },
+    return {
+      form: {
+        nome: '',
+        marca: '',
+        modelo: '',
+        estado: '',
+        preco: '',
+        loja_id: '',
+        catalogo_id: ''
+      },
+      imagem: null, // nova propriedade para armazenar o ficheiro
+    };
   },
+  methods: {
+    handleFileUpload(event) {
+      this.imagem = event.target.files[0];
+    },
+
+    async submitForm() {
+  try {
+    const formData = new FormData();
+
+    // Adiciona os campos de texto
+    formData.append('nome', this.form.nome);
+    formData.append('marca', this.form.marca);
+    formData.append('modelo', this.form.modelo);
+    formData.append('estado', this.form.estado);
+    formData.append('preco', this.form.preco);
+    formData.append('loja_id', this.form.loja_id);
+    formData.append('catalogo_id', this.form.catalogo_id);
+
+    // Adiciona a imagem se houver
+    if (this.imagem) {
+      formData.append('imagem', this.imagem);
+    }
+
+    const response = await fetch('http://localhost:3000/api/equipamentos', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) throw new Error('Erro ao registrar equipamento');
+
+    const data = await response.json();
+    console.log('Equipamento registrado:', data);
+
+  } catch (error) {
+    console.error('Erro:', error);
+    alert('Erro ao registrar equipamento: ' + error.message);
+  }
+}
+
+   
+  }
 };
+
 </script>
 
 

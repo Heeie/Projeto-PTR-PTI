@@ -100,28 +100,29 @@ export default {
   data() {
     return {
       form: {
-        username: '',
-        password: '',
-        email: '',
-        telefone: '',
-        nif: '',
-        nic: '',
-        morada: '',
-        genero: 'Masculino',
-      },
+      nome: '',
+      senha: '',
+      email: '',
+      telefone: '',
+      nif: '',
+      nic: '',
+      morada: '',
+      genero: 'Masculino',
+    },
     };
   },
   methods: {
     async submitForm() {
       console.log('Formulário enviado:', this.form);
       try {
-        const response = await fetch('http://localhost:3000/api/conta', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(this.form),
-        });
+        const response = await fetch('http://localhost:3000/api/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(this.form),
+      });
+
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -153,8 +154,8 @@ export default {
     resetForm() {
       // Reseta os campos do formulário
       this.form = {
-        username: '',
-        password: '',
+        nome: '',
+        senha: '',
         email: '',
         telefone: '',
         nif: '',
