@@ -16,6 +16,43 @@
         
         <p>Informações do Utilizador</p>
       </section>
+
+      <section class="perfil">
+  <h2>Perfil do Utilizador</h2>
+  
+  <div v-if="!editando">
+    <p><strong>Nome:</strong> {{ user.nome }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Telefone:</strong> {{ user.telefone }}</p>
+    <p><strong>NIF:</strong> {{ user.nif }}</p>
+    <p><strong>NIC:</strong> {{ user.nic }}</p>
+    <p><strong>Morada:</strong> {{ user.morada }}</p>
+    <p><strong>Gênero:</strong> {{ user.genero }}</p>
+    <p><strong>Role:</strong> {{ user.role }}</p>
+
+    <button id="regisbtn" @click="editando = true">Editar</button>
+  </div>
+
+  <div v-else>
+    <label>Nome: <input v-model="user.nome" /></label><br>
+    <label>Email: <input v-model="user.email" /></label><br>
+    <label>Telefone: <input v-model="user.telefone" /></label><br>
+    <label>NIF: <input v-model="user.nif" /></label><br>
+    <label>NIC: <input v-model="user.nic" /></label><br>
+    <label>Morada: <input v-model="user.morada" /></label><br>
+    <label>Gênero: 
+      <select v-model="user.genero">
+        <option>Masculino</option>
+        <option>Feminino</option>
+        <option>Outro</option>
+      </select>
+    </label><br>
+
+    <button id="regisbtn" @click="salvarAlteracoes">Guardar</button>
+    <button id="regisbtn" @click="editando = false">Cancelar</button>
+  </div>
+</section>
+
   
       
       
@@ -31,6 +68,64 @@
       </footer>
     </div>
   </template>
+
+
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      user: {
+        nome: '',
+        email: '',
+        telefone: '',
+        nif: '',
+        nic: '',
+        morada: '',
+        genero: '',
+        role: ''
+      },
+      editando: false
+    };
+  },
+  async mounted() {
+  const token = localStorage.getItem('token');
+
+  try {
+    const res = await axios.get('http://localhost:3000/api/perfil', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    console.log('Perfil carregado:', res.data);
+    this.user = res.data; // Aqui você salva o ID também
+  } catch (err) {
+    console.error('Erro ao carregar perfil:', err.response?.data || err.message);
+  }
+}
+
+
+,
+  methods: {
+    async salvarAlteracoes() {
+      try {
+        const res = await axios.put(`http://localhost:3000/api/utilizadores/${this.user.id}`, this.user, {
+          withCredentials: true
+        });
+        this.user = res.data;
+        this.editando = false;
+        alert('Informações atualizadas com sucesso!');
+      } catch (err) {
+        console.error('Erro ao atualizar perfil:', err);
+        alert('Erro ao atualizar informações');
+      }
+    }
+  }
+};
+</script>
+
 
 <style scoped>
 header {
@@ -112,4 +207,23 @@ footer {
   margin-top: 40px;
   font-size: 14px;
 }
+
+.perfil {
+  padding: 40px;
+  text-align: center;
+  background-color: #f0f2f5;
+  margin: 20px auto;
+  max-width: 600px;
+  border-radius: 10px;
+}
+
+.perfil input,
+.perfil select {
+  padding: 8px;
+  margin: 5px;
+  width: 80%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 </style>

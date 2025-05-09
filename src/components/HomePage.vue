@@ -9,8 +9,11 @@
           <li><a href="#contato">Contato</a></li>
           <button type="button" id="regisbtn" @click="goToRegistro">Registar equipamento</button>
           <button type="button" id="catalogbtn" @click="goToAddCatalog">ADDCatalogo</button>
+          <button type="button" id="infobtn"  @click="goToUserInfo">Info do utilizador</button>
         </ul>
       </nav>
+
+      
     </header>
 
     <section class="banner">
@@ -53,6 +56,10 @@ function goToRegistro() {
 
 function goToAddCatalog() {
   router.push('/addToCatalog');
+}
+
+function goToUserInfo() {
+  router.push('/infoUtilizador');
 }
 
 onMounted(async () => {

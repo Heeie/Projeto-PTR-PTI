@@ -51,3 +51,19 @@ exports.criarUtilizador = async (req, res) => {
     });
   }
 };
+
+exports.getPerfil = async (req, res) => {
+  try {
+    const userId = req.user.id; // definido pelo middleware JWT
+    const user = await Utilizador.findById(userId).select('-senha');
+
+    if (!user) {
+      return res.status(404).json({ mensagem: 'Utilizador não encontrado' });
+    }
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ mensagem: 'Erro ao carregar perfil' });
+  }
+};
+

@@ -7,6 +7,8 @@ import RegisEquipamento from './components/RegistrarEquipamento.vue';
 import Inicio from './components/PaginaInicio.vue';
 import CriarConta from './components/CriarConta.vue';
 import ADDCatalogo from './components/AddCatalogo.vue';
+import InfoUser from './components/InfoUser.vue';
+
 
 import axios from 'axios';
 // Configuração das rotas
@@ -20,6 +22,7 @@ const router = createRouter({
     { path: '/', component: Inicio },
     { path: '/criar_conta', component: CriarConta },
     { path: '/addToCatalog', component: ADDCatalogo },
+    { path: '/infoUtilizador', component: InfoUser },
 
 
 

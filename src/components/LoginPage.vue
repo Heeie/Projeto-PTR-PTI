@@ -47,7 +47,12 @@ export default {
   async created() {
     try {
       // Realizar a requisição para obter todos os usuários assim que o componente for criado
-      const response = await axios.get('http://localhost:3000/api/utilizadores');
+      const response = await axios.get('http://localhost:3000/api/utilizadores', {
+        withCredentials: true
+      });
+
+      
+
       this.users = response.data;  // Salvar os usuários na variável 'users'
       console.log(this.users);
     } catch (error) {
@@ -64,7 +69,18 @@ export default {
       const response = await axios.post('http://localhost:3000/api/login', {
         username: this.username,
         password: this.password,
+      }, {
+        withCredentials: true  // <- IMPORTANTE
       });
+
+      // Simula sucesso de login (ajuste se usar JWT)
+    const perfil = await axios.get('http://localhost:3000/api/perfil', {
+      withCredentials: true
+    });
+
+    console.log("Login response:", response.data);
+
+    console.log(perfil.data);
 
       // ✅ Se login for bem-sucedido, guarda o token
       const token = response.data.token;
@@ -79,6 +95,8 @@ export default {
       console.error("Erro no login:", error);
       alert('Usuário ou senha incorretos.');
     }
+
+
   } 
 
   }

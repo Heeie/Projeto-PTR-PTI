@@ -4,7 +4,7 @@ const Utilizador = require('../models/Utilizador.js');
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-
+const authMiddleware = require('../middlewares/authMiddleware');
 const utilizadorController = require('../controllers/UtilizadorController');
 //const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -19,51 +19,54 @@ const utilizadorController = require('../controllers/UtilizadorController');
 
 router.post('/criar', utilizadorController.criarUtilizador);
 
+router.get('/perfil', authMiddleware, utilizadorController.getPerfil);
+
+
+
 
 // Login de utilizador
+// 🔐 Login de utilizador
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  console.log( username);
-    console.log( password);
+
+  console.log("Tentativa de login:", username);
 
   try {
     const user = await Utilizador.findOne({ nome: username });
 
-    if (!user) return res.status(404).json({ erro: 'Usuário não encontrado' });
-    console.log( username);
-    console.log( user.senha);
+    if (!user) {
+      return res.status(404).json({ erro: 'Usuário não encontrado' });
+    }
 
     const senhaCorreta = await bcrypt.compare(password, user.senha);
-   
-      console.log( senhaCorreta);
 
-    if (!senhaCorreta) return res.status(401).json({ erro: 'Senha incorreta' });
+    if (!senhaCorreta) {
+      return res.status(401).json({ erro: 'Senha incorreta' });
+    }
 
-    // Gerar token
-    const token = jwt.sign({ id: user._id, nome: user.nome }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // ✅ Gerar token JWT
+    const token = jwt.sign(
+      { id: user._id, nome: user.nome, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
-    res.json({ token, user: { nome: user.nome, id: user._id } });
+    // 🔐 Retornar token e dados do utilizador (sem a senha)
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        nome: user.nome,
+        email: user.email,
+        role: user.role
+      }
+    });
+
   } catch (err) {
-    res.status(500).json({ erro: 'Erro no login' });
+    console.error("Erro no login:", err);
+    res.status(500).json({ erro: 'Erro interno no login' });
   }
 });
-
-
-//*
-// 
-// Criar utilizador
-// router.post('/utilizadores', async (req, res) => {
-//  try {
-//    const novo = new Utilizador(req.body);
-//    const salvo = await novo.save();
-//    res.status(201).json(salvo);
-//  } catch (err) {
-//    res.status(400).json({ erro: err.message });
-//  }
-// });
-// 
-// 
-// */
 
 // Buscar um utilizador pelo nome
 router.get('/utilizadores/nome/:nome', async (req, res) => {
