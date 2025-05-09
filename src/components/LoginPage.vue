@@ -1,6 +1,6 @@
 <template>
   <div id="login">
-    <form @submit="goToHome"> <!-- Impede o envio do formulário padrão -->
+    <form @submit.prevent="goToHome"> <!-- Impede o envio do formulário padrão -->
       <div class="imgcontainer">
         <img src="/Images/smile.jpg" alt="Avatar" class="avatar">
         <h1>Login</h1>
@@ -58,38 +58,28 @@ export default {
   },
   methods: {
     async goToHome(event) {
-    event.preventDefault();  // Impede o envio do formulário padrão
-
-    if (this.loading) {
-      alert("Aguarde o carregamento dos dados.");
-      return;
-    }
+    event.preventDefault();
 
     try {
-      // Fazendo a requisição assíncrona para buscar o usuário pelo nome
-      const response = await axios.get(`http://localhost:3000/api/utilizadores/nome/${this.username}`);
-      
-      // Verificando se a resposta contém dados
-      if (response.data) {
-        const user = response.data;  // Armazenando o usuário encontrado
-        console.log('Usuário encontrado:', user);
+      const response = await axios.post('http://localhost:3000/api/login', {
+        username: this.username,
+        password: this.password,
+      });
 
-        // Verificar se o usuário existe e se a senha é correta
-        if (user.senha === this.password) {
-          // Se as credenciais forem válidas, redireciona para a página inicial
-          this.$router.push('/home');
-        } else {
-          // Se as credenciais não forem válidas, mostra um erro
-          alert('Usuário ou senha incorretos.');
-        }
-      } else {
-        alert('Usuário não encontrado.');
-      }
+      // ✅ Se login for bem-sucedido, guarda o token
+      const token = response.data.token;
+      localStorage.setItem('token', token); // Armazenar token no navegador
+
+      // Opcional: guardar também o nome do utilizador
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+
+      // Redirecionar para a Home
+      this.$router.push('/home');
     } catch (error) {
-      console.error("Erro ao verificar o usuário:", error);
-      alert('Usuário não encontrado ou erro na requisição.');
+      console.error("Erro no login:", error);
+      alert('Usuário ou senha incorretos.');
     }
-  }
+  } 
 
   }
 };

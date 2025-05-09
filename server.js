@@ -10,6 +10,10 @@ const path = require('path');
 const equipamentoRoutes = require('./routes/equipamento.routes');
 const utilizadorRoutes = require('./routes/utilizadorRoutes');
 const lojaRoutes = require('./routes/lojaRoutes');
+const categoriaRoutes = require('./routes/categoriaRoutes');
+const tipoRoutes = require('./routes/tipoRoutes');
+
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,12 +28,20 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 
+
+
+
+
+
 // Servir arquivos estáticos (como imagens)
 app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
 
 // Rotas da API
 app.use('/api/equipamentos', equipamentoRoutes);
 app.use('/api', utilizadorRoutes);
+app.use('/api/categorias', categoriaRoutes);
+app.use('/api/tipos', tipoRoutes);
+
 //app.use('/api/lojas', lojaRoutes);
 
 // Tratamento de erros global

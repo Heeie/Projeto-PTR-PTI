@@ -3,7 +3,7 @@ const Categoria = require('../models/Categoria');
 const router = express.Router();
 
 // Criar uma nova categoria
-router.post('/categorias', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const novaCategoria = new Categoria(req.body);
         await novaCategoria.save();
@@ -14,7 +14,7 @@ router.post('/categorias', async (req, res) => {
 });
 
 // Listar todas as categorias
-router.get('/categorias', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const categorias = await Categoria.find();
         res.json(categorias);

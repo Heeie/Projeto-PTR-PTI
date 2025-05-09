@@ -2,6 +2,14 @@
   <div>
     <header>
       <h1>FromU2Me</h1>
+      <nav>
+        <ul>
+          <li><router-link to="/home">Início</router-link></li>
+          <li><a href="#produtos">Produtos</a></li>
+          <li><a href="#contato">Contato</a></li>
+          
+        </ul>
+      </nav>
     </header>
 
     <section>
@@ -92,6 +100,27 @@
               required
             />
 
+
+           <!-- Categoria -->
+          <label for="categoria_id"><b>Categoria</b></label>
+          <select v-model="form.categoria_id" required>
+            <option disabled value="">Selecione uma categoria</option>
+            <option v-for="cat in categorias" :key="cat._id" :value="cat._id">
+              {{ cat.nome }}
+            </option>
+          </select>
+
+          <!-- Tipo -->
+          <label for="tipo_id"><b>Tipo</b></label>
+          <select v-model="form.tipo_id" required>
+            <option disabled value="">Selecione um tipo</option>
+            <option v-for="tipo in tipos" :key="tipo._id" :value="tipo._id">
+              {{ tipo.nome }}
+            </option>
+          </select>
+
+
+
             <button type="submit">Registrar Equipamento</button>
           </div>
         </form>
@@ -116,9 +145,13 @@ export default {
         estado: '',
         preco: '',
         loja_id: '',
-        catalogo_id: ''
+        catalogo_id: '',
+        categoria_id: '',
+        tipo_id: ''
       },
-      imagem: null, // nova propriedade para armazenar o ficheiro
+      imagem: null,
+      categorias: [], // novas listas
+      tipos: []
     };
   },
   methods: {
@@ -127,42 +160,50 @@ export default {
     },
 
     async submitForm() {
-  try {
-    const formData = new FormData();
+      try {
+        const formData = new FormData();
+        Object.keys(this.form).forEach(key => {
+          formData.append(key, this.form[key]);
+        });
+        if (this.imagem) {
+          formData.append('imagem', this.imagem);
+        }
 
-    // Adiciona os campos de texto
-    formData.append('nome', this.form.nome);
-    formData.append('marca', this.form.marca);
-    formData.append('modelo', this.form.modelo);
-    formData.append('estado', this.form.estado);
-    formData.append('preco', this.form.preco);
-    formData.append('loja_id', this.form.loja_id);
-    formData.append('catalogo_id', this.form.catalogo_id);
+        const response = await fetch('http://localhost:3000/api/equipamentos', {
+          method: 'POST',
+          body: formData
+        });
 
-    // Adiciona a imagem se houver
-    if (this.imagem) {
-      formData.append('imagem', this.imagem);
+        if (!response.ok) throw new Error('Erro ao registrar equipamento');
+
+        const data = await response.json();
+        console.log('Equipamento registrado:', data);
+      } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao registrar equipamento: ' + error.message);
+      }
+    },
+
+    async carregarCategoriasETipos() {
+      try {
+        const [catRes, tipoRes] = await Promise.all([
+          fetch('http://localhost:3000/api/categorias'),
+          fetch('http://localhost:3000/api/tipos')
+        ]);
+
+        this.categorias = await catRes.json();
+        this.tipos = await tipoRes.json();
+      } catch (err) {
+        console.error('Erro ao carregar categorias ou tipos:', err);
+      }
     }
+  },
 
-    const response = await fetch('http://localhost:3000/api/equipamentos', {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) throw new Error('Erro ao registrar equipamento');
-
-    const data = await response.json();
-    console.log('Equipamento registrado:', data);
-
-  } catch (error) {
-    console.error('Erro:', error);
-    alert('Erro ao registrar equipamento: ' + error.message);
-  }
-}
-
-   
+  created() {
+    this.carregarCategoriasETipos();
   }
 };
+
 
 </script>
 

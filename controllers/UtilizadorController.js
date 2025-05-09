@@ -1,10 +1,10 @@
-const Utilizador = require('../models/Utilizador'); // Certifique-se de que o caminho está correto
+const Utilizador = require('../models/Utilizador');
+const bcrypt = require('bcrypt'); // ou bcryptjs
 
 exports.criarUtilizador = async (req, res) => {
   try {
     console.log('Requisição recebida:', req.body);
 
-    // Desestruturação dos campos recebidos
     const {
       nome,
       email,
@@ -17,15 +17,17 @@ exports.criarUtilizador = async (req, res) => {
       role = 'cliente'
     } = req.body;
 
-    // Validação simples para verificar se os campos obrigatórios estão presentes
     if (!nome || !senha) {
       throw new Error('Nome e Senha são obrigatórios.');
     }
 
+    // ➤ Criptografar a senha ANTES de salvar
+    const hashedPassword = await bcrypt.hash(senha, 10); // 10 = saltRounds
+
     const novoUtilizador = new Utilizador({
       nome,
       email,
-      senha,
+      senha: hashedPassword, // senha criptografada aqui
       telefone,
       nif,
       nic,
@@ -34,17 +36,15 @@ exports.criarUtilizador = async (req, res) => {
       role
     });
 
-    // Salvar o utilizador no banco de dados
     await novoUtilizador.save();
 
-    // Retornar resposta de sucesso
     res.status(201).json({
       message: "Utilizador criado com sucesso!",
       utilizador: novoUtilizador
     });
 
   } catch (error) {
-    console.error('Erro ao criar utilizador:', error);
+    console.error('Erro ao criar utilizador: ', error.message);
     res.status(500).json({
       error: "Erro ao criar Utilizador",
       detalhes: error.message

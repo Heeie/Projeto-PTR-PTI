@@ -11,8 +11,12 @@ const EquipamentoSchema = new mongoose.Schema({
     imagem: {
         type: String, // URL de imagem
         required: false
-      }
+      },
       
+   // Novos campos de referência
+   categoria_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Categoria' },
+   tipo_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Tipo' }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Equipamento', EquipamentoSchema);

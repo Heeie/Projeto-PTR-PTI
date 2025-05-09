@@ -11,7 +11,11 @@ exports.criarEquipamento = async (req, res) => {
       modelo,
       estado,
       preco,
-      imagem: imagem || '../public/Images/default.jpg' // Caminho padrão se não for enviado
+      loja_id: loja_id || "1", 
+      catalogo_id : catalogo_id || "1" ,
+      imagem: imagem || '../public/Images/default.jpg', // Caminho padrão se não for enviado
+      categoria_id,
+      tipo_id
     };
 
     // Só adiciona loja_id se for um ObjectId válido
@@ -23,6 +27,12 @@ exports.criarEquipamento = async (req, res) => {
     //if (catalogo_id && mongoose.Types.ObjectId.isValid(catalogo_id)) {
     //  equipamentoData.catalogo_id = catalogo_id;
     //}
+
+    // Validação de ObjectIds
+    if (mongoose.Types.ObjectId.isValid(loja_id)) equipamentoData.loja_id = loja_id;
+    if (mongoose.Types.ObjectId.isValid(catalogo_id)) equipamentoData.catalogo_id = catalogo_id;
+    if (mongoose.Types.ObjectId.isValid(categoria_id)) equipamentoData.categoria_id = categoria_id;
+    if (mongoose.Types.ObjectId.isValid(tipo_id)) equipamentoData.tipo_id = tipo_id;
 
     const novoEquipamento = new Equipamento(equipamentoData);
     await novoEquipamento.save();

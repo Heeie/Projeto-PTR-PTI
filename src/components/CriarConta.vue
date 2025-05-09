@@ -115,7 +115,7 @@ export default {
     async submitForm() {
       console.log('Formulário enviado:', this.form);
       try {
-        const response = await fetch('http://localhost:3000/api/', {
+        const response = await fetch('http://localhost:3000/api/criar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export default {
         this.$router.push('/home');
 
       } catch (error) {
-        console.error('Erro:', error);
+        console.error('Erro:', error.message);
         alert('Erro ao registrar Utilizador: ' + error.message);
       }
     },

@@ -4,10 +4,11 @@
       <h1>FromU2Me</h1>
       <nav>
         <ul>
-          <li><router-link to="/">Início</router-link></li>
+          <li><router-link to="/home">Início</router-link></li>
           <li><a href="#produtos">Produtos</a></li>
           <li><a href="#contato">Contato</a></li>
           <button type="button" id="regisbtn" @click="goToRegistro">Registar equipamento</button>
+          <button type="button" id="catalogbtn" @click="goToAddCatalog">ADDCatalogo</button>
         </ul>
       </nav>
     </header>
@@ -48,6 +49,10 @@ const equipamentos = ref([]);
 
 function goToRegistro() {
   router.push('/registroEquipamento');
+}
+
+function goToAddCatalog() {
+  router.push('/addToCatalog');
 }
 
 onMounted(async () => {

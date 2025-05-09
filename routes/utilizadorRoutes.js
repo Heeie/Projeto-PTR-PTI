@@ -2,11 +2,51 @@ const express = require('express');
 const router = express.Router();
 const Utilizador = require('../models/Utilizador.js');
 
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 const utilizadorController = require('../controllers/UtilizadorController');
+//const authMiddleware = require('../middlewares/authMiddleware');
 
-router.post('/', utilizadorController.criarUtilizador);
+// Rota protegida que só usuários autenticados podem acessar
+//router.get('/perfil', authMiddleware, utilizadorController.getPerfil);
 
+// Outra rota protegida
+//router.post('/atualizar', authMiddleware, utilizadorController.atualizarPerfil);
+
+//module.exports = router;
+
+
+router.post('/criar', utilizadorController.criarUtilizador);
+
+
+// Login de utilizador
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  console.log( username);
+    console.log( password);
+
+  try {
+    const user = await Utilizador.findOne({ nome: username });
+
+    if (!user) return res.status(404).json({ erro: 'Usuário não encontrado' });
+    console.log( username);
+    console.log( user.senha);
+
+    const senhaCorreta = await bcrypt.compare(password, user.senha);
+   
+      console.log( senhaCorreta);
+
+    if (!senhaCorreta) return res.status(401).json({ erro: 'Senha incorreta' });
+
+    // Gerar token
+    const token = jwt.sign({ id: user._id, nome: user.nome }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.json({ token, user: { nome: user.nome, id: user._id } });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro no login' });
+  }
+});
 
 
 //*

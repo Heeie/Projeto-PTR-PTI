@@ -39,8 +39,12 @@ router.post('/', upload.single('imagem'), async (req, res) => {
     console.log('Arquivo recebido:', req.file);
 
     // Verificar se os campos obrigatórios foram fornecidos
-    const { nome, marca, modelo, estado, preco, loja_id, catalogo_id } = req.body;
-    if (!nome || !marca || !modelo || !estado || !preco || !loja_id || !catalogo_id) {
+    
+    const { nome, marca, modelo, estado, preco, loja_id, catalogo_id, categoria_id, tipo_id } = req.body;
+
+
+
+    if (!nome || !marca || !preco ) { //|| !loja_id || !catalogo_id
       return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
     }
 
@@ -57,11 +61,13 @@ router.post('/', upload.single('imagem'), async (req, res) => {
       modelo,
       estado,
       preco,
-      loja_id,  // Usando ObjectId
-      catalogo_id,  // Usando ObjectId
+      loja_id,
+      catalogo_id,
+      categoria_id,
+      tipo_id,
       imagem
     });
-
+    
     // Salvar no banco de dados
     await novoEquipamento.save();
     res.status(201).json(novoEquipamento);
