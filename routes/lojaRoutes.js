@@ -1,17 +1,9 @@
 const express = require('express');
-const Loja = require('../models/Loja');
 const router = express.Router();
+const lojaController = require('../controllers/LojaController');
 
-// Criar uma nova loja
-router.post('/lojas', async (req, res) => {
-    try {
-        const novaLoja = new Loja(req.body);
-        await novaLoja.save();
-        res.status(201).json(novaLoja);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
+// Criar uma nova loja usando o controlador
+router.post('/lojas', lojaController.criarLoja);
 
 // Listar todas as lojas
 router.get('/lojas', async (req, res) => {

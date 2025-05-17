@@ -63,6 +63,7 @@ app.use('/api/equipamentos', equipamentoRoutes);
 app.use('/api', utilizadorRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/tipos', tipoRoutes);
+app.use('/api', lojaRoutes);
 
 //app.use('/api/lojas', lojaRoutes);
 

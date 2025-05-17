@@ -8,6 +8,10 @@ import Inicio from './components/PaginaInicio.vue';
 import CriarConta from './components/CriarConta.vue';
 import ADDCatalogo from './components/AddCatalogo.vue';
 import InfoUser from './components/InfoUser.vue';
+import PaginaProduto from './components/PaginaProduto.vue';
+import Loja from './components/CriarLoja.vue';
+import Change from './components/ChangeRole.vue';
+
 
 
 import axios from 'axios';
@@ -24,7 +28,9 @@ const router = createRouter({
     { path: '/addToCatalog', component: ADDCatalogo },
     { path: '/infoUtilizador', component: InfoUser },
 
-
+    { path: '/produto/:id', name: 'DetalhesProduto', component: PaginaProduto},
+     { path: '/criarLoja', component: Loja },
+      { path: '/changerole', component: Change },
 
     
   ],
@@ -34,6 +40,7 @@ const router = createRouter({
 const app = createApp(App);
 app.use(router); // Registrando o Vue Router
 app.mount('#app'); // Montando o app
+
 
 
 

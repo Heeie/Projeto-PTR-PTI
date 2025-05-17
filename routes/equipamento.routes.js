@@ -77,6 +77,44 @@ router.post('/', upload.single('imagem'), async (req, res) => {
   }
 });
 
+
+router.get('/equipamentos/:id', async (req, res) => {
+  const equipamento = await db.collection('equipamentos').findOne({ _id: new ObjectId(req.params.id) });
+  if (!equipamento) return res.status(404).json({ mensagem: "Não encontrado" });
+  res.json(equipamento);
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const equipamento = await Equipamento.findById(req.params.id);
+    if (!equipamento) {
+      return res.status(404).send('Equipamento não encontrado');
+    }
+    res.json(equipamento);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erro no servidor');
+  }
+});
+
+
+/*// Obter um equipamento por ID
+router.get('/equipamentos/:id', async (req, res) => {
+  try {
+    const equipamento = await Equipamento.findById(req.params.id);
+
+    if (!equipamento) {
+      return res.status(404).json({ mensagem: 'Equipamento não encontrado' });
+    }
+
+    res.json(equipamento);
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+});*/
+
+
+
 // Listar todos os equipamentos
 router.get('/', async (req, res) => {
   try {

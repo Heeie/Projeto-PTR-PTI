@@ -65,36 +65,31 @@ export default {
     async goToHome(event) {
     event.preventDefault();
 
-    try {
-      const response = await axios.post('http://localhost:3000/api/login', {
-        username: this.username,
-        password: this.password,
-      }, {
-        withCredentials: true  // <- IMPORTANTE
-      });
+    const response = await axios.post('http://localhost:3000/api/login', {
+  username: this.username,
+  password: this.password,
+}, {
+  withCredentials: true
+});
 
-      // Simula sucesso de login (ajuste se usar JWT)
-    const perfil = await axios.get('http://localhost:3000/api/perfil', {
-      withCredentials: true
-    });
+// ✅ Salvar token e usuário
+const token = response.data.token;
+localStorage.setItem('token', token);
+localStorage.setItem('user', JSON.stringify(response.data.user));
 
-    console.log("Login response:", response.data);
+// ✅ Agora que tem token, você pode buscar o perfil
+const perfil = await axios.get('http://localhost:3000/api/perfil', {
+  headers: {
+    Authorization: `Bearer ${token}` // <-- Importante!
+  },
+  withCredentials: true
+});
 
-    console.log(perfil.data);
+console.log("Perfil:", perfil.data);
 
-      // ✅ Se login for bem-sucedido, guarda o token
-      const token = response.data.token;
-      localStorage.setItem('token', token); // Armazenar token no navegador
+// Redirecionar para Home
+this.$router.push('/home');
 
-      // Opcional: guardar também o nome do utilizador
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      // Redirecionar para a Home
-      this.$router.push('/home');
-    } catch (error) {
-      console.error("Erro no login:", error);
-      alert('Usuário ou senha incorretos.');
-    }
 
 
   } 
