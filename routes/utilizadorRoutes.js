@@ -6,15 +6,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const authMiddleware = require('../middlewares/authMiddleware');
 const utilizadorController = require('../controllers/UtilizadorController');
-//const authMiddleware = require('../middlewares/authMiddleware');
-
-// Rota protegida que só usuários autenticados podem acessar
-//router.get('/perfil', authMiddleware, utilizadorController.getPerfil);
-
-// Outra rota protegida
-//router.post('/atualizar', authMiddleware, utilizadorController.atualizarPerfil);
-
-//module.exports = router;
 
 
 router.post('/criar', utilizadorController.criarUtilizador);

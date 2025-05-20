@@ -10,7 +10,7 @@
           
           <button type="button" id="regisbtn" 
           v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
-          @click="goToRegistro">Registar equipamento</button>
+          @click="goToRegistro">Gerir equipamentos</button>
           
           <button type="button" id="catalogbtn"
            v-if="user && (user.role === 'admin' || user.role === 'empregado' )"

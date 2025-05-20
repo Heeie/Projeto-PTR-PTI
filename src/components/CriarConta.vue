@@ -116,17 +116,23 @@ export default {
       console.log('Formulário enviado:', this.form);
       try {
         const response = await fetch('http://localhost:3000/api/criar', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(this.form),
-      });
-
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(this.form),
+        });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Erro ao registrar utilizador');
+
+          // Caso o utilizador já exista (erro 409), mostrar mensagem clara
+          if (response.status === 409) {
+            alert(errorData.error || 'Utilizador já existe.');
+          } else {
+            throw new Error(errorData.error || 'Erro ao registrar utilizador');
+          }
+          return;
         }
 
         const data = await response.json();
@@ -134,11 +140,8 @@ export default {
 
         alert('Utilizador registrado com sucesso!');
 
-        // Limpa o formulário após sucesso
         this.resetForm();
-
-        // Redireciona para a página inicial ou de login
-        this.$router.push('/home');
+        this.$router.push('/');
 
       } catch (error) {
         console.error('Erro:', error.message);

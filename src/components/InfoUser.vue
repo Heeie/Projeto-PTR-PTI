@@ -100,11 +100,12 @@ export default {
     });
 
     console.log('Perfil carregado:', res.data);
-    this.user = res.data; // Aqui você salva o ID também
+    this.user = { ...res.data, id: res.data._id }; // <- CORREÇÃO AQUI
   } catch (err) {
     console.error('Erro ao carregar perfil:', err.response?.data || err.message);
   }
 }
+
 
 
 ,

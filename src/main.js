@@ -11,6 +11,7 @@ import InfoUser from './components/InfoUser.vue';
 import PaginaProduto from './components/PaginaProduto.vue';
 import Loja from './components/CriarLoja.vue';
 import Change from './components/ChangeRole.vue';
+import Compra from './components/CompraProduto.vue';
 
 
 
@@ -31,6 +32,7 @@ const router = createRouter({
     { path: '/produto/:id', name: 'DetalhesProduto', component: PaginaProduto},
      { path: '/criarLoja', component: Loja },
       { path: '/changerole', component: Change },
+    { path: '/comprar', component: Compra },
 
     
   ],

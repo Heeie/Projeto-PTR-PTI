@@ -1,130 +1,184 @@
 <template>
-  <div class="detalhes">
+  <div class="gestao-utilizadores">
+    <div class="voltar-container">
+  <button class="voltar-btn" @click="router.push('/home')">⬅ Voltar à Página Principal</button>
+</div>
+
     <header>
-      <h1>Alterar Roles</h1>
-      <button @click="voltar">← Voltar</button>
+      <h1>Gestão de Utilizadores</h1>
     </header>
 
-    <section>
-      <input
-        v-model="nomeBusca"
-        type="text"
-        placeholder="Nome do utilizador"
-      />
-      <button @click="buscarUtilizador">Buscar</button>
-    </section>
+    <div class="tabela-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="u in utilizadores" :key="u._id">
+            <td>{{ u.nome }}</td>
+            <td>{{ u.email }}</td>
+            <td>
+              <select v-model="u.role" @change="atualizarRole(u)">
+                <option value="cliente">cliente</option>
+                <option value="doador">doador</option>
+                <option v-if="user.role === 'admin'" value="empregado">empregado</option>
+                <option v-if="user.role === 'admin'" value="admin">admin</option>
+              </select>
+            </td>
+            <td>
+              <button @click="apagarUtilizador(u._id)">🗑 Apagar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
 
-    <div v-if="utilizador" class="info-utilizador">
-      <h2>{{ utilizador.nome }}</h2>
-      <p>Email: {{ utilizador.email }}</p>
-      <p>Role atual: <strong>{{ utilizador.role }}</strong></p>
-
-      <label for="novaRole">Nova Role:</label>
-      <select id="novaRole" v-model="novaRole">
-        <option value="cliente">cliente</option>
-        <option value="admin">admin</option>
-        <option value="empregado">empregado</option>
-      </select>
-
-      <button @click="alterarRole">Alterar Role</button>
+      <div v-if="mensagem" class="mensagem">{{ mensagem }}</div>
     </div>
-
-    <div v-if="mensagem" class="mensagem">{{ mensagem }}</div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-
 const router = useRouter();
-const nomeBusca = ref('');
-const utilizador = ref(null);
-const novaRole = ref('');
+
+
+const utilizadores = ref([]);
 const mensagem = ref('');
+const token = localStorage.getItem('token');
+const user = ref(null);
 
-function voltar() {
-  router.back();
-}
-
-async function buscarUtilizador() {
+onMounted(async () => {
   try {
-    const res = await axios.get(`http://localhost:3000/api/utilizadores/nome/${nomeBusca.value}`);
-    utilizador.value = res.data;
-    novaRole.value = res.data.role;
-    mensagem.value = '';
+    const perfil = await axios.get('http://localhost:3000/api/perfil', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    user.value = perfil.data;
+
+    const res = await axios.get('http://localhost:3000/api/utilizadores');
+    utilizadores.value = res.data;
   } catch (err) {
-    utilizador.value = null;
-    mensagem.value = 'Utilizador não encontrado.';
+    console.error('Erro:', err);
+  }
+});
+
+async function apagarUtilizador(id) {
+  try {
+    await axios.delete(`http://localhost:3000/api/utilizadores/${id}`);
+    utilizadores.value = utilizadores.value.filter(u => u._id !== id);
+    mensagem.value = 'Utilizador apagado com sucesso.';
+  } catch (err) {
+    mensagem.value = 'Erro ao apagar utilizador.';
   }
 }
 
-async function alterarRole() {
-  if (!utilizador.value || !novaRole.value) return;
-
+async function atualizarRole(utilizador) {
   try {
-    const res = await axios.put(`http://localhost:3000/api/utilizadores/${utilizador.value._id}`, {
-      role: novaRole.value,
+    await axios.put(`http://localhost:3000/api/utilizadores/${utilizador._id}`, {
+      role: utilizador.role,
     });
-
-    utilizador.value = res.data;
-    mensagem.value = 'Role atualizada com sucesso!';
+    mensagem.value = 'Role atualizada com sucesso.';
   } catch (err) {
-    console.error(err);
     mensagem.value = 'Erro ao atualizar role.';
   }
 }
 </script>
 
 <style scoped>
-.detalhes {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #f8f9fa;
+.voltar-container {
+  margin: 20px 0;
+  text-align: left;
+}
+
+.voltar-btn {
+  padding: 10px 20px;
+  background-color: lightblue;
+  color: black;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.voltar-btn:hover {
+  background-color: #0d6efd;
+  color: white;
+}
+
+
+.gestao-utilizadores {
+  padding: 40px;
+  max-width: 1000px;
+  margin: auto;
+  background: #f8f9fa;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 20px rgba(0,0,0,0.05);
 }
 
 header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  background-color: #0d6efd;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  border-radius: 10px 10px 0 0;
 }
 
-input,
-select {
-  padding: 10px;
-  margin: 10px 0;
+.tabela-container {
+  margin-top: 20px;
+  background: white;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+table {
   width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: #0d6efd;
+  color: white;
+}
+
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+select {
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
 button {
-  background-color: #0d6efd;
+  padding: 6px 10px;
+  background-color: crimson;
   color: white;
   border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
+  border-radius: 5px;
+  font-weight: bold;
   cursor: pointer;
+  transition: background 0.3s;
 }
 
 button:hover {
-  background-color: #084298;
-}
-
-.info-utilizador {
-  margin-top: 20px;
-  background: #fff;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  background-color: darkred;
 }
 
 .mensagem {
   margin-top: 20px;
-  font-weight: bold;
-  color: green;
+  padding: 10px;
+  background-color: #d4edda;
+  color: #155724;
+  border-radius: 5px;
 }
 </style>

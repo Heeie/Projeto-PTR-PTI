@@ -17,17 +17,28 @@ exports.criarUtilizador = async (req, res) => {
       role = 'cliente'
     } = req.body;
 
-    if (!nome || !senha) {
-      throw new Error('Nome e Senha são obrigatórios.');
+    if (!nome || !senha || !email) {
+      throw new Error('Nome, Email e Senha são obrigatórios.');
     }
 
-    // ➤ Criptografar a senha ANTES de salvar
-    const hashedPassword = await bcrypt.hash(senha, 10); // 10 = saltRounds
+      // Verifica se já existe um utilizador com o mesmo email, nif ou nic
+    const existente = await Utilizador.findOne({
+      $or: [{ email }, { nif }, { nic }]
+    });
+
+    if (existente) {
+      return res.status(409).json({
+        error: 'Já existe um utilizador com este email, NIF ou NIC.'
+      });
+    }
+
+
+    const hashedPassword = await bcrypt.hash(senha, 10);
 
     const novoUtilizador = new Utilizador({
       nome,
       email,
-      senha: hashedPassword, // senha criptografada aqui
+      senha: hashedPassword,
       telefone,
       nif,
       nic,
@@ -52,6 +63,7 @@ exports.criarUtilizador = async (req, res) => {
   }
 };
 
+
 exports.getPerfil = async (req, res) => {
   try {
     const userId = req.user.id; // definido pelo middleware JWT
@@ -66,4 +78,7 @@ exports.getPerfil = async (req, res) => {
     res.status(500).json({ mensagem: 'Erro ao carregar perfil' });
   }
 };
+
+
+
 
