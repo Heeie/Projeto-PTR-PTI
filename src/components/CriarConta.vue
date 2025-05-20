@@ -110,7 +110,7 @@
             <button type="submit">Criar Conta</button>
           </div>
 
-          <div class="container" style="background-color:#f1f1f1">
+          <div class="container" style="background-color:#ffffff">
             
             
             

@@ -233,6 +233,7 @@ ul.nav-center li a:hover {
   padding: 20px;
   max-width: 400px;
   margin: auto;
+  margin-bottom: 10px;
 }
 
 button {
