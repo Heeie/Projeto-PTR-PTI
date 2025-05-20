@@ -1,16 +1,17 @@
-const mongoose = require('mongoose');
+const sqlite3 = require('sqlite3').verbose();
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect('mongodb://localhost:27017/meuProjeto', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    console.log('MongoDB conectado com sucesso!');
-  } catch (error) {
-    console.error('Erro ao conectar ao MongoDB:', error);
-    process.exit(1);  // Encerra o processo em caso de erro na conexão
+// Cria ou abre o banco de dados
+const db = new sqlite3.Database('./meu_banco.db', (err) => {
+  if (err) {
+    console.error("Erro ao conectar ao banco de dados:", err.message);
+  } else {
+    console.log("Conectado ao banco de dados SQLite.");
   }
-};
+});
 
-module.exports = connectDB;
+// Criar tabela (se não existir)
+db.serialize(() => {
+  db.run("CREATE TABLE IF NOT EXISTS usuarios (id INTEGER PRIMARY KEY, nome TEXT, email TEXT)");
+});
+
+module.exports = db;

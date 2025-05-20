@@ -6,8 +6,15 @@ const EquipamentoSchema = new mongoose.Schema({
     modelo: { type: String, required: true },
     estado: { type: String, enum: ['novo', 'usado', 'avariado'], required: true },
     preco: { type: Number, required: true },
-    loja_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Loja' },
-    catalogo_id: { type: mongoose.Schema.Types.ObjectId, ref: 'CatalogoEquipamentos' }
+    loja_id: { type: String, ref: 'Loja' },
+    catalogo_id: { type: String, ref: 'CatalogoEquipamentos' },
+    imagem: {
+        type: String, // URL de imagem
+        required: false
+      },
+   categoria_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Categoria' },
+   tipo_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Tipo' }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Equipamento', EquipamentoSchema);

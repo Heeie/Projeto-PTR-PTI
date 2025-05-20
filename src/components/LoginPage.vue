@@ -1,18 +1,6 @@
-
-<script>
-export default {
-  methods: {
-    goToHome() {
-      this.$router.push('/home'); // Redireciona para a página inicial
-    },
-  },
-};
-</script>
-
-
 <template>
   <div id="login">
-    <form > <!-- Impede o envio do formulário -->
+    <form @submit.prevent="goToHome"> <!-- Impede o envio do formulário padrão -->
       <div class="imgcontainer">
         <img src="/Images/smile.jpg" alt="Avatar" class="avatar">
         <h1>Login</h1>
@@ -25,21 +13,90 @@ export default {
         <label for="psw"><b>Password</b></label>
         <input type="password" v-model="password" placeholder="Enter Password" name="psw" required />
 
-        <button id="btnLogin" @click="goToHome" type="submit">Login</button>
+        <button id="btnLogin" type="submit">Login</button>
 
         <label>
-          <input type="checkbox" checked="checked" name="remember" /> Remember me
+          <input type="checkbox" checked="checked" name="remember" /> Lembrar-me
         </label>
       </div>
 
       <div class="container" style="background-color:#f1f1f1">
-        <button type="button" class="cancelbtn">Cancel</button>
-        <span class="create"><a href="#">Create a new User</a></span>
-        <span class="psw">Forgot <a href="#">password?</a></span>
+        <button type="button" class="cancelbtn">Cancelar</button>
+        <span class="create"><a href="#">Criar uma nova conta</a></span>
+        <span class="psw">Esqueceu a <a href="#">password?</a></span>
       </div>
     </form>
+
+    <!-- Exibição de Carregamento -->
+    <div v-if="loading">Carregando...</div>
   </div>
 </template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      username: '',
+      password: '',
+      users: [], // Lista de usuários
+      loading: true, // Para controlar o estado de carregamento
+    };
+  },
+  async created() {
+    try {
+      // Realizar a requisição para obter todos os usuários assim que o componente for criado
+      const response = await axios.get('http://localhost:3000/api/utilizadores', {
+        withCredentials: true
+      });
+
+      
+
+      this.users = response.data;  // Salvar os usuários na variável 'users'
+      console.log(this.users);
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+    } finally {
+      this.loading = false; // Alterar o estado para carregamento concluído
+    }
+  },
+  methods: {
+    async goToHome(event) {
+    event.preventDefault();
+
+    const response = await axios.post('http://localhost:3000/api/login', {
+  username: this.username,
+  password: this.password,
+}, {
+  withCredentials: true
+});
+
+// ✅ Salvar token e usuário
+const token = response.data.token;
+localStorage.setItem('token', token);
+localStorage.setItem('user', JSON.stringify(response.data.user));
+
+// ✅ Agora que tem token, você pode buscar o perfil
+const perfil = await axios.get('http://localhost:3000/api/perfil', {
+  headers: {
+    Authorization: `Bearer ${token}` // <-- Importante!
+  },
+  withCredentials: true
+});
+
+console.log("Perfil:", perfil.data);
+
+// Redirecionar para Home
+this.$router.push('/home');
+
+
+
+  } 
+
+  }
+};
+</script>
 
 
 <style scoped>

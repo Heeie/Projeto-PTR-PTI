@@ -2,6 +2,14 @@
   <div>
     <header>
       <h1>FromU2Me</h1>
+      <nav>
+        <ul>
+          <li><router-link to="/home">Início</router-link></li>
+          <li><a href="#produtos">Produtos</a></li>
+          <li><a href="#contato">Contato</a></li>
+          
+        </ul>
+      </nav>
     </header>
 
     <section>
@@ -52,6 +60,16 @@
             />
 
 
+            <!-- Adiciona depois do campo catálogo_id -->
+            <label for="imagem"><b>Imagem</b></label>
+            <input
+              type="file"
+              name="imagem"
+              accept="image/*"
+              @change="handleFileUpload"
+            />
+
+
             <!-- Preço -->
             <label for="preco"><b>Preço</b></label>
             <input
@@ -82,6 +100,27 @@
               required
             />
 
+
+           <!-- Categoria -->
+          <label for="categoria_id"><b>Categoria</b></label>
+          <select v-model="form.categoria_id" required>
+            <option disabled value="">Selecione uma categoria</option>
+            <option v-for="cat in categorias" :key="cat._id" :value="cat._id">
+              {{ cat.nome }}
+            </option>
+          </select>
+
+          <!-- Tipo -->
+          <label for="tipo_id"><b>Tipo</b></label>
+          <select v-model="form.tipo_id" required>
+            <option disabled value="">Selecione um tipo</option>
+            <option v-for="tipo in tipos" :key="tipo._id" :value="tipo._id">
+              {{ tipo.nome }}
+            </option>
+          </select>
+
+
+
             <button type="submit">Registrar Equipamento</button>
           </div>
         </form>
@@ -98,54 +137,74 @@
 export default {
   name: 'CriarEquipamento',
   data() {
-  return {
-    form: {
-      nome: '',
-      marca: '',
-      modelo: '',
-      estado: '',
-      preco: '',
-      loja_id: '',         // opcional agora, mas adiciona depois se quiser
-      catalogo_id: '',     // idem
-    },
-  };
-},
-
+    return {
+      form: {
+        nome: '',
+        marca: '',
+        modelo: '',
+        estado: '',
+        preco: '',
+        loja_id: '',
+        catalogo_id: '',
+        categoria_id: '',
+        tipo_id: ''
+      },
+      imagem: null,
+      categorias: [], // novas listas
+      tipos: []
+    };
+  },
   methods: {
+    handleFileUpload(event) {
+      this.imagem = event.target.files[0];
+    },
+
     async submitForm() {
       try {
+        const formData = new FormData();
+        Object.keys(this.form).forEach(key => {
+          formData.append(key, this.form[key]);
+        });
+        if (this.imagem) {
+          formData.append('imagem', this.imagem);
+        }
+
         const response = await fetch('http://localhost:3000/api/equipamentos', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(this.form),
+          body: formData
         });
 
         if (!response.ok) throw new Error('Erro ao registrar equipamento');
 
         const data = await response.json();
-        console.log('Equipamento salvo no MongoDB:', data);
-
-        alert('Equipamento registrado com sucesso!');
-
-        // Limpa o formulário
-        this.form = {
-          nome: '',
-          marca: '',
-          modelo: '',
-          estado: '',
-          preco: '',
-          loja_id: '',
-          catalogo_id: ''
-        };
+        console.log('Equipamento registrado:', data);
       } catch (error) {
         console.error('Erro:', error);
-        alert('Erro ao registrar equipamento.');
+        alert('Erro ao registrar equipamento: ' + error.message);
       }
     },
+
+    async carregarCategoriasETipos() {
+      try {
+        const [catRes, tipoRes] = await Promise.all([
+          fetch('http://localhost:3000/api/categorias'),
+          fetch('http://localhost:3000/api/tipos')
+        ]);
+
+        this.categorias = await catRes.json();
+        this.tipos = await tipoRes.json();
+      } catch (err) {
+        console.error('Erro ao carregar categorias ou tipos:', err);
+      }
+    }
   },
+
+  created() {
+    this.carregarCategoriasETipos();
+  }
 };
+
+
 </script>
 
 

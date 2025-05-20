@@ -3,7 +3,7 @@ const Tipo = require('../models/Tipo');
 const router = express.Router();
 
 // Criar um novo tipo
-router.post('/tipos', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const novoTipo = new Tipo(req.body);
         await novoTipo.save();
@@ -14,7 +14,7 @@ router.post('/tipos', async (req, res) => {
 });
 
 // Listar todos os tipos
-router.get('/tipos', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const tipos = await Tipo.find();
         res.json(tipos);

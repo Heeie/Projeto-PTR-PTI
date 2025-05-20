@@ -4,12 +4,39 @@
       <h1>FromU2Me</h1>
       <nav>
         <ul>
-          <li><router-link to="/">Início</router-link></li>
+          <li><router-link to="/home">Início</router-link></li>
           <li><a href="#produtos">Produtos</a></li>
           <li><a href="#contato">Contato</a></li>
-          <button type="button" id="regisbtn" @click="goToRegistro">Registar equipamento</button>
+          
+          <button type="button" id="regisbtn" 
+          v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
+          @click="goToRegistro">Registar equipamento</button>
+          
+          <button type="button" id="catalogbtn"
+           v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
+          @click="goToAddCatalog">ADDCatalogo</button>
+
+          <button type="button" id="infobtn"  
+         
+          @click="goToUserInfo">Info do utilizador</button>
+          
+          <button type="button" id="infobtn" 
+          v-if="user && (user.role === 'admin' )"
+          @click="router.push('/criarLoja') ">Criar Loja</button>
+          
+          
+          <button
+            type="button"
+            id="chrbtn"
+            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+            @click="router.push('/changerole')"
+          >
+            Alterar a Role
+          </button>
         </ul>
       </nav>
+
+      
     </header>
 
     <section class="banner">
@@ -17,20 +44,22 @@
       <p>Confira nossas ofertas e garanta já o seu.</p>
     </section>
 
-    <section id="produtos" class="produtos">
-      <div class="produto">
-        <img src="@/assets/orn.png" alt="Laptop">
-        <h3>Laptop Gamer</h3>
-        <p>Alta performance para jogos e trabalho.</p>
-        <span>R$ 5.999,00</span>
-      </div>
-      <div class="produto">
-        <img src="@/assets/orn.png" alt="Smartphone">
-        <h3>Smartphone 5G</h3>
-        <p>Velocidade e tecnologia de ponta.</p>
-        <span>R$ 3.499,00</span>
-      </div>
+     <section id="produtos" class="produtos">
+        <router-link
+        class="produto"
+        v-for="equipamento in equipamentos"
+        :key="equipamento._id"
+        :to="`/produto/${equipamento._id}`"
+      >
+        <img :src="equipamento.imagem ? equipamento.imagem : '/images/default.jpg'" alt="Imagem do equipamento">
+        <h3>{{ equipamento.nome }}</h3>
+        <p>{{ equipamento.modelo }} - {{ equipamento.marca }}</p>
+        <span>Euros {{ Number(equipamento.preco).toLocaleString('pt-Pt', { minimumFractionDigits: 2 }) }}</span>
+      </router-link>
     </section>
+
+    
+
 
     <section id="contato" class="contato">
       <h2>Entre em contato</h2>
@@ -45,13 +74,50 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const equipamentos = ref([]);
+const token = localStorage.getItem('token');
+const user = ref(null);
+
 
 function goToRegistro() {
   router.push('/registroEquipamento');
 }
+
+function goToAddCatalog() {
+  router.push('/addToCatalog');
+}
+
+function goToUserInfo() {
+  router.push('/infoUtilizador');
+}
+
+onMounted(async () => {
+  
+  try {
+    const res = await axios.get('http://localhost:3000/api/equipamentos');
+    equipamentos.value = res.data;
+
+
+    const resUser = await axios.get('http://localhost:3000/api/perfil', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+  });
+
+  console.log('Usuário carregado:', user.value);
+
+   user.value = resUser.data;
+
+  } catch (err) {
+    console.error('Erro ao buscar equipamentos:', err);
+  }
+});
+
 </script>
 
 <style scoped>
