@@ -13,9 +13,9 @@ export const useCarrinhoStore = defineStore('carrinho', () => {
   }
 
   function limparCarrinho() {
-  equipamentos.value = [];
-  localStorage.removeItem('carrinho');
-}
+    equipamentos.value = [];
+    localStorage.removeItem('carrinho');
+  }
 
 
   return {

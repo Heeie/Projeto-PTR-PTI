@@ -67,7 +67,6 @@ const total = computed(() =>
   carrinho.value.reduce((soma, item) => soma + Number(item.preco), 0)
 );
 
-// Simulação de transação MBWay
 async function finalizarCompra() {
   if (!numeroMBWay.value.match(/^9[1236][0-9]{7}$/)) {
     mensagem.value = 'Número MBWay inválido.';
@@ -75,20 +74,41 @@ async function finalizarCompra() {
   }
 
   try {
-    // Aqui seria a chamada real à API do MBWay
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // simulação de espera
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    mensagem.value = `Pagamento MBWay para ${numeroMBWay.value} concluído com sucesso!`;
+    // Simulação: substitui por ID real
+    const lojaId = '6650dd0f26e3b38b9260b9f7';
+
+    const response = await fetch('http://localhost:3000/api/transacoes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}` // ou como guardaste o token
+      },
+      body: JSON.stringify({
+        loja_id: lojaId,
+        equipamentos: carrinho.value.map(item => item._id),
+        total: total.value
+      })
+    });
+
+    if (!response.ok) throw new Error('Erro ao criar transação');
+
+    const result = await response.json();
+
+    mensagem.value = `Pagamento MBWay para ${numeroMBWay.value} concluído com sucesso! Transação ID: ${result.transacao._id}`;
     carrinhoStore.limparCarrinho();
 
     setTimeout(() => {
       router.push('/home');
     }, 7000);
+
   } catch (error) {
     mensagem.value = 'Erro ao processar pagamento. Tente novamente.';
     console.error(error);
   }
 }
+
 </script>
 
 <style scoped>

@@ -14,6 +14,7 @@ const utilizadorRoutes = require('./routes/utilizadorRoutes');
 const lojaRoutes = require('./routes/lojaRoutes');
 const categoriaRoutes = require('./routes/categoriaRoutes');
 const tipoRoutes = require('./routes/tipoRoutes');
+const transacoesRouter = require('./routes/transacaoRoutes'); // exemplo do caminho
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,6 +67,13 @@ app.use('/api', utilizadorRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/tipos', tipoRoutes);
 app.use('/api', lojaRoutes);
+
+
+
+app.use('/api/transacoes', transacoesRouter); // <<<<<<<<<<
+
+app.listen(3000);
+
 
 //app.use('/api/lojas', lojaRoutes);
 
