@@ -1,30 +1,45 @@
 <template>
   <div>
     <header>
-      <h1>FromU2Me</h1>
+      <h1>Finalizar Compra</h1>
       <nav>
         <ul>
-          <li><router-link to="/home">Início</router-link></li>
-          <li><a href="#produtos">Produtos</a></li>
-          <li><a href="#contato">Contato</a></li>
-          
-         
+          <li class="homebar"><router-link to="/home">Início</router-link></li>
+          <li class="homebar"><router-link to="/">Produtos</router-link></li>
         </ul>
       </nav>
-
-      
     </header>
 
-  
-     
+    <section class="compra">
+      <h2>Itens no Carrinho</h2>
+      <div v-if="carrinho.length > 0">
+        <ul>
+          <li v-for="(item, index) in carrinho" :key="index">
+            {{ item.nome }} - € {{ Number(item.preco).toFixed(2) }}
+          </li>
+        </ul>
+        <p><strong>Total:</strong> € {{ total.toFixed(2) }}</p>
 
-    
+        <form @submit.prevent="finalizarCompra">
+          <label for="mbway">Número de Telemóvel (MBWay):</label>
+          <input
+            type="tel"
+            id="mbway"
+            v-model="numeroMBWay"
+            placeholder="912345678"
+            required
+            pattern="[9][1236][0-9]{7}"
+          />
+          <button type="submit">Pagar com MBWay</button>
+        </form>
 
+        <div v-if="mensagem" class="mensagem">{{ mensagem }}</div>
 
-    <section id="contato" class="contato">
-      <h2>Entre em contato</h2>
-      <p>Email: contato@fromu2me.com</p>
-      <p>Telefone: (11) 99999-9999</p>
+      </div>
+      <div v-else>
+        <p>O carrinho está vazio.</p>
+        <div class="mensagem">{{ mensagem }}</div>
+      </div>
     </section>
 
     <footer>
@@ -34,87 +49,144 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
+import { useCarrinhoStore } from '@/stores/carrinho';
+import { useRouter } from 'vue-router';
 
+// Store e router
+const carrinhoStore = useCarrinhoStore();
+const router = useRouter();
+
+// Referências reativas
+const numeroMBWay = ref('');
+const mensagem = ref('');
+
+// Computed: lista e total
+const carrinho = computed(() => carrinhoStore.equipamentos);
+const total = computed(() =>
+  carrinho.value.reduce((soma, item) => soma + Number(item.preco), 0)
+);
+
+// Simulação de transação MBWay
+async function finalizarCompra() {
+  if (!numeroMBWay.value.match(/^9[1236][0-9]{7}$/)) {
+    mensagem.value = 'Número MBWay inválido.';
+    return;
+  }
+
+  try {
+    // Aqui seria a chamada real à API do MBWay
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // simulação de espera
+
+    mensagem.value = `Pagamento MBWay para ${numeroMBWay.value} concluído com sucesso!`;
+    carrinhoStore.limparCarrinho();
+
+    setTimeout(() => {
+      router.push('/home');
+    }, 7000);
+  } catch (error) {
+    mensagem.value = 'Erro ao processar pagamento. Tente novamente.';
+    console.error(error);
+  }
+}
 </script>
 
 <style scoped>
-  header {
-    background: #0d6efd;
-    color: #fff;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
 
-  #regisbtn {
-    padding: 10px 20px;
-    background-color: lightblue;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
+.homebar{
+  color: black;
+}
+header {
+  background: #0d6efd;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 
-  #regisbtn:hover {
-    background-color: #0d6efd;
-    color: white;
-  }
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 0;
+}
 
-  nav ul {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-  }
+nav ul li a {
+  color: #975d5d;
+  text-decoration: none;
+  font-weight: bold;
+}
 
-  nav ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-  }
+.compra {
+  padding: 40px;
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #f4f6ff;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
 
-  .banner {
-    text-align: center;
-    padding: 60px 20px;
-    background: linear-gradient(to right, #0d6efd, #6610f2);
-    color: #fff;
-  }
+.compra h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
 
-  .produtos {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 40px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+ul {
+  list-style: none;
+  padding: 0;
+}
 
-  .produto {
-    background: #fff;
-    padding: 15px;
-    text-align: center;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
+li {
+  background: white;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
-  .produto img {
-    max-width: 100%;
-    border-radius: 5px;
-  }
+form {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-  .contato {
-    text-align: center;
-    padding: 40px 20px;
-    background-color: #f8f9fa;
-  }
+input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
 
-  footer {
-    background: #0d6efd;
-    color: #fff;
-    text-align: center;
-    padding: 20px;
-    margin-top: 40px;
-    font-size: 14px;
-  }
+button {
+  background-color: #198754;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #146c43;
+}
+
+.mensagem {
+  margin-top: 15px;
+  font-weight: bold;
+  color: green;
+  text-align: center;
+}
+
+footer {
+  background: #0d6efd;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+  font-size: 14px;
+}
 </style>

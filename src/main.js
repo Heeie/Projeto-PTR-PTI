@@ -12,6 +12,11 @@ import PaginaProduto from './components/PaginaProduto.vue';
 import Loja from './components/CriarLoja.vue';
 import Change from './components/ChangeRole.vue';
 import Compra from './components/CompraProduto.vue';
+import Carrinho from './components/PaginaCarrinho.vue'
+import { createPinia } from 'pinia';
+
+
+
 
 
 
@@ -33,6 +38,8 @@ const router = createRouter({
      { path: '/criarLoja', component: Loja },
       { path: '/changerole', component: Change },
     { path: '/comprar', component: Compra },
+     { path: '/carrinho', component: Carrinho },
+     
 
     
   ],
@@ -43,7 +50,8 @@ const app = createApp(App);
 app.use(router); // Registrando o Vue Router
 app.mount('#app'); // Montando o app
 
-
+const pinia = createPinia();
+app.use(pinia);
 
 
 axios.defaults.baseURL = 'http://localhost:3000/api';

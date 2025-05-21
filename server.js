@@ -56,6 +56,7 @@ app.use(session({
 
 
 // Servir arquivos estáticos (como imagens)
+
 app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
 
 // Rotas da API

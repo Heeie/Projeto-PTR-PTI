@@ -1,11 +1,13 @@
 <template>
-    <div class="detalhes">
-      <header>
-        <h1>Detalhes do Produto</h1>
-        <button @click="voltar">← Voltar</button>
-      </header>
-  
-     <div v-if="produto" class="produto-info">
+  <div class="detalhes">
+    <header>
+      <h1>Detalhes do Produto</h1>
+      <button @click="voltar">← Voltar</button>
+    </header>
+
+    <template v-if="produto">
+      <div class="produto-info">
+
       <img :src="produto.imagem" alt="Imagem do produto" />
       <h2>{{ produto.nome }}</h2>
       <p><strong>Marca:</strong> {{ produto.marca }}</p>
@@ -13,42 +15,100 @@
       <p><strong>Estado:</strong> {{ produto.estado }}</p>
       <p><strong>Preço:</strong> € {{ Number(produto.preco).toLocaleString('pt-PT', { minimumFractionDigits: 2 }) }}</p>
 
-      <button class="comprar-btn" @click="router.push('/comprar')">Comprar agora</button>
-    </div>
+     <button class="comprar-btn" @click="comprarProduto">Adicionar ao Carrinho</button>
+     <button class="finalizar-btn" @click="finalizarCompra">Finalizar Compra</button>
 
-  
-      <div v-else class="carregando">
+<p v-if="alertaVisivel" class="alerta-carrinho">
+  Produto adicionado ao carrinho! Total: {{ carrinhoStore.equipamentos.length }} item(ns)
+</p>
+
+   <!-- conteúdo do produto -->
+      </div>
+    </template>
+
+    <template v-else>
+      <div class="carregando">
         <p>Carregando detalhes do produto...</p>
       </div>
-    </div>
-  </template>
-  
+    </template>
+
+    
+
+  </div>
+</template>
+
   <script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRoute, useRouter } from 'vue-router';
-  import axios from 'axios';
-  
-  const route = useRoute();
-  const router = useRouter();
-  const produto = ref(null);
-  
-  function voltar() {
-    router.back();
-  }
-  
-  onMounted(async () => {
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import axios from 'axios';
+import { useCarrinhoStore } from '@/stores/carrinho'; // caminho pode variar
+
+const route = useRoute();
+const router = useRouter();
+const produto = ref(null);
+
+const carrinhoStore = useCarrinhoStore();
+const alertaVisivel = ref(false);
+
+function voltar() {
+  router.back();
+}
+
+function comprarProduto() {
+  carrinhoStore.adicionarAoCarrinho(produto.value);
+  alertaVisivel.value = true;
+
+  setTimeout(() => {
+    alertaVisivel.value = false;
+  }, 2000);
+}
+
+function finalizarCompra() {
+  router.push('/comprar');
+}
+
+
+onMounted(async () => {
   try {
     const id = route.params.id;
     const res = await axios.get(`http://localhost:3000/api/equipamentos/${id}`);
     produto.value = res.data;
+    console.log(produto.value.imagem)
   } catch (err) {
     console.error('Erro ao carregar produto:', err);
   }
 });
+</script>
 
-  </script>
   
   <style scoped>
+
+  .finalizar-btn {
+  margin-top: 12px;
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.finalizar-btn:hover {
+  background-color: #084298;
+}
+
+
+  .alerta-carrinho {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 5px;
+}
 
   .comprar-btn {
   margin-top: 20px;

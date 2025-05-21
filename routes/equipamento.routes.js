@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB para as imagens
+  limits: { fileSize: 10 * 1024 * 1024 }, // Limite de 5MB para as imagens
   fileFilter: (req, file, cb) => {
     const tiposValidos = ['image/jpeg', 'image/png', 'image/jpg'];
     if (tiposValidos.includes(file.mimetype)) {
@@ -88,7 +88,8 @@ router.post('/', upload.single('imagem'), async (req, res) => {
 
     let imagem = null;
     if (req.file) {
-      imagem = `public/Images/${req.file.filename}`;
+     imagem = `/Images/${req.file.filename}`; // correto
+
     }
 
     const novoEquipamento = new Equipamento({

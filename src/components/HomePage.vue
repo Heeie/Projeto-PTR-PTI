@@ -33,10 +33,18 @@
           >
             Alterar a Role
           </button>
+
+
         </ul>
       </nav>
 
-      
+     <button @click="finalizarCompra()" id="carrinhoBtn">
+  🛒 Carrinho ({{ carrinhoCount }})
+</button>
+
+
+
+
     </header>
 
     <section class="banner">
@@ -54,6 +62,10 @@
         <img :src="equipamento.imagem ? equipamento.imagem : '/images/default.jpg'" alt="Imagem do equipamento">
         <h3>{{ equipamento.nome }}</h3>
         <p>{{ equipamento.modelo }} - {{ equipamento.marca }}</p>
+            <p v-if="getQuantidade(equipamento._id) > 0">
+      Já no carrinho: {{ getQuantidade(equipamento._id) }}x
+    </p>
+
         <span>Euros {{ Number(equipamento.preco).toLocaleString('pt-Pt', { minimumFractionDigits: 2 }) }}</span>
       </router-link>
     </section>
@@ -74,14 +86,40 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted,  computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import { useCarrinhoStore } from '@/stores/carrinho';
+
+
+// Store e router
+const carrinhoStore = useCarrinhoStore();
+
+
+// Computed: lista e total
+const carrinho = computed(() => carrinhoStore.equipamentos);
 
 const router = useRouter();
 const equipamentos = ref([]);
 const token = localStorage.getItem('token');
 const user = ref(null);
+const carrinhoCount = computed(() =>
+  carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
+);
+
+
+
+
+
+function finalizarCompra() {
+  router.push('/comprar');
+}
+
+function getQuantidade(id) {
+  const item = carrinho.value.find(p => p._id === id);
+  return item ? item.quantidade : 0;
+}
+
 
 
 function goToRegistro() {
@@ -97,7 +135,7 @@ function goToUserInfo() {
 }
 
 onMounted(async () => {
-  
+
   try {
     const res = await axios.get('http://localhost:3000/api/equipamentos');
     equipamentos.value = res.data;
@@ -121,6 +159,21 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+ #carrinhoBtn, #checkoutBtn {
+  padding: 10px 20px;
+  background-color: #198754;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 10px;
+}
+
+#carrinhoBtn:hover, #checkoutBtn:hover {
+  background-color: #157347;
+}
+
   header {
     background: #0d6efd;
     color: #fff;
