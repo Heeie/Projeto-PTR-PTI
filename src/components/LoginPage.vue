@@ -99,8 +99,13 @@ export default {
         });
 
         const data = await response.json();
+        console.log("API Response:", data);
 
-        if (response.ok && data.success) {
+        if (response.ok && data.token) {
+          // Armazenar o token, se necessário
+          localStorage.setItem('authToken', data.token);
+
+          // Redirecionar para a página inicial
           this.$router.push("/home");
         } else {
           this.errorMessage = data.message || "Usuário ou senha incorretos.";

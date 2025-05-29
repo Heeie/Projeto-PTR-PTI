@@ -12,6 +12,7 @@
           <li><a href="/home">Início</a></li>
           <li><a href="/home#produtos">Produtos</a></li>
           <li><a href="/home#contato">Contato</a></li>
+          <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
           <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
         </ul>
         
