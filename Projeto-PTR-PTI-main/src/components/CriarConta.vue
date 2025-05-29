@@ -110,7 +110,7 @@
             <button type="submit">Criar Conta</button>
           </div>
 
-          <div class="container" style="background-color:#ffffff">
+          <div class="container" style="background-color:#f1f1f1">
             
             
             
@@ -178,7 +178,7 @@ export default {
       this.errorMessage = "";
 
       try {
-        const response = await fetch("http://localhost:3000/api/criar", {
+        const response = await fetch("http://localhost:3000/api/conta", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

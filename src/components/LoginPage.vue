@@ -1,228 +1,333 @@
 <template>
-  <div id="login">
-    <form @submit.prevent="goToHome"> <!-- Impede o envio do formulário padrão -->
-      <div class="imgcontainer">
-        <img src="/Images/smile.jpg" alt="Avatar" class="avatar">
-        <h1>Login</h1>
+  <div>
+    <header>
+  <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+
+  <!-- Botão fora do retângulo -->
+  <button class="top-create-btn" @click="$router.push('/criar_conta')">
+    Criar Conta
+  </button>
+
+  <!-- Barra central de navegação -->
+  <nav class="nav-container">
+    <ul class="nav-center">
+      <li><a href="/home">Início</a></li>
+      <li><a href="/home#produtos">Produtos</a></li>
+      <li><a href="/home#contato">Contato</a></li>
+    </ul>
+  </nav>
+</header>
+
+    <section>
+      <div id="login">
+        <form @submit.prevent="handleLogin">
+          <div class="imgcontainer">
+            <img src="/Images/smile.jpg" alt="Avatar" class="avatar" />
+            <h1>Login</h1>
+          </div>
+
+          <div class="container">
+            <span v-if="errorMessage" class="error">{{ errorMessage }}</span>
+
+            <label for="username"><b>Username</b></label>
+            <input
+              type="text"
+              placeholder="Enter Username"
+              id="username"
+              v-model="username"
+              required
+            />
+
+            <label for="password"><b>Password</b></label>
+            <input
+              type="password"
+              placeholder="Enter Password"
+              id="password"
+              v-model="password"
+              required
+            />
+
+            <button type="submit">Login</button>
+
+            <label>
+              <input type="checkbox" checked="checked" name="remember" />
+              Remember me
+            </label>
+          </div>
+
+          <div
+            class="container"
+            style="background-color:#f1f1f1; display: flex; justify-content: space-between; align-items: center;"
+          >
+            <span class="psw">
+              <router-link to="/recuperar_senha"
+                >Esqueceste-te da tua palavra-passe?</router-link
+              >
+            </span>
+          </div>
+        </form>
       </div>
+    </section>
 
-      <div class="container">
-        <label for="uname"><b>Username</b></label>
-        <input type="text" v-model="username" placeholder="Enter Username" name="uname" required />
-
-        <label for="psw"><b>Password</b></label>
-        <input type="password" v-model="password" placeholder="Enter Password" name="psw" required />
-
-        <button id="btnLogin" type="submit">Login</button>
-
-        <label>
-          <input type="checkbox" checked="checked" name="remember" /> Lembrar-me
-        </label>
-      </div>
-
-      <div class="container" style="background-color:#f1f1f1">
-        <button type="button" class="cancelbtn">Cancelar</button>
-        <span class="create"><a href="#">Criar uma nova conta</a></span>
-        <span class="psw">Esqueceu a <a href="#">password?</a></span>
-      </div>
-    </form>
-
-    <!-- Exibição de Carregamento -->
-    <div v-if="loading">Carregando...</div>
+    <footer>
+      <p>&copy; 2025 Loja Tech - Todos os direitos reservados.</p>
+    </footer>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
   data() {
     return {
-      username: '',
-      password: '',
-      users: [], // Lista de usuários
-      loading: true, // Para controlar o estado de carregamento
+      username: "",
+      password: "",
+      errorMessage: "",
     };
   },
-  async created() {
-    try {
-      // Realizar a requisição para obter todos os usuários assim que o componente for criado
-      const response = await axios.get('http://localhost:3000/api/utilizadores', {
-        withCredentials: true
-      });
-
-      
-
-      this.users = response.data;  // Salvar os usuários na variável 'users'
-      console.log(this.users);
-    } catch (error) {
-      console.error("Erro ao buscar usuários:", error);
-    } finally {
-      this.loading = false; // Alterar o estado para carregamento concluído
-    }
-  },
   methods: {
-    async goToHome(event) {
-    event.preventDefault();
+    async handleLogin() {
+      this.errorMessage = "";
 
-    const response = await axios.post('http://localhost:3000/api/login', {
-  username: this.username,
-  password: this.password,
-}, {
-  withCredentials: true
-});
+      try {
+        const response = await fetch("http://localhost:3000/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: this.username,
+            password: this.password,
+          }),
+        });
 
-// ✅ Salvar token e usuário
-const token = response.data.token;
-localStorage.setItem('token', token);
-localStorage.setItem('user', JSON.stringify(response.data.user));
+        const data = await response.json();
+        console.log("API Response:", data);
 
-// ✅ Agora que tem token, você pode buscar o perfil
-const perfil = await axios.get('http://localhost:3000/api/perfil', {
-  headers: {
-    Authorization: `Bearer ${token}` // <-- Importante!
+        if (response.ok && data.token) {
+          // Armazenar o token, se necessário
+          localStorage.setItem('authToken', data.token);
+
+          // Redirecionar para a página inicial
+          this.$router.push("/home");
+        } else {
+          this.errorMessage = data.message || "Usuário ou senha incorretos.";
+        }
+      } catch (error) {
+        this.errorMessage = "Erro ao conectar com o servidor.";
+        console.error(error);
+      }
+    },
   },
-  withCredentials: true
-});
-
-console.log("Perfil:", perfil.data);
-
-// Redirecionar para Home
-this.$router.push('/home');
-
-
-
-  } 
-
-  }
 };
 </script>
 
-
 <style scoped>
-body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f8f9fa;
-    color: #333;
-}
+
 header {
-    background: #0d6efd;
-    color: #fff;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: #0d6efd;
+  padding: 20px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-radius: 0 0 10px 10px;
+  margin-bottom: 30px;
 }
-nav ul {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+
+h1 {
+  margin: 10;
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #ffffff;
 }
-nav ul li {
-    display: inline;
+
+/* Botão "Criar Conta" fora da barra central */
+.top-create-btn {
+  position: absolute;
+  top: auto;
+  right: 20px;
+  background-color: white;
+  color: #0d6efd;
+  border: 2px solid white;
+  padding: 8px 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  width: auto !important;
 }
-nav ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
+
+.top-create-btn:hover {
+  background-color: #0d6efd;
+  color: white;
+  border-color: #ffffff;
 }
-.banner {
-    text-align: center;
-    padding: 60px 20px;
-    background: linear-gradient(to right, #0d6efd, #6610f2);
-    color: #fff;
+
+/* Barra central de navegação */
+nav.nav-container {
+  max-width: max-content;
+  margin: 0 auto 40px auto;
+  background: #0d6efd;
+  border: 2px solid white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  box-sizing: border-box;
 }
-.produtos {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 40px;
-    max-width: 1200px;
-    margin: 0 auto;
-    
+
+ul.nav-center {
+  list-style: none;
+  display: flex;
+  gap: auto;
+  margin: 0;
+  padding: 0;
+  flex-grow: 1;
+  justify-content: center;
+}
+
+ul.nav-center li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+ul.nav-center li a:hover {
+  background-color: #084298;
+  cursor: pointer;
 }
 
 
-footer {
-    background: #0d6efd;
-    color: #fff;
-    text-align: center;
-    padding: 20px;
-    margin-top: 40px;
-    font-size: 14px;
+
+
+
+.nav-right {
+  margin-left: auto;
+}
+
+.nav-right button {
+  background-color: white;
+  color: #0d6efd;
+  border: 3px solid #0d6efd;
+  padding: 12px 25px;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-right button:hover {
+  background-color: #0d6efd;
+  color: white;
+  border-color: white;
+}
+
+/* Login Form */
+.imgcontainer {
+  text-align: center;
+  margin: 20px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  max-width: 400px;
+  margin: auto;
+  margin-bottom: 10px;
+}
+
+button {
+  background-color: #04aa6d;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+.imgcontainer img.avatar {
+  width: 40%;
+  border-radius: 50%;
 }
 
 form {
-    border: 3px solid #f1f1f1;
+  border: 3px solid #f1f1f1;
+}
+
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.error {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: -8px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+footer {
+  background: #0d6efd;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+  font-size: 14px;
+}
+
+.psw {
+  font-size: 0.9rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.psw router-link {
+  color: #0d6efd;
+  text-decoration: none;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.psw router-link:hover {
+  text-decoration: underline;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+  nav.nav-container {
+    flex-direction: column;
+    gap: 10px;
   }
-  
-  /* Full-width inputs */
-  input[type=text], input[type=password] {
+
+  ul.nav-center {
+    justify-content: center;
+  }
+
+  .nav-right {
+    margin-left: 0;
+  }
+
+  .nav-right button {
     width: 100%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    display: inline-block;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
   }
-  
-  /* Set a style for all buttons */
-  button {
-    background-color: #04AA6D;
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-  }
-  
-  /* Add a hover effect for buttons */
-  button:hover {
-    opacity: 0.8;
-  }
-  
-  /* Extra style for the cancel button (red) */
-  .cancelbtn {
-    width: auto;
-    padding: 10px 18px;
-    background-color: #f44336;
-  }
-  
-  /* Center the avatar image inside this container */
-  .imgcontainer {
-    text-align: center;
-    margin: 24px 0 12px 0;
-  }
-  
-  /* Avatar image */
-  img.avatar {
-    width: 40%;
-    border-radius: 50%;
-  }
-  
-  /* Add padding to containers */
-  .container {
-    padding: 16px;
-  }
-  
-  /* The "Forgot password" text */
-  span.psw {
-    float: right;
-    padding-top: 16px;
-  }
-  
-  /* Change styles for span and cancel button on extra small screens */
-  @media screen and (max-width: 300px) {
-    span.psw {
-      display: block;
-      float: none;
-    }
-    .cancelbtn {
-      width: 100%;
-    }
-  }
+}
 </style>

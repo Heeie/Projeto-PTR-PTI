@@ -1,3 +1,121 @@
+<template>
+  <div>
+    <header>
+  <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+
+  <!-- Botão fora do retângulo -->
+  <button class="top-create-btn" @click="$router.push('/criar_conta')">
+    Criar Conta
+  </button>
+
+  <!-- Barra central de navegação -->
+  <nav class="nav-container">
+    <ul class="nav-center">
+      <li><a href="/home">Início</a></li>
+      <li><a href="/home#produtos">Produtos</a></li>
+      <li><a href="/home#contato">Contato</a></li>
+    </ul>
+  </nav>
+</header>
+
+    <section>
+      <div id="login">
+        <form @submit.prevent="handleLogin">
+          <div class="imgcontainer">
+            <img src="/Images/smile.jpg" alt="Avatar" class="avatar" />
+            <h1>Login</h1>
+          </div>
+
+          <div class="container">
+            <span v-if="errorMessage" class="error">{{ errorMessage }}</span>
+
+            <label for="username"><b>Username</b></label>
+            <input
+              type="text"
+              placeholder="Enter Username"
+              id="username"
+              v-model="username"
+              required
+            />
+
+            <label for="password"><b>Password</b></label>
+            <input
+              type="password"
+              placeholder="Enter Password"
+              id="password"
+              v-model="password"
+              required
+            />
+
+            <button type="submit">Login</button>
+
+            <label>
+              <input type="checkbox" checked="checked" name="remember" />
+              Remember me
+            </label>
+          </div>
+
+          <div
+            class="container"
+            style="background-color:#f1f1f1; display: flex; justify-content: space-between; align-items: center;"
+          >
+            <span class="psw">
+              <router-link to="/recuperar_senha"
+                >Esqueceste-te da tua palavra-passe?</router-link
+              >
+            </span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <footer>
+      <p>&copy; 2025 Loja Tech - Todos os direitos reservados.</p>
+    </footer>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      username: "",
+      password: "",
+      errorMessage: "",
+    };
+  },
+  methods: {
+    async handleLogin() {
+      this.errorMessage = "";
+
+      try {
+        const response = await fetch("http://localhost:3000/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: this.username,
+            password: this.password,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          this.$router.push("/home");
+        } else {
+          this.errorMessage = data.message || "Usuário ou senha incorretos.";
+        }
+      } catch (error) {
+        this.errorMessage = "Erro ao conectar com o servidor.";
+        console.error(error);
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+
 header {
   background: #0d6efd;
   padding: 20px;
@@ -206,3 +324,4 @@ footer {
     width: 100%;
   }
 }
+</style>
