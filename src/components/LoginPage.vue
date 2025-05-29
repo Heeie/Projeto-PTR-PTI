@@ -62,37 +62,36 @@ export default {
     }
   },
   methods: {
-    async goToHome(event) {
-    event.preventDefault();
-
+   async goToHome(event) {
+  event.preventDefault();
+  try {
     const response = await axios.post('http://localhost:3000/api/login', {
-  username: this.username,
-  password: this.password,
-}, {
-  withCredentials: true
-});
+      username: this.username,
+      password: this.password,
+    }, {
+      withCredentials: true
+    });
 
-// ✅ Salvar token e usuário
-const token = response.data.token;
-localStorage.setItem('token', token);
-localStorage.setItem('user', JSON.stringify(response.data.user));
+    const token = response.data.token;
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
 
-// ✅ Agora que tem token, você pode buscar o perfil
-const perfil = await axios.get('http://localhost:3000/api/perfil', {
-  headers: {
-    Authorization: `Bearer ${token}` // <-- Importante!
-  },
-  withCredentials: true
-});
+    const perfil = await axios.get('http://localhost:3000/api/perfil', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      withCredentials: true
+    });
 
-console.log("Perfil:", perfil.data);
+    console.log("Perfil:", perfil.data);
+    this.$router.push('/home');
 
-// Redirecionar para Home
-this.$router.push('/home');
+  } catch (error) {
+    console.error("Erro no login:", error.response?.data || error.message);
+    alert("Erro ao fazer login: " + (error.response?.data?.erro || "Erro interno"));
+  }
+}
 
-
-
-  } 
 
   }
 };

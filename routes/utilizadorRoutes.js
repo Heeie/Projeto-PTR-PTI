@@ -6,11 +6,54 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const authMiddleware = require('../middlewares/authMiddleware');
 const utilizadorController = require('../controllers/UtilizadorController');
-
+const checkJwt = require('../middlewares/auth0Middleware');
 
 router.post('/criar', utilizadorController.criarUtilizador);
 
-router.get('/perfil', authMiddleware, utilizadorController.getPerfil);
+router.get('/perfil', authMiddleware, async (req, res) => {
+  try {
+    let user;
+
+    // Se for login local (com JWT tradicional)
+    if (req.user && req.user.id) {
+      user = await Utilizador.findById(req.user.id).select('-senha');
+    }
+
+    // Se for login com Auth0
+    else if (req.auth && req.auth.sub) {
+      const sub = req.auth.sub;
+      user = await Utilizador.findOne({ auth0Id: sub });
+
+      // Se não existir, cria
+      if (!user) {
+        user = new Utilizador({
+          nome: req.auth.nickname || req.auth.name,
+          email: req.auth.email,
+          role: 'cliente',
+          auth0Id: sub,
+        });
+        await user.save();
+      }
+    }
+
+    if (!user) {
+      return res.status(404).json({ mensagem: 'Utilizador não encontrado' });
+    }
+
+    res.json({
+      id: user._id,
+      nome: user.nome,
+      email: user.email,
+      role: user.role
+    });
+
+  } catch (err) {
+    console.error("Erro ao obter perfil:", err);
+    res.status(500).json({ erro: 'Erro ao carregar perfil' });
+  }
+});
+
+
 
 
 
