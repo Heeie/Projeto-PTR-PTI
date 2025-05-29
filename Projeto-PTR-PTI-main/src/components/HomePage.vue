@@ -1,55 +1,21 @@
 <template>
   <div>
     <header>
+      <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
 
-      <h1>FromU2Me</h1>
-      <nav>
-        <ul>
-          <li><router-link to="/home">Início</router-link></li>
-          <li><a href="#produtos">Produtos</a></li>
-          <li><a href="#contato">Contato</a></li>
-          
-          <button type="button" id="regisbtn" 
-          v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
-          @click="goToRegistro">Gerir equipamentos</button>
-          
-          <button type="button" id="catalogbtn"
-           v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
-          @click="goToAddCatalog">ADDCatalogo</button>
+      <button class="top-create-btn" @click="loginOrRegister">
+        Login / Criar Conta
+      </button>
 
-          <button type="button" id="infobtn"  
-         
-          @click="goToUserInfo">Info do utilizador</button>
-          
-          <button type="button" id="infobtn" 
-          v-if="user && (user.role === 'admin' )"
-          @click="router.push('/criarLoja') ">Criar Loja</button>
-          
-          
-          <button
-            type="button"
-            id="chrbtn"
-            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
-            @click="router.push('/changerole')"
-          >
-            Alterar a Role
-          </button>
-
-
-
+      <nav class="nav-container">
+        <ul class="nav-center">
+          <li><a href="/home">Início</a></li>
+          <li><a href="/home#produtos">Produtos</a></li>
+          <li><a href="/home#contato">Contato</a></li>
+          <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
         </ul>
         
       </nav>
-
-
-     <button @click="finalizarCompra()" id="carrinhoBtn">
-  🛒 Carrinho ({{ carrinhoCount }})
-</button>
-
-
-
-
-
     </header>
 
     <section class="banner">
@@ -57,24 +23,19 @@
       <p>Confira nossas ofertas e garanta já o seu.</p>
     </section>
 
-
-     <section id="produtos" class="produtos">
-        <router-link
-        class="produto"
-        v-for="equipamento in equipamentos"
-        :key="equipamento._id"
-        :to="`/produto/${equipamento._id}`"
-      >
-        <img :src="equipamento.imagem ? equipamento.imagem : '/images/default.jpg'" alt="Imagem do equipamento">
-        <h3>{{ equipamento.nome }}</h3>
-        <p>{{ equipamento.modelo }} - {{ equipamento.marca }}</p>
-            <p v-if="getQuantidade(equipamento._id) > 0">
-      Já no carrinho: {{ getQuantidade(equipamento._id) }}x
-    </p>
-
-        <span>Euros {{ Number(equipamento.preco).toLocaleString('pt-Pt', { minimumFractionDigits: 2 }) }}</span>
-      </router-link>
-
+    <section id="produtos" class="produtos">
+      <div class="produto">
+        <img src="@/assets/orn.png" alt="Laptop" />
+        <h3>Laptop Gamer</h3>
+        <p>Alta performance para jogos e trabalho.</p>
+        <span>R$ 5.999,00</span>
+      </div>
+      <div class="produto">
+        <img src="@/assets/orn.png" alt="Smartphone" />
+        <h3>Smartphone 5G</h3>
+        <p>Velocidade e tecnologia de ponta.</p>
+        <span>R$ 3.499,00</span>
+      </div>
     </section>
 
     <section id="contato" class="contato">
@@ -90,68 +51,12 @@
 </template>
 
 <script setup>
-
-import { ref, onMounted,  computed } from 'vue';
-import axios from 'axios';
 import { useRouter } from 'vue-router';
-import { useCarrinhoStore } from '@/stores/carrinho';
-
-
-// Store e router
-const carrinhoStore = useCarrinhoStore();
-
-
-// Computed: lista e total
-const carrinho = computed(() => carrinhoStore.equipamentos);
-
 const router = useRouter();
-const equipamentos = ref([]);
-const token = localStorage.getItem('token');
-const user = ref(null);
-const carrinhoCount = computed(() =>
-  carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
-);
-
-
-
-
-
-function finalizarCompra() {
-  router.push('/comprar');
-}
-
-function getQuantidade(id) {
-  const item = carrinho.value.find(p => p._id === id);
-  return item ? item.quantidade : 0;
-}
-
-
 
 function loginOrRegister() {
   router.push('/login');
 }
-
-onMounted(async () => {
-
-  try {
-    const res = await axios.get('http://localhost:3000/api/equipamentos');
-    equipamentos.value = res.data;
-
-
-    const resUser = await axios.get('http://localhost:3000/api/perfil', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-  });
-
-  console.log('Usuário carregado:', user.value);
-
-   user.value = resUser.data;
-
-  } catch (err) {
-    console.error('Erro ao buscar equipamentos:', err);
-  }
-});
 
 </script>
 
@@ -191,13 +96,11 @@ h1 {
   width: auto !important;
 }
 
-
 .top-create-btn:hover {
   background-color: #0d6efd;
   color: white;
   border-color: #ffffff;
 }
-
 
 /* Barra central de navegação */
 nav.nav-container {
@@ -239,29 +142,6 @@ ul.nav-center li a:hover {
 
 
 
-<style scoped>
- #carrinhoBtn, #checkoutBtn {
-  padding: 10px 20px;
-  background-color: #198754;
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin: 10px;
-}
-
-#carrinhoBtn:hover, #checkoutBtn:hover {
-  background-color: #157347;
-}
-
-  header {
-    background: #0d6efd;
-    color: #fff;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
 
 
 .nav-right {

@@ -110,7 +110,7 @@
             <button type="submit">Criar Conta</button>
           </div>
 
-          <div class="container" style="background-color:#ffffff">
+          <div class="container" style="background-color:#f1f1f1">
             
             
             
@@ -170,9 +170,6 @@ export default {
     },
 
     async submitForm() {
-
-     
-
       if (!this.validateForm()) {
         return;
       }
@@ -181,7 +178,7 @@ export default {
       this.errorMessage = "";
 
       try {
-        const response = await fetch("http://localhost:3000/api/criar", {
+        const response = await fetch("http://localhost:3000/api/conta", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -201,7 +198,6 @@ export default {
         if (!response.ok) {
           throw new Error(data.error || "Erro ao registrar utilizador");
         }
-
 
         console.log("Utilizador salvo no MongoDB:", data);
         this.successMessage = "Utilizador registrado com sucesso!";

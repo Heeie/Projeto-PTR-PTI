@@ -7,14 +7,21 @@
 
   <div>
     <header>
-      <h1>FromU2Me</h1>
-      <nav>
-        <ul>
-          <li><router-link to="/home">Início</router-link></li>
-          <li><a href="#produtos">Produtos</a></li>
-          <li><a href="#contato">Contato</a></li>
-          
+      <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+
+      <button class="top-create-btn" @click="loginOrRegister">
+        Login / Criar Conta
+      </button>
+
+      <nav class="nav-container">
+        <ul class="nav-center">
+          <li><a href="/home">Início</a></li>
+          <li><a href="/home#produtos">Produtos</a></li>
+          <li><a href="/home#contato">Contato</a></li>
+          <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
+          <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
         </ul>
+        
       </nav>
     </header>
 
@@ -27,16 +34,15 @@
           </div>
 
           <div class="container">
+            <!-- Mensagens -->
+            <div v-if="successMessage" class="success">{{ successMessage }}</div>
+            <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
+
             <!-- Nome -->
             <label for="nome">Nome</label>
-            <input
-              type="text"
-              placeholder="Nome do equipamento"
-              name="nome"
-              v-model="form.nome"
-              required
-            />
+            <input type="text" placeholder="Nome do equipamento" v-model="form.nome" required />
 
+            <!-- Estado -->
             <label for="estado">Estado</label>
             <select required v-model="form.estado">
               <option disabled value="">Selecionar estado</option>
@@ -45,10 +51,9 @@
               <option value="avariado">Avariado</option>
             </select>
 
-
             <!-- Marca -->
             <label for="marca">Marca</label>
-            <select required id="marca" name="marca" v-model="form.marca">
+            <select required v-model="form.marca">
               <option disabled value="">Selecione uma marca</option>
               <option value="Xiaomi">Xiaomi</option>
               <option value="Nokia">Nokia</option>
@@ -56,37 +61,15 @@
             </select>
 
             <!-- Modelo -->
-            <label for="modelo"><b>Modelo</b></label>
-            <input
-              type="text"
-              placeholder="Introduza um modelo"
-              name="modelo"
-              v-model="form.modelo"
-              required
-            />
-
-
-            <!-- Adiciona depois do campo catálogo_id -->
-            <label for="imagem"><b>Imagem</b></label>
-            <input
-              type="file"
-              name="imagem"
-              accept="image/*"
-              @change="handleFileUpload"
-            />
-
+            <label for="modelo">Modelo</label>
+            <input type="text" placeholder="Introduza um modelo" v-model="form.modelo" required />
 
             <!-- Preço -->
-            <label for="preco"><b>Preço</b></label>
-            <input
-              type="number"
-              placeholder="Introduza um preço"
-              name="preco"
-              v-model="form.preco"
-              required
-            />
+            <label for="preco">Preço</label>
+            <input type="number" placeholder="Introduza um preço" v-model="form.preco" required />
 
             <!-- Loja ID -->
+
             <!-- Loja -->
             <label for="loja_id"><b>Loja</b></label>
             <select v-model="form.loja_id" required>
@@ -99,37 +82,17 @@
 
 
             <!-- Catálogo ID -->
-            <label for="catalogo_id"><b>ID do Catálogo</b></label>
-            <input
-              type="text"
-              placeholder="ID do catálogo de equipamentos"
-              name="catalogo_id"
-              v-model="form.catalogo_id"
-              required
-            />
+            <label for="catalogo_id">Catálogo</label>
+            <select v-model="form.catalogo_id" required>
+              <option disabled value="">Selecione um catálogo</option>
+              <option v-for="catalogo in catalogos" :key="catalogo._id" :value="catalogo._id">
+                {{ catalogo.nome }} (ID: {{ catalogo._id }})
+              </option>
+            </select>
 
-
-           <!-- Categoria -->
-          <label for="categoria_id"><b>Categoria</b></label>
-          <select v-model="form.categoria_id" required>
-            <option disabled value="">Selecione uma categoria</option>
-            <option v-for="cat in categorias" :key="cat._id" :value="cat._id">
-              {{ cat.nome }}
-            </option>
-          </select>
-
-          <!-- Tipo -->
-          <label for="tipo_id"><b>Tipo</b></label>
-          <select v-model="form.tipo_id" required>
-            <option disabled value="">Selecione um tipo</option>
-            <option v-for="tipo in tipos" :key="tipo._id" :value="tipo._id">
-              {{ tipo.nome }}
-            </option>
-          </select>
-
-
-
+            <!-- Botões -->
             <button type="submit">Registrar Equipamento</button>
+            <button type="button" class="cancelbtn" @click="voltar">Voltar</button>
           </div>
         </form>
 
@@ -228,19 +191,17 @@
 
 <script>
 export default {
-  name: 'CriarEquipamento',
+  name: "CriarEquipamento",
   data() {
     return {
       form: {
-        nome: '',
-        marca: '',
-        modelo: '',
-        estado: '',
-        preco: '',
-        loja_id: '',
-        catalogo_id: '',
-        categoria_id: '',
-        tipo_id: ''
+        nome: "",
+        marca: "",
+        modelo: "",
+        estado: "",
+        preco: "",
+        loja_id: "",
+        catalogo_id: "",
       },
       imagem: null,
       categorias: [], // novas listas
@@ -266,7 +227,27 @@ export default {
 
     };
   },
+  async mounted() {
+    try {
+      const [lojasRes, catalogosRes] = await Promise.all([
+        fetch("http://localhost:3000/api/lojas"),
+        fetch("http://localhost:3000/api/catalogos"),
+      ]);
+
+      this.lojas = await lojasRes.json();
+      this.catalogos = await catalogosRes.json();
+
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        this.user = JSON.parse(storedUser);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar lojas/catalogos:", err);
+      this.errorMessage = "Erro ao carregar dados.";
+    }
+  },
   methods: {
+
 
      mostrarMensagem(msg) {
       this.mensagem = msg;
@@ -276,9 +257,14 @@ export default {
     },
     handleFileUpload(event) {
       this.imagem = event.target.files[0];
-    },
 
+    loginOrRegister() {
+      // Redireciona para a página de login ou criação de conta
+      this.$router.push("/login");
+
+    },
     async submitForm() {
+    
   try {
     const formData = new FormData();
     Object.keys(this.form).forEach(key => {
@@ -445,11 +431,45 @@ export default {
  created() {
     this.carregarCategoriasETipos();
   }
+
 };
-
-
 </script>
 
+<style scoped>
+/* Header */
+header {
+  background: #0d6efd;
+  padding: 20px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-radius: 0 0 10px 10px;
+  margin-bottom: 30px;
+}
+
+h1 {
+  margin: 10;
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #ffffff;
+}
+
+/* Botão "Criar Conta" fora da barra central */
+.top-create-btn {
+  position: absolute;
+  top: auto;
+  right: 20px;
+  background-color: white;
+  color: #0d6efd;
+  border: 2px solid white;
+  padding: 8px 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  width: auto !important;
+}
 
   
 <style scoped>
@@ -509,124 +529,215 @@ export default {
     padding: 0;
     background-color: #f8f9fa;
     color: #333;
+
+.top-create-btn:hover {
+  background-color: #0d6efd;
+  color: white;
+  border-color: #ffffff;
+
 }
-header {
-    background: #0d6efd;
-    color: #fff;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+/* Barra central de navegação */
+nav.nav-container {
+  max-width: max-content;
+  margin: 0 auto 40px auto;
+  background: #0d6efd;
+  border: 2px solid white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  box-sizing: border-box;
 }
-nav ul {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+
+ul.nav-center {
+  list-style: none;
+  display: flex;
+  gap: auto;
+  margin: 0;
+  padding: 0;
+  flex-grow: 1;
+  justify-content: center;
 }
-nav ul li {
-    display: inline;
+
+ul.nav-center li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
 }
-nav ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: bold;
-}
-.banner {
-    text-align: center;
-    padding: 60px 20px;
-    background: linear-gradient(to right, #0d6efd, #6610f2);
-    color: #fff;
-}
-.produtos {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 40px;
-    max-width: 1200px;
-    margin: 0 auto;
-    
+
+ul.nav-center li a:hover {
+  background-color: #084298;
+  cursor: pointer;
 }
 
 
+
+
+
+.nav-right {
+  margin-left: auto;
+}
+
+.nav-right button {
+  background-color: white;
+  color: #0d6efd;
+  border: 3px solid #0d6efd;
+  padding: 12px 25px;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-right button:hover {
+  background-color: #0d6efd;
+  color: white;
+  border-color: white;
+}
+
+/* Form container - deixa a caixa do formulário igual à dos outros */
+#login form {
+  background-color: white;
+  max-width: 450px;
+  margin: 0 auto 40px auto;
+  padding: 30px 35px;
+  border: 3px solid #f1f1f1;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgb(0 0 0 / 0.1);
+  box-sizing: border-box;
+}
+
+/* Título e imagem do avatar */
+.imgcontainer {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+img.avatar {
+  width: 40%;
+  border-radius: 50%;
+  margin-bottom: 15px;
+}
+
+h1 {
+  margin: 10;
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #ffffff;
+}
+
+/* Inputs e selects estilo uniforme */
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 10px 0 20px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  border-color: #0d6efd;
+  outline: none;
+}
+
+/* Labels */
+label {
+  font-weight: 600;
+  color: #555;
+}
+
+/* Botões */
+button[type="submit"],
+button.cancelbtn {
+  width: 100%;
+  padding: 14px 20px;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  margin-top: 10px;
+}
+
+button[type="submit"] {
+  background-color: #0d6efd;
+  color: white;
+}
+
+button[type="submit"]:hover {
+  background-color: #084298;
+}
+
+button.cancelbtn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+}
+
+button.cancelbtn:hover {
+  opacity: 0.85;
+}
+
+/* Mensagens */
+.success {
+  color: green;
+  font-weight: 700;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.error {
+  color: red;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* Footer */
 footer {
-    background: #0d6efd;
-    color: #fff;
-    text-align: center;
-    padding: 20px;
-    margin-top: 40px;
-    font-size: 14px;
+  background: #0d6efd;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+  margin-top: 50px;
+  border-radius: 10px 10px 0 0;
 }
 
-form {
-    border: 3px solid #f1f1f1;
+/* Responsividade */
+@media (max-width: 480px) {
+  nav.nav-container {
+    flex-direction: column;
+    gap: 10px;
   }
-  
-  /* Full-width inputs */
-  input[type=text], input[type=password] {
-    width: 100%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    display: inline-block;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
+
+  ul.nav-center {
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  
-  /* Set a style for all buttons */
-  button {
-    background-color: #04AA6D;
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    cursor: pointer;
+
+  .nav-right button {
     width: 100%;
   }
-  
-  /* Add a hover effect for buttons */
-  button:hover {
-    opacity: 0.8;
+
+  #login form {
+    padding: 20px;
+    margin: 20px 10px 40px 10px;
   }
-  
-  /* Extra style for the cancel button (red) */
-  .cancelbtn {
-    width: auto;
-    padding: 10px 18px;
-    background-color: #f44336;
-  }
-  
-  /* Center the avatar image inside this container */
-  .imgcontainer {
-    text-align: center;
-    margin: 24px 0 12px 0;
-  }
-  
-  /* Avatar image */
-  img.avatar {
-    width: 40%;
-    border-radius: 50%;
-  }
-  
-  /* Add padding to containers */
-  .container {
-    padding: 16px;
-  }
-  
-  /* The "Forgot password" text */
-  span.psw {
-    float: right;
-    padding-top: 16px;
-  }
-  
-  /* Change styles for span and cancel button on extra small screens */
-  @media screen and (max-width: 300px) {
-    span.psw {
-      display: block;
-      float: none;
-    }
-    .cancelbtn {
-      width: 100%;
-    }
-  }
-  </style>
-  
+}
+</style>
