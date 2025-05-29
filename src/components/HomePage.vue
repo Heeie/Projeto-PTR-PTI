@@ -126,11 +126,6 @@ function getQuantidade(id) {
 }
 
 
-
-function loginOrRegister() {
-  router.push('/login');
-}
-
 onMounted(async () => {
 
   try {
