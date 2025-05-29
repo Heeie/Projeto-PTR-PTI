@@ -1,102 +1,216 @@
 <template>
-    <div>
-      <header>
-        <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+  <div>
+    <header>
+      <h1>FromU2Me</h1>
+      <nav>
+        <ul>
+          <li><router-link to="/home">Início</router-link></li>
+          <li><a href="#produtos">Produtos</a></li>
+          <li><a href="#contato">Contato</a></li>
+        </ul>
+      </nav>
+    </header>
 
-        <button class="top-create-btn" @click="loginOrRegister">
-          Login / Criar Conta
-        </button>
+    <section class="banner">
+      <!-- Formulário de Categoria -->
+      <div>
+        <h2>{{ editandoCategoriaId ? 'Editar Categoria' : 'Adicionar Categoria' }}</h2>
+        <form @submit.prevent="adicionarCategoria">
+          <input type="text" v-model="novaCategoria.nome" placeholder="Nome da categoria" required />
+          <textarea v-model="novaCategoria.descricao" placeholder="Descrição da categoria"></textarea>
+          <button type="submit">Salvar</button>
+        </form>
+      </div>
 
-        <nav class="nav-container">
-          <ul class="nav-center">
-            <li><a href="/home">Início</a></li>
-            <li><a href="/home#produtos">Produtos</a></li>
-            <li><a href="/home#contato">Contato</a></li>
-            <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
-            <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
-          </ul>
-          
-        </nav>
-      </header>
+      <!-- Lista de Categorias -->
+      <div>
+        <h3>Categorias Existentes</h3>
+        <ul>
+          <li v-for="categoria in categorias" :key="categoria._id">
+            {{ categoria.nome }} - {{ categoria.descricao }}
+            <button @click="editarCategoria(categoria)">Editar</button>
+            <button @click="apagarCategoria(categoria._id)">Apagar</button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Formulário de Tipo -->
+      <div style="margin-top: 30px;">
+        <h2>{{ editandoTipoId ? 'Editar Tipo' : 'Adicionar Tipo' }}</h2>
+        <form @submit.prevent="adicionarTipo">
+          <input type="text" v-model="novoTipo.nome" placeholder="Nome do tipo" required />
+          <textarea v-model="novoTipo.descricao" placeholder="Descrição do tipo"></textarea>
+          <button type="submit">Salvar</button>
+        </form>
+      </div>
+
+      <!-- Lista de Tipos -->
+      <div>
+        <h3>Tipos Existentes</h3>
+        <ul>
+          <li v-for="tipo in tipos" :key="tipo._id">
+            {{ tipo.nome }} - {{ tipo.descricao }}
+            <button @click="editarTipo(tipo)">Editar</button>
+            <button @click="apagarTipo(tipo._id)">Apagar</button>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <div v-if="mensagem" :class="['mensagem', tipoMensagem]">
+      {{ mensagem }}
   
-      <section class="banner">
-        <div>
-          <h2>Adicionar Categoria</h2>
-          <form @submit.prevent="adicionarCategoria">
-            <input type="text" v-model="novaCategoria.nome" placeholder="Nome da categoria" required />
-            <textarea v-model="novaCategoria.descricao" placeholder="Descrição da categoria"></textarea>
-            <button id="regisbtn" type="submit">Adicionar</button>
-          </form>
-        </div>
-  
-        <div style="margin-top: 30px;">
-          <h2>Adicionar Tipo</h2>
-          <form @submit.prevent="adicionarTipo">
-            <input type="text" v-model="novoTipo.nome" placeholder="Nome do tipo" required />
-            <textarea v-model="novoTipo.descricao" placeholder="Descrição do tipo"></textarea>
-            <button id="regisbtn" type="submit">Adicionar</button>
-          </form>
-        </div>
-      </section>
-  
-      <section id="contato" class="contato">
-        <h2>Entre em contato</h2>
-        <p>Email: contato@fromu2me.com</p>
-        <p>Telefone: (11) 99999-9999</p>
-      </section>
-  
-      <footer>
-        <p>&copy; 2025 Loja Tech - Todos os direitos reservados.</p>
-      </footer>
     </div>
-  </template>
+
+    <section id="contato" class="contato">
+      <h2>Entre em contato</h2>
+      <p>Email: contato@fromu2me.com</p>
+      <p>Telefone: (11) 99999-9999</p>
+    </section>
+
+    <footer>
+      <p>&copy; 2025 Loja Tech - Todos os direitos reservados.</p>
+    </footer>
+  </div>
+</template>
+
   
-  <script>
-  export default {
-    name: 'HomePage',
-    data() {
-      return {
-        novaCategoria: {
-          nome: '',
-          descricao: ''
-        },
-        novoTipo: {
-          nome: '',
-          descricao: ''
-        }
-      };
+<script>
+export default {
+  data() {
+    return {
+      novaCategoria: { nome: '', descricao: '' },
+      novoTipo: { nome: '', descricao: '' },
+      categorias: [],
+      tipos: [],
+      editandoCategoriaId: null,
+      editandoTipoId: null,
+      mensagem: '',
+      tipoMensagem: ''
+    };
+  },
+  mounted() {
+    this.carregarCategorias();
+    this.carregarTipos();
+  },
+  methods: {
+    async carregarCategorias() {
+      const res = await fetch('http://localhost:3000/api/categorias');
+      this.categorias = await res.json();
     },
-    methods: {
-      adicionarCategoria() {
-        fetch('http://localhost:3000/api/categorias', {
-          method: 'POST',
+
+    async carregarTipos() {
+      const res = await fetch('http://localhost:3000/api/tipos');
+      this.tipos = await res.json();
+    },
+
+    async adicionarCategoria() {
+      const url = this.editandoCategoriaId
+        ? `http://localhost:3000/api/categorias/${this.editandoCategoriaId}`
+        : 'http://localhost:3000/api/categorias';
+
+      const method = this.editandoCategoriaId ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(this.novaCategoria)
-        })
-          .then(res => res.json())
-          .then(data => {
-            console.log('Categoria adicionada:', data);
-            this.novaCategoria = { nome: '', descricao: '' };
-          })
-          .catch(err => alert('Erro ao adicionar categoria: ' + err.message));
-      },
-  
-      adicionarTipo() {
-        fetch('http://localhost:3000/api/tipos', {
-          method: 'POST',
+        });
+
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.message || res.statusText);
+
+        this.mensagem = this.editandoCategoriaId
+          ? 'Categoria atualizada com sucesso!'
+          : 'Categoria adicionada com sucesso!';
+        this.tipoMensagem = 'sucesso';
+
+        this.novaCategoria = { nome: '', descricao: '' };
+        this.editandoCategoriaId = null;
+        this.carregarCategorias();
+      } catch (err) {
+        this.mensagem = err.message;
+        this.tipoMensagem = 'erro';
+      }
+    },
+
+    editarCategoria(categoria) {
+      this.novaCategoria = { ...categoria };
+      this.editandoCategoriaId = categoria._id;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    async apagarCategoria(id) {
+      if (confirm('Deseja realmente apagar esta categoria?')) {
+        try {
+          const res = await fetch(`http://localhost:3000/api/categorias/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Erro ao apagar categoria');
+          this.mensagem = 'Categoria apagada com sucesso!';
+          this.tipoMensagem = 'sucesso';
+          this.carregarCategorias();
+        } catch (err) {
+          this.mensagem = err.message;
+          this.tipoMensagem = 'erro';
+        }
+      }
+    },
+
+    async adicionarTipo() {
+      const url = this.editandoTipoId
+        ? `http://localhost:3000/api/tipos/${this.editandoTipoId}`
+        : 'http://localhost:3000/api/tipos';
+
+      const method = this.editandoTipoId ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(this.novoTipo)
-        })
-          .then(res => res.json())
-          .then(data => {
-            console.log('Tipo adicionado:', data);
-            this.novoTipo = { nome: '', descricao: '' };
-          })
-          .catch(err => alert('Erro ao adicionar tipo: ' + err.message));
+        });
+
+        const body = await res.json();
+        if (!res.ok) throw new Error(body.message || res.statusText);
+
+        this.mensagem = this.editandoTipoId
+          ? 'Tipo atualizado com sucesso!'
+          : 'Tipo adicionado com sucesso!';
+        this.tipoMensagem = 'sucesso';
+
+        this.novoTipo = { nome: '', descricao: '' };
+        this.editandoTipoId = null;
+        this.carregarTipos();
+      } catch (err) {
+        this.mensagem = err.message;
+        this.tipoMensagem = 'erro';
+      }
+    },
+
+    editarTipo(tipo) {
+      this.novoTipo = { ...tipo };
+      this.editandoTipoId = tipo._id;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    async apagarTipo(id) {
+      if (confirm('Deseja realmente apagar este tipo?')) {
+        try {
+          const res = await fetch(`http://localhost:3000/api/tipos/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Erro ao apagar tipo');
+          this.mensagem = 'Tipo apagado com sucesso!';
+          this.tipoMensagem = 'sucesso';
+          this.carregarTipos();
+        } catch (err) {
+          this.mensagem = err.message;
+          this.tipoMensagem = 'erro';
+        }
       }
     }
-  };
-  </script>
+  }
+};
+</script>
+
   
   
 
@@ -295,4 +409,26 @@ footer {
     width: 100%;
   }
 }
+.mensagem {
+  margin: 20px auto;
+  padding: 15px;
+  width: fit-content;
+  border-radius: 5px;
+  font-weight: bold;
+  text-align: center;
+  max-width: 400px;
+}
+
+.mensagem.sucesso {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.mensagem.erro {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
 </style>

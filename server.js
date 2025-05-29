@@ -14,6 +14,7 @@ const utilizadorRoutes = require('./routes/utilizadorRoutes');
 const lojaRoutes = require('./routes/lojaRoutes');
 const categoriaRoutes = require('./routes/categoriaRoutes');
 const tipoRoutes = require('./routes/tipoRoutes');
+const transacoesRouter = require('./routes/transacaoRoutes'); // exemplo do caminho
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -56,14 +57,23 @@ app.use(session({
 
 
 // Servir arquivos estáticos (como imagens)
+
 app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
 
 // Rotas da API
 app.use('/api/equipamentos', equipamentoRoutes);
 app.use('/api', utilizadorRoutes);
+
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/tipos', tipoRoutes);
 app.use('/api', lojaRoutes);
+
+
+
+app.use('/api/transacoes', transacoesRouter); // <<<<<<<<<<
+
+app.listen(3000);
+
 
 //app.use('/api/lojas', lojaRoutes);
 
@@ -74,11 +84,19 @@ app.use((err, req, res, next) => {
 });
 
 
+const Equipamento = require('./models/Equipamento');
+
+// Garante que os índices únicos estão aplicados
+Equipamento.syncIndexes().then(() => {
+  console.log('✔️ Índices sincronizados com sucesso!');
+}).catch(err => {
+  console.error('❌ Erro ao sincronizar índices:', err.message);
+});
+
+
+
 // Conexão com MongoDB
-mongoose.connect('mongodb://localhost:27017', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
+mongoose.connect('mongodb://localhost:27017').then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 Servidor a correr em http://localhost:${PORT}`);
   });

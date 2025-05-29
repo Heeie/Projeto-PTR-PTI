@@ -85,6 +85,8 @@ export default {
     };
   },
   methods: {
+
+
     async handleLogin() {
       this.errorMessage = "";
 
@@ -160,6 +162,7 @@ h1 {
   color: white;
   border-color: #ffffff;
 }
+
 
 /* Barra central de navegação */
 nav.nav-container {
@@ -329,5 +332,5 @@ footer {
   .nav-right button {
     width: 100%;
   }
-}
+
 </style>

@@ -1,4 +1,10 @@
 <template>
+
+  <!-- Mensagem de alerta -->
+    <div v-if="mensagem" class="mensagem">
+      {{ mensagem }}
+    </div>
+
   <div>
     <header>
       <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
@@ -63,13 +69,17 @@
             <input type="number" placeholder="Introduza um preço" v-model="form.preco" required />
 
             <!-- Loja ID -->
-            <label for="loja_id">Loja</label>
+
+            <!-- Loja -->
+            <label for="loja_id"><b>Loja</b></label>
             <select v-model="form.loja_id" required>
               <option disabled value="">Selecione uma loja</option>
               <option v-for="loja in lojas" :key="loja._id" :value="loja._id">
-                {{ loja.nome }} (ID: {{ loja._id }})
+                {{ loja.nome }}
               </option>
             </select>
+
+
 
             <!-- Catálogo ID -->
             <label for="catalogo_id">Catálogo</label>
@@ -85,7 +95,92 @@
             <button type="button" class="cancelbtn" @click="voltar">Voltar</button>
           </div>
         </form>
-      </div>
+
+
+        <!-- Editar Equipamento -->
+        <div class="container">
+          <h2>Modificar Equipamento</h2>
+
+          <label for="nome_pesquisa_editar">Nome do Equipamento</label>
+          <input
+            type="text"
+            placeholder="Nome do equipamento"
+            v-model="nomePesquisaEditar"
+          />
+          <button @click="buscarParaEditar()">Pesquisar</button>
+
+          <div v-if="formEditar._id">
+            <!-- Os mesmos campos do formulário de registro -->
+            <label>Nome</label>
+            <input type="text" v-model="formEditar.nome" required />
+
+            <label>Modelo</label>
+            <input type="text" v-model="formEditar.modelo" required />
+
+            <label>Estado</label>
+            <select v-model="formEditar.estado" required>
+              <option disabled value="">Selecionar estado</option>
+              <option value="novo">Novo</option>
+              <option value="usado">Usado</option>
+              <option value="avariado">Avariado</option>
+            </select>
+
+            <label>Preço</label>
+            <input type="number" v-model="formEditar.preco" required />
+
+            <label>Categoria</label>
+            <select v-model="formEditar.categoria_id" required>
+              <option disabled value="">Selecionar categoria</option>
+              <option v-for="cat in categorias" :key="cat._id" :value="cat._id">
+                {{ cat.nome }}
+              </option>
+            </select>
+
+            <label>Tipo</label>
+            <select v-model="formEditar.tipo_id" required>
+              <option disabled value="">Selecionar tipo</option>
+              <option v-for="tipo in tipos" :key="tipo._id" :value="tipo._id">
+                {{ tipo.nome }}
+              </option>
+            </select>
+
+            <label>Loja</label>
+            <select v-model="formEditar.loja_id" required>
+              <option disabled value="">Selecionar loja</option>
+              <option v-for="loja in lojas" :key="loja._id" :value="loja._id">
+                {{ loja.nome }}
+              </option>
+            </select>
+
+            <button @click="editarEquipamento()">Salvar Alterações</button>
+          </div>
+        </div>
+
+
+        <!-- Apagar Equipamento -->
+        <div class="container">
+          <h2>Apagar Equipamento</h2>
+
+          <label for="nome_pesquisa_apagar">Nome do Equipamento</label>
+          <input
+            type="text"
+            placeholder="Nome do equipamento"
+            v-model="nomePesquisaApagar"
+          />
+          <button @click="buscarParaApagar()">Pesquisar</button>
+
+          <div v-if="equipamentoParaApagar">
+            <p><strong>Modelo:</strong> {{ equipamentoParaApagar.modelo }}</p>
+            <p><strong>Preço:</strong> {{ equipamentoParaApagar.preco }}€</p>
+            <p><strong>Estado:</strong> {{ equipamentoParaApagar.estado }}</p>
+            <button @click="apagarEquipamento()">Confirmar Apagar</button>
+          </div>
+        </div>
+
+
+        
+    </div>
+
     </section>
 
     <footer>
@@ -108,11 +203,28 @@ export default {
         loja_id: "",
         catalogo_id: "",
       },
-      lojas: [],
-      catalogos: [],
-      successMessage: "",
-      errorMessage: "",
-      user: null,
+      imagem: null,
+      categorias: [], // novas listas
+      tipos: [],
+      lojas: [],  // 👈 novo array
+      
+      nomePesquisaApagar: '',
+      equipamentoParaApagar: null,
+
+      nomePesquisaEditar: '',
+      formEditar: {
+        _id: '',
+        nome: '',
+        modelo: '',
+        estado: '',
+        preco: '',
+        categoria_id: '',
+        tipo_id: '',
+        loja_id: ''
+      },
+       mensagem: '', // variável para mensagem de alerta
+
+
     };
   },
   async mounted() {
@@ -135,48 +247,191 @@ export default {
     }
   },
   methods: {
+
+
+     mostrarMensagem(msg) {
+      this.mensagem = msg;
+      setTimeout(() => {
+        this.mensagem = '';
+      }, 5000);
+    },
+    handleFileUpload(event) {
+      this.imagem = event.target.files[0];
+
     loginOrRegister() {
       // Redireciona para a página de login ou criação de conta
       this.$router.push("/login");
+
     },
     async submitForm() {
-      this.successMessage = "";
-      this.errorMessage = "";
+    
+  try {
+    const formData = new FormData();
+    Object.keys(this.form).forEach(key => {
+      formData.append(key, this.form[key]);
+    });
+    if (this.imagem) {
+      formData.append('imagem', this.imagem);
+    }
 
+    const response = await fetch('http://localhost:3000/api/equipamentos', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      // Tenta ler a mensagem de erro da resposta JSON
+      const errorData = await response.json();
+      if (response.status === 409) {
+         this.mostrarMensagem(errorData.message || 'Equipamento já existe.');
+      } else {
+         this.mostrarMensagem(errorData.message || 'Erro ao registrar equipamento');
+      }
+      return; // Sai da função para não continuar
+    }
+
+    const data = await response.json();
+    console.log('Equipamento registrado:', data);
+    this.mostrarMensagem('Equipamento registrado com sucesso!');
+
+    // Opcional: resetar o formulário
+    this.form = {
+      nome: '',
+      marca: '',
+      modelo: '',
+      estado: '',
+      preco: '',
+      loja_id: '',
+      catalogo_id: '',
+      categoria_id: '',
+      tipo_id: ''
+    };
+    this.imagem = null;
+
+  } catch (error) {
+    console.error('Erro:', error);
+    this.mostrarMensagem('Erro ao registrar equipamento: ' + error.message);
+  }
+}
+,
+
+    async carregarCategoriasETipos() {
       try {
-        const response = await fetch("http://localhost:3000/api/equipamentos", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(this.form),
-        });
+        const [catRes, tipoRes, lojaRes] = await Promise.all([
+          fetch('http://localhost:3000/api/categorias'),
+          fetch('http://localhost:3000/api/tipos'),
+          fetch('http://localhost:3000/api/lojas') // 👈 nova rota
+        ]);
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Erro ao registrar equipamento");
-
-        this.successMessage = "Equipamento registrado com sucesso!";
-        this.resetForm();
-      } catch (error) {
-        console.error("Erro:", error);
-        this.errorMessage = "Erro ao registrar equipamento: " + error.message;
+        this.categorias = await catRes.json();
+        this.tipos = await tipoRes.json();
+        this.lojas = await lojaRes.json(); // 👈 nova lista
+      } catch (err) {
+        console.error('Erro ao carregar categorias, tipos ou lojas:', err);
       }
     },
-    resetForm() {
-      this.form = {
-        nome: "",
-        marca: "",
-        modelo: "",
-        estado: "",
-        preco: "",
-        loja_id: "",
-        catalogo_id: "",
-      };
+
+  async buscarParaApagar() {
+      try {
+        const res = await fetch(`http://localhost:3000/api/equipamentos?nome=${this.nomePesquisaApagar}`);
+        const data = await res.json();
+        this.equipamentoParaApagar = data[0] || null;
+
+        if (!this.equipamentoParaApagar) {
+           this.mostrarMensagem('Equipamento não encontrado.');
+        }
+      } catch (err) {
+        console.error(err);
+         this.mostrarMensagem('Erro ao buscar equipamento.');
+      }
     },
-    voltar() {
-      this.$router.push("/home");
+
+    async apagarEquipamento() {
+      try {
+        if (!this.equipamentoParaApagar || !this.equipamentoParaApagar._id) {
+           this.mostrarMensagem('ID do equipamento inválido.');
+          return;
+        }
+
+        const url = `http://localhost:3000/api/equipamentos/${this.equipamentoParaApagar._id}`;
+        console.log('Apagando via URL:', url);
+
+        const res = await fetch(url, { method: 'DELETE' });
+
+        if (!res.ok) {
+          const text = await res.text();
+          console.error('Resposta não-OK:', text);
+           this.mostrarMensagem('Erro ao apagar: ' + text);
+          return;
+        }
+
+        alert('Equipamento apagado com sucesso!');
+        this.nomePesquisaApagar = '';
+        this.equipamentoParaApagar = null;
+
+      } catch (err) {
+        console.error('Erro ao apagar:', err);
+         this.mostrarMensagem('Erro ao apagar equipamento: ' + err.message);
+      }
     },
-  },
+
+    async buscarParaEditar() {
+      try {
+        const res = await fetch(`http://localhost:3000/api/equipamentos?nome=${this.nomePesquisaEditar}`);
+        const data = await res.json();
+
+        if (!data.length) {
+           this.mostrarMensagem('Equipamento não encontrado.');
+          return;
+        }
+
+        this.formEditar = { ...data[0] };
+      } catch (err) {
+        console.error(err);
+         this.mostrarMensagem('Erro ao buscar equipamento.');
+      }
+    },
+
+    async editarEquipamento() {
+      try {
+        const res = await fetch(`http://localhost:3000/api/equipamentos/${this.formEditar._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.formEditar)
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          this.mostrarMensagem(error.message || 'Erro ao editar');
+          return;
+        }
+
+        this.mostrarMensagem('Equipamento editado com sucesso!');
+        this.nomePesquisaEditar = '';
+        this.formEditar = {
+          _id: '',
+          nome: '',
+          modelo: '',
+          estado: '',
+          preco: '',
+          categoria_id: '',
+          tipo_id: '',
+          loja_id: ''
+        };
+      } catch (err) {
+        console.error(err);
+         this.mostrarMensagem('Erro ao editar equipamento: ' + err.message);
+      }
+    },
+
+ 
+
+ 
+} ,
+ created() {
+    this.carregarCategoriasETipos();
+  }
+
 };
 </script>
 
@@ -216,10 +471,70 @@ h1 {
   width: auto !important;
 }
 
+  
+<style scoped>
+
+  /* Estilo para a mensagem de alerta */
+.mensagem {
+  position: fixed;
+  background-color: #0d6efd;
+  color: white;
+  padding: 12px 20px;
+  margin: 15px auto;
+  max-width: 400px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  border-color: black;
+  
+}
+
+  header {
+    background: #0d6efd;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .imgcontainer {
+    text-align: center;
+    margin: 20px;
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    max-width: 400px;
+    margin: auto;
+  }
+  
+  button {
+    background: #0d6efd;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  button:hover {
+    background: #084298;
+  }
+  body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333;
+
 .top-create-btn:hover {
   background-color: #0d6efd;
   color: white;
   border-color: #ffffff;
+
 }
 
 /* Barra central de navegação */

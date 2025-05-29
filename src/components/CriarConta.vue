@@ -170,6 +170,9 @@ export default {
     },
 
     async submitForm() {
+
+     
+
       if (!this.validateForm()) {
         return;
       }
@@ -198,6 +201,7 @@ export default {
         if (!response.ok) {
           throw new Error(data.error || "Erro ao registrar utilizador");
         }
+
 
         console.log("Utilizador salvo no MongoDB:", data);
         this.successMessage = "Utilizador registrado com sucesso!";
