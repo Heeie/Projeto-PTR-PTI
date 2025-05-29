@@ -332,5 +332,5 @@ footer {
   .nav-right button {
     width: 100%;
   }
-
-</style>
+}
+ </style>

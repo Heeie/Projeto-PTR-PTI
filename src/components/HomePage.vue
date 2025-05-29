@@ -11,15 +11,15 @@
           
           <button type="button" id="regisbtn" 
           v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
-          @click="goToRegistro">Gerir equipamentos</button>
+          @click="router.push('/registroEquipamento')">Gerir equipamentos</button>
           
           <button type="button" id="catalogbtn"
            v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
-          @click="goToAddCatalog">ADDCatalogo</button>
+          @click="router.push('/addToCatalog')">ADDCatalogo</button>
 
           <button type="button" id="infobtn"  
          
-          @click="goToUserInfo">Info do utilizador</button>
+          @click="router.push('/infoUtilizador')">Info do utilizador</button>
           
           <button type="button" id="infobtn" 
           v-if="user && (user.role === 'admin' )"
@@ -127,9 +127,7 @@ function getQuantidade(id) {
 
 
 
-function loginOrRegister() {
-  router.push('/login');
-}
+
 
 onMounted(async () => {
 
@@ -238,8 +236,6 @@ ul.nav-center li a:hover {
 }
 
 
-
-<style scoped>
  #carrinhoBtn, #checkoutBtn {
   padding: 10px 20px;
   background-color: #198754;

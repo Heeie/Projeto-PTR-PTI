@@ -257,7 +257,7 @@ export default {
     },
     handleFileUpload(event) {
       this.imagem = event.target.files[0];
-
+    },
     loginOrRegister() {
       // Redireciona para a página de login ou criação de conta
       this.$router.push("/login");
@@ -329,9 +329,7 @@ export default {
       } catch (err) {
         console.error('Erro ao carregar categorias, tipos ou lojas:', err);
       }
-    },
-
-  async buscarParaApagar() {
+    }, async buscarParaApagar() {
       try {
         const res = await fetch(`http://localhost:3000/api/equipamentos?nome=${this.nomePesquisaApagar}`);
         const data = await res.json();
@@ -471,8 +469,6 @@ h1 {
   width: auto !important;
 }
 
-  
-<style scoped>
 
   /* Estilo para a mensagem de alerta */
 .mensagem {
@@ -529,7 +525,7 @@ h1 {
     padding: 0;
     background-color: #f8f9fa;
     color: #333;
-
+  }
 .top-create-btn:hover {
   background-color: #0d6efd;
   color: white;
