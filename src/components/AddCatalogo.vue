@@ -1,102 +1,108 @@
 <template>
-    <div>
-      <header>
-        <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+  <div>
+    <header>
+      <h1 @click="() => router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
 
-        <button class="top-create-btn" @click="loginOrRegister">
-          Login / Criar Conta
-        </button>
+      <button class="top-create-btn" @click="loginOrRegister">
+        Login / Criar Conta
+      </button>
 
-        <nav class="nav-container">
-          <ul class="nav-center">
-            <li><a href="/home">Início</a></li>
-            <li><a href="/home#produtos">Produtos</a></li>
-            <li><a href="/home#contato">Contato</a></li>
-            <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
-            <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
-          </ul>
-          
-        </nav>
-      </header>
-  
-      <section class="banner">
-        <div>
-          <h2>Adicionar Categoria</h2>
-          <form @submit.prevent="adicionarCategoria">
-            <input type="text" v-model="novaCategoria.nome" placeholder="Nome da categoria" required />
-            <textarea v-model="novaCategoria.descricao" placeholder="Descrição da categoria"></textarea>
-            <button id="regisbtn" type="submit">Adicionar</button>
-          </form>
-        </div>
-  
-        <div style="margin-top: 30px;">
-          <h2>Adicionar Tipo</h2>
-          <form @submit.prevent="adicionarTipo">
-            <input type="text" v-model="novoTipo.nome" placeholder="Nome do tipo" required />
-            <textarea v-model="novoTipo.descricao" placeholder="Descrição do tipo"></textarea>
-            <button id="regisbtn" type="submit">Adicionar</button>
-          </form>
-        </div>
-      </section>
-  
-      <section id="contato" class="contato">
-        <h2>Entre em contato</h2>
-        <p>Email: contato@fromu2me.com</p>
-        <p>Telefone: (11) 99999-9999</p>
-      </section>
-  
-      <footer>
-        <p>&copy; 2025 Loja Tech - Todos os direitos reservados.</p>
-      </footer>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'HomePage',
-    data() {
-      return {
-        novaCategoria: {
-          nome: '',
-          descricao: ''
-        },
-        novoTipo: {
-          nome: '',
-          descricao: ''
-        }
-      };
-    },
-    methods: {
-      adicionarCategoria() {
-        fetch('http://localhost:3000/api/categorias', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.novaCategoria)
-        })
-          .then(res => res.json())
-          .then(data => {
-            console.log('Categoria adicionada:', data);
-            this.novaCategoria = { nome: '', descricao: '' };
-          })
-          .catch(err => alert('Erro ao adicionar categoria: ' + err.message));
-      },
-  
-      adicionarTipo() {
-        fetch('http://localhost:3000/api/tipos', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.novoTipo)
-        })
-          .then(res => res.json())
-          .then(data => {
-            console.log('Tipo adicionado:', data);
-            this.novoTipo = { nome: '', descricao: '' };
-          })
-          .catch(err => alert('Erro ao adicionar tipo: ' + err.message));
-      }
-    }
-  };
-  </script>
+      <nav class="nav-container">
+        <ul class="nav-center">
+          <li><a href="/home">Início</a></li>
+          <li><a href="/home#produtos">Produtos</a></li>
+          <li><a href="/home#contato">Contato</a></li>
+          <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
+          <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
+          <li><a @click="finalizarCompra">🛒 Carrinho ({{ carrinhoCount }})</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="banner">
+      <div>
+        <h2>Adicionar Categoria</h2>
+        <form @submit.prevent="adicionarCategoria">
+          <input type="text" v-model="novaCategoria.nome" placeholder="Nome da categoria" required />
+          <textarea v-model="novaCategoria.descricao" placeholder="Descrição da categoria"></textarea>
+          <button id="regisbtn" type="submit">Adicionar</button>
+        </form>
+      </div>
+
+      <div style="margin-top: 30px;">
+        <h2>Adicionar Tipo</h2>
+        <form @submit.prevent="adicionarTipo">
+          <input type="text" v-model="novoTipo.nome" placeholder="Nome do tipo" required />
+          <textarea v-model="novoTipo.descricao" placeholder="Descrição do tipo"></textarea>
+          <button id="regisbtn" type="submit">Adicionar</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="contato" class="contato">
+      <h2>Entre em contato</h2>
+      <p>Email: contato@fromu2me.com</p>
+      <p>Telefone: (11) 99999-9999</p>
+    </section>
+
+    <footer>
+      <p>&copy; 2025 Loja Tech - Todos os direitos reservados.</p>
+    </footer>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCarrinhoStore } from '@/stores/carrinho'
+
+const router = useRouter()
+const carrinhoStore = useCarrinhoStore()
+
+const carrinho = computed(() => carrinhoStore.equipamentos)
+const carrinhoCount = computed(() =>
+  carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
+)
+
+const novaCategoria = ref({ nome: '', descricao: '' })
+const novoTipo = ref({ nome: '', descricao: '' })
+
+function loginOrRegister() {
+  router.push('/login')
+}
+
+function finalizarCompra() {
+  router.push('/comprar')
+}
+
+function adicionarCategoria() {
+  fetch('http://localhost:3000/api/categorias', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(novaCategoria.value)
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log('Categoria adicionada:', data)
+      novaCategoria.value = { nome: '', descricao: '' }
+    })
+    .catch(err => alert('Erro ao adicionar categoria: ' + err.message))
+}
+
+function adicionarTipo() {
+  fetch('http://localhost:3000/api/tipos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(novoTipo.value)
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log('Tipo adicionado:', data)
+      novoTipo.value = { nome: '', descricao: '' }
+    })
+    .catch(err => alert('Erro ao adicionar tipo: ' + err.message))
+}
+</script>
   
   
 

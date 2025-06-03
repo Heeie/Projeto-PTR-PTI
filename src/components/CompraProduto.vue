@@ -22,34 +22,35 @@
     </header>
 
     <section class="banner">
-      <h2>Os melhores equipamentos eletrônicos para você!</h2>
-      <p>Confira nossas ofertas e garanta já o seu.</p>
-    </section>
+      <h2>Itens no Carrinho</h2>
+      <div v-if="carrinho.length > 0">
+        <ul>
+          <li v-for="(item, index) in carrinho" :key="index">
+            {{ item.nome }} - € {{ Number(item.preco).toFixed(2) }}
+          </li>
+        </ul>
+        <p><strong>Total:</strong> € {{ total.toFixed(2) }}</p>
 
+        <form @submit.prevent="finalizarCompra">
+          <label for="mbway">Número de Telemóvel (MBWay):</label>
+          <input
+            type="tel"
+            id="mbway"
+            v-model="numeroMBWay"
+            placeholder="912345678"
+            required
+            pattern="[9][1236][0-9]{7}"
+          />
+          <button type="submit">Pagar com MBWay</button>
+        </form>
 
-     <section id="produtos" class="produtos">
-        <router-link
-        class="produto"
-        v-for="equipamento in equipamentos"
-        :key="equipamento._id"
-        :to="`/produto/${equipamento._id}`"
-      >
-        <img :src="equipamento.imagem ? equipamento.imagem : '/images/default.jpg'" alt="Imagem do equipamento">
-        <h3>{{ equipamento.nome }}</h3>
-        <p>{{ equipamento.modelo }} - {{ equipamento.marca }}</p>
-            <p v-if="getQuantidade(equipamento._id) > 0">
-      Já no carrinho: {{ getQuantidade(equipamento._id) }}x
-    </p>
+        <div v-if="mensagem" class="mensagem">{{ mensagem }}</div>
 
-        <span>Euros {{ Number(equipamento.preco).toLocaleString('pt-Pt', { minimumFractionDigits: 2 }) }}</span>
-      </router-link>
-
-    </section>
-
-    <section id="contato" class="contato">
-      <h2>Entre em contato</h2>
-      <p>Email: contato@fromu2me.com</p>
-      <p>Telefone: (11) 99999-9999</p>
+      </div>
+      <div v-else>
+        <p>O carrinho está vazio.</p>
+        <div class="mensagem">{{ mensagem }}</div>
+      </div>
     </section>
 
     <footer>
@@ -59,70 +60,68 @@
 </template>
 
 <script setup>
-
-import { ref, onMounted,  computed } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+import { ref, computed } from 'vue';
 import { useCarrinhoStore } from '@/stores/carrinho';
-
+import { useRouter } from 'vue-router';
 
 // Store e router
 const carrinhoStore = useCarrinhoStore();
+const router = useRouter();
 
+// Referências reativas
+const numeroMBWay = ref('');
+const mensagem = ref('');
 
 // Computed: lista e total
 const carrinho = computed(() => carrinhoStore.equipamentos);
-
-const router = useRouter();
-const equipamentos = ref([]);
-const token = localStorage.getItem('token');
-const user = ref(null);
+const total = computed(() =>
+  carrinho.value.reduce((soma, item) => soma + Number(item.preco), 0)
+);
 const carrinhoCount = computed(() =>
   carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
 );
 
 
-
-
-
-function finalizarCompra() {
-  router.push('/comprar');
-}
-
-function getQuantidade(id) {
-  const item = carrinho.value.find(p => p._id === id);
-  return item ? item.quantidade : 0;
-}
-
-
-
-
-
-onMounted(async () => {
+async function finalizarCompra() {
+  if (!numeroMBWay.value.match(/^9[1236][0-9]{7}$/)) {
+    mensagem.value = 'Número MBWay inválido.';
+    return;
+  }
 
   try {
-    const res = await axios.get('http://localhost:3000/api/equipamentos');
-    equipamentos.value = res.data;
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
+    // Simulação: substitui por ID real
+    const lojaId = '6650dd0f26e3b38b9260b9f7';
 
-    const resUser = await axios.get('http://localhost:3000/api/perfil', {
+    const response = await fetch('http://localhost:3000/api/transacoes', {
+      method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`
-      }
-  });
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}` // ou como guardaste o token
+      },
+      body: JSON.stringify({
+        loja_id: lojaId,
+        equipamentos: carrinho.value.map(item => item._id),
+        total: total.value
+      })
+    });
 
-  console.log('Usuário carregado:', user.value);
+    if (!response.ok) throw new Error('Erro ao criar transação');
 
-   user.value = resUser.data;
+    const result = await response.json();
 
-  } catch (err) {
-    console.error('Erro ao buscar equipamentos:', err);
+    mensagem.value = `Pagamento MBWay para ${numeroMBWay.value} concluído com sucesso! Transação ID: ${result.transacao._id}`;
+    carrinhoStore.limparCarrinho();
+
+    setTimeout(() => {
+      router.push('/home');
+    }, 7000);
+
+  } catch (error) {
+    mensagem.value = 'Erro ao processar pagamento. Tente novamente.';
+    console.error(error);
   }
-});
-
-
-function loginOrRegister() {
-  router.push('/login');
 }
 
 </script>
@@ -206,10 +205,6 @@ ul.nav-center li a:hover {
   background-color: #084298;
   cursor: pointer;
 }
-
-
-
-
 
 .nav-right {
   margin-left: auto;

@@ -14,8 +14,8 @@
           <li><a href="/home#contato">Contato</a></li>
           <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
           <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
+          <li><a @click="finalizarCompra"> 🛒 Carrinho ({{ carrinhoCount }})</a></li>
         </ul>
-        
       </nav>
     </header>
 
@@ -28,15 +28,12 @@
           </div>
 
           <div class="container">
-            <!-- Mensagens -->
             <div v-if="successMessage" class="success">{{ successMessage }}</div>
             <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
 
-            <!-- Nome -->
             <label for="nome">Nome</label>
             <input type="text" placeholder="Nome do equipamento" v-model="form.nome" required />
 
-            <!-- Estado -->
             <label for="estado">Estado</label>
             <select required v-model="form.estado">
               <option disabled value="">Selecionar estado</option>
@@ -45,7 +42,6 @@
               <option value="avariado">Avariado</option>
             </select>
 
-            <!-- Marca -->
             <label for="marca">Marca</label>
             <select required v-model="form.marca">
               <option disabled value="">Selecione uma marca</option>
@@ -54,15 +50,12 @@
               <option value="Outra">Outra</option>
             </select>
 
-            <!-- Modelo -->
             <label for="modelo">Modelo</label>
             <input type="text" placeholder="Introduza um modelo" v-model="form.modelo" required />
 
-            <!-- Preço -->
             <label for="preco">Preço</label>
             <input type="number" placeholder="Introduza um preço" v-model="form.preco" required />
 
-            <!-- Loja ID -->
             <label for="loja_id">Loja</label>
             <select v-model="form.loja_id" required>
               <option disabled value="">Selecione uma loja</option>
@@ -71,7 +64,6 @@
               </option>
             </select>
 
-            <!-- Catálogo ID -->
             <label for="catalogo_id">Catálogo</label>
             <select v-model="form.catalogo_id" required>
               <option disabled value="">Selecione um catálogo</option>
@@ -80,7 +72,6 @@
               </option>
             </select>
 
-            <!-- Botões -->
             <button type="submit">Registrar Equipamento</button>
             <button type="button" class="cancelbtn" @click="voltar">Voltar</button>
           </div>
@@ -94,90 +85,98 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "CriarEquipamento",
-  data() {
-    return {
-      form: {
-        nome: "",
-        marca: "",
-        modelo: "",
-        estado: "",
-        preco: "",
-        loja_id: "",
-        catalogo_id: "",
-      },
-      lojas: [],
-      catalogos: [],
-      successMessage: "",
-      errorMessage: "",
-      user: null,
-    };
-  },
-  async mounted() {
-    try {
-      const [lojasRes, catalogosRes] = await Promise.all([
-        fetch("http://localhost:3000/api/lojas"),
-        fetch("http://localhost:3000/api/catalogos"),
-      ]);
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCarrinhoStore } from '@/stores/carrinho'
 
-      this.lojas = await lojasRes.json();
-      this.catalogos = await catalogosRes.json();
+const router = useRouter()
+const carrinhoStore = useCarrinhoStore()
 
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        this.user = JSON.parse(storedUser);
-      }
-    } catch (err) {
-      console.error("Erro ao carregar lojas/catalogos:", err);
-      this.errorMessage = "Erro ao carregar dados.";
-    }
-  },
-  methods: {
-    loginOrRegister() {
-      // Redireciona para a página de login ou criação de conta
-      this.$router.push("/login");
-    },
-    async submitForm() {
-      this.successMessage = "";
-      this.errorMessage = "";
+const carrinho = computed(() => carrinhoStore.equipamentos)
 
-      try {
-        const response = await fetch("http://localhost:3000/api/equipamentos", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(this.form),
-        });
+const carrinhoCount = computed(() =>
+  carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
+)
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Erro ao registrar equipamento");
+function finalizarCompra() {
+  router.push('/comprar')
+}
 
-        this.successMessage = "Equipamento registrado com sucesso!";
-        this.resetForm();
-      } catch (error) {
-        console.error("Erro:", error);
-        this.errorMessage = "Erro ao registrar equipamento: " + error.message;
-      }
-    },
-    resetForm() {
-      this.form = {
-        nome: "",
-        marca: "",
-        modelo: "",
-        estado: "",
-        preco: "",
-        loja_id: "",
-        catalogo_id: "",
-      };
-    },
-    voltar() {
-      this.$router.push("/home");
-    },
-  },
-};
+// Formulário e mensagens
+const form = ref({
+  nome: "",
+  marca: "",
+  modelo: "",
+  estado: "",
+  preco: "",
+  loja_id: "",
+  catalogo_id: ""
+})
+const lojas = ref([])
+const catalogos = ref([])
+const successMessage = ref("")
+const errorMessage = ref("")
+const user = ref(null)
+
+onMounted(async () => {
+  try {
+    const [lojasRes, catalogosRes] = await Promise.all([
+      fetch("http://localhost:3000/api/lojas"),
+      fetch("http://localhost:3000/api/catalogos")
+    ])
+    lojas.value = await lojasRes.json()
+    catalogos.value = await catalogosRes.json()
+
+    const storedUser = localStorage.getItem("user")
+    if (storedUser) user.value = JSON.parse(storedUser)
+  } catch (err) {
+    console.error("Erro ao carregar lojas/catalogos:", err)
+    errorMessage.value = "Erro ao carregar dados."
+  }
+})
+
+function loginOrRegister() {
+  router.push("/login")
+}
+
+async function submitForm() {
+  successMessage.value = ""
+  errorMessage.value = ""
+
+  try {
+    const response = await fetch("http://localhost:3000/api/equipamentos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form.value)
+    })
+
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.message || "Erro ao registrar equipamento")
+
+    successMessage.value = "Equipamento registrado com sucesso!"
+    resetForm()
+  } catch (error) {
+    console.error("Erro:", error)
+    errorMessage.value = "Erro ao registrar equipamento: " + error.message
+  }
+}
+
+function resetForm() {
+  form.value = {
+    nome: "",
+    marca: "",
+    modelo: "",
+    estado: "",
+    preco: "",
+    loja_id: "",
+    catalogo_id: ""
+  }
+}
+
+function voltar() {
+  router.push("/home")
+}
 </script>
 
 <style scoped>

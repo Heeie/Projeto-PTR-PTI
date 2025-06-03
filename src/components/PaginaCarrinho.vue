@@ -1,134 +1,67 @@
 <template>
-  <div>
-    <header>
-      <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+  <div class="carrinho-page">
+    
+    <h1>🛒 Carrinho de Compras</h1>
 
-      <button class="top-create-btn" @click="loginOrRegister">
-        Login / Criar Conta
-      </button>
+    <div v-if="carrinho.length === 0" class="vazio">
+      <p>O carrinho está vazio.</p>
+      <router-link to="/home">Voltar às compras</router-link>
+    </div>
 
-
-      <nav class="nav-container">
-        <ul class="nav-center">
-          <li><a href="/home">Início</a></li>
-          <li><a href="/home#produtos">Produtos</a></li>
-          <li><a href="/home#contato">Contato</a></li>
-          <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
-          <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
-          <li><a @click="finalizarCompra()"> 🛒 Carrinho ({{ carrinhoCount }})</a></li>
-        </ul>
-        
-      </nav>
-    </header>
-
-    <section class="banner">
-      <h2>Os melhores equipamentos eletrônicos para você!</h2>
-      <p>Confira nossas ofertas e garanta já o seu.</p>
-    </section>
-
-
-     <section id="produtos" class="produtos">
-        <router-link
-        class="produto"
-        v-for="equipamento in equipamentos"
-        :key="equipamento._id"
-        :to="`/produto/${equipamento._id}`"
+    <div v-else class="itens">
+      <div
+        v-for="(item, index) in carrinho"
+        :key="index"
+        class="item-carrinho"
       >
-        <img :src="equipamento.imagem ? equipamento.imagem : '/images/default.jpg'" alt="Imagem do equipamento">
-        <h3>{{ equipamento.nome }}</h3>
-        <p>{{ equipamento.modelo }} - {{ equipamento.marca }}</p>
-            <p v-if="getQuantidade(equipamento._id) > 0">
-      Já no carrinho: {{ getQuantidade(equipamento._id) }}x
-    </p>
+        <img :src="item.imagem || '/images/default.jpg'" alt="Imagem do produto" />
+        <div>
+          <h3>{{ item.nome }}</h3>
+          <p>Preço: € {{ Number(item.preco).toFixed(2) }}</p>
+          <p>Quantidade: {{ item.quantidade }}</p>
+          <button @click="removerItem(index)">Remover</button>
+        </div>
+      </div>
 
-        <span>Euros {{ Number(equipamento.preco).toLocaleString('pt-Pt', { minimumFractionDigits: 2 }) }}</span>
-      </router-link>
-
-    </section>
-
-    <section id="contato" class="contato">
-      <h2>Entre em contato</h2>
-      <p>Email: contato@fromu2me.com</p>
-      <p>Telefone: (11) 99999-9999</p>
-    </section>
-
-    <footer>
-      <p>&copy; 2025 Loja Tech - Todos os direitos reservados.</p>
-    </footer>
+      <div class="total">
+        <h2>Total: € {{ totalCarrinho.toFixed(2) }}</h2>
+        <button @click="finalizarCompra">Finalizar Compra</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-import { ref, onMounted,  computed } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
-import { useCarrinhoStore } from '@/stores/carrinho';
+const carrinho = ref([])
+const router = useRouter()
 
+function carregarCarrinho() {
+  const dados = JSON.parse(localStorage.getItem('carrinho')) || []
+  carrinho.value = dados
+}
 
-// Store e router
-const carrinhoStore = useCarrinhoStore();
+function removerItem(index) {
+  carrinho.value.splice(index, 1)
+  localStorage.setItem('carrinho', JSON.stringify(carrinho.value))
+}
 
-
-// Computed: lista e total
-const carrinho = computed(() => carrinhoStore.equipamentos);
-
-const router = useRouter();
-const equipamentos = ref([]);
-const token = localStorage.getItem('token');
-const user = ref(null);
-const carrinhoCount = computed(() =>
-  carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
-);
-
-
-
-
+const totalCarrinho = computed(() =>
+  carrinho.value.reduce((total, item) => total + item.preco * item.quantidade, 0)
+)
 
 function finalizarCompra() {
-  router.push('/comprar');
+  router.push('/finalizar-compra')
 }
 
-function getQuantidade(id) {
-  const item = carrinho.value.find(p => p._id === id);
-  return item ? item.quantidade : 0;
-}
-
-
-
-
-
-onMounted(async () => {
-
-  try {
-    const res = await axios.get('http://localhost:3000/api/equipamentos');
-    equipamentos.value = res.data;
-
-
-    const resUser = await axios.get('http://localhost:3000/api/perfil', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-  });
-
-  console.log('Usuário carregado:', user.value);
-
-   user.value = resUser.data;
-
-  } catch (err) {
-    console.error('Erro ao buscar equipamentos:', err);
-  }
-});
-
-
-function loginOrRegister() {
-  router.push('/login');
-}
-
+onMounted(() => {
+  carregarCarrinho()
+})
 </script>
 
 <style scoped>
-/* Header */
 header {
   background: #0d6efd;
   padding: 20px;
