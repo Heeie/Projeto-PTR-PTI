@@ -27,12 +27,14 @@ router.get('/perfil', authMiddleware, utilizadorController.getPerfil);
 // Login de utilizador
 // 🔐 Login de utilizador
 router.post('/login', async (req, res) => {
+  console.log('Corpo recebido no login:', req.body);
   const { username, password } = req.body;
 
   console.log("Tentativa de login:", username);
 
   try {
-    const user = await Utilizador.findOne({ nome: username });
+    // Buscar usuário pelo email usando o campo 'username' recebido
+    const user = await Utilizador.findOne({ email: username });
 
     if (!user) {
       return res.status(404).json({ erro: 'Usuário não encontrado' });
@@ -44,14 +46,13 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ erro: 'Senha incorreta' });
     }
 
-    // ✅ Gerar token JWT
+    // Gerar token JWT
     const token = jwt.sign(
       { id: user._id, nome: user.nome, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
-    // 🔐 Retornar token e dados do utilizador (sem a senha)
     res.json({
       token,
       user: {
@@ -67,6 +68,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ erro: 'Erro interno no login' });
   }
 });
+
 
 // Buscar um utilizador pelo nome
 router.get('/utilizadores/nome/:nome', async (req, res) => {

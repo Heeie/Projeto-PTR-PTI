@@ -21,7 +21,7 @@
 
     <section>
       <div id="login">
-        <form @submit.prevent="submitForm">
+        <form @submit.prevent="submitForm" enctype="multipart/form-data">
           <div class="imgcontainer">
             <img src="/Images/smile.jpg" alt="Avatar" class="avatar" />
             <h1>Registar Equipamento</h1>
@@ -32,7 +32,12 @@
             <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
 
             <label for="nome">Nome</label>
-            <input type="text" placeholder="Nome do equipamento" v-model="form.nome" required />
+            <input
+              type="text"
+              placeholder="Nome do equipamento"
+              v-model="form.nome"
+              required
+            />
 
             <label for="estado">Estado</label>
             <select required v-model="form.estado">
@@ -51,10 +56,20 @@
             </select>
 
             <label for="modelo">Modelo</label>
-            <input type="text" placeholder="Introduza um modelo" v-model="form.modelo" required />
+            <input
+              type="text"
+              placeholder="Introduza um modelo"
+              v-model="form.modelo"
+              required
+            />
 
             <label for="preco">Preço</label>
-            <input type="number" placeholder="Introduza um preço" v-model="form.preco" required />
+            <input
+              type="number"
+              placeholder="Introduza um preço"
+              v-model="form.preco"
+              required
+            />
 
             <label for="loja_id">Loja</label>
             <select v-model="form.loja_id" required>
@@ -64,13 +79,35 @@
               </option>
             </select>
 
-            <label for="catalogo_id">Catálogo</label>
-            <select v-model="form.catalogo_id" required>
-              <option disabled value="">Selecione um catálogo</option>
-              <option v-for="catalogo in catalogos" :key="catalogo._id" :value="catalogo._id">
-                {{ catalogo.nome }} (ID: {{ catalogo._id }})
+            <label for="categoria_id">Categoria</label>
+            <select v-model="form.categoria_id" required>
+              <option disabled value="">Selecione uma categoria</option>
+              <option
+                v-for="categoria in categorias"
+                :key="categoria._id"
+                :value="categoria._id"
+              >
+                {{ categoria.nome }}
               </option>
             </select>
+
+            <label for="tipo_id">Tipo</label>
+            <select v-model="form.tipo_id" required>
+              <option disabled value="">Selecione um tipo</option>
+              <option v-for="tipo in tipos" :key="tipo._id" :value="tipo._id">
+                {{ tipo.nome }}
+              </option>
+            </select>
+
+            <!-- Novo campo para upload de imagem -->
+            <label for="imagem">Foto do Equipamento</label>
+            <input
+              type="file"
+              id="imagem"
+              accept="image/*"
+              @change="handleFileUpload"
+              required
+            />
 
             <button type="submit">Registrar Equipamento</button>
             <button type="button" class="cancelbtn" @click="voltar">Voltar</button>
@@ -86,24 +123,25 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useCarrinhoStore } from '@/stores/carrinho'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useCarrinhoStore } from "@/stores/carrinho";
 
-const router = useRouter()
-const carrinhoStore = useCarrinhoStore()
+const router = useRouter();
+const carrinhoStore = useCarrinhoStore();
 
-const carrinho = computed(() => carrinhoStore.equipamentos)
+const carrinho = computed(() => carrinhoStore.equipamentos);
 
 const carrinhoCount = computed(() =>
   carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
-)
+);
 
 function finalizarCompra() {
-  router.push('/comprar')
+  router.push("/comprar");
 }
 
 // Formulário e mensagens
+
 const form = ref({
   nome: "",
   marca: "",
@@ -111,54 +149,78 @@ const form = ref({
   estado: "",
   preco: "",
   loja_id: "",
-  catalogo_id: ""
-})
-const lojas = ref([])
-const catalogos = ref([])
-const successMessage = ref("")
-const errorMessage = ref("")
-const user = ref(null)
+  categoria_id: "",
+  tipo_id: "",
+  imagem: null, // Para armazenar o arquivo
+});
+
+const lojas = ref([]);
+const successMessage = ref("");
+const errorMessage = ref("");
+const categorias = ref([]);
+const tipos = ref([]);
 
 onMounted(async () => {
   try {
-    const [lojasRes, catalogosRes] = await Promise.all([
+    const [lojasRes, tiposRes, categoriasRes] = await Promise.all([
       fetch("http://localhost:3000/api/lojas"),
-      fetch("http://localhost:3000/api/catalogos")
-    ])
-    lojas.value = await lojasRes.json()
-    catalogos.value = await catalogosRes.json()
-
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) user.value = JSON.parse(storedUser)
+      fetch("http://localhost:3000/api/tipos"),
+      fetch("http://localhost:3000/api/categorias"),
+    ]);
+    lojas.value = await lojasRes.json();
+    categorias.value = await categoriasRes.json();
+    tipos.value = await tiposRes.json();
   } catch (err) {
-    console.error("Erro ao carregar lojas/catalogos:", err)
-    errorMessage.value = "Erro ao carregar dados."
+    console.error("Erro ao carregar lojas/catalogos:", err);
+    errorMessage.value = "Erro ao carregar dados.";
   }
-})
+});
 
 function loginOrRegister() {
-  router.push("/login")
+  router.push("/login");
+}
+
+function handleFileUpload(event) {
+  form.value.imagem = event.target.files[0];
 }
 
 async function submitForm() {
-  successMessage.value = ""
-  errorMessage.value = ""
+  successMessage.value = "";
+  errorMessage.value = "";
 
   try {
+    const formData = new FormData();
+
+    // Adiciona o arquivo da imagem (se houver)
+    if (form.value.imagem) {
+      formData.append("imagem", form.value.imagem);
+    }
+
+    // Adiciona os campos do formulário
+    formData.append("nome", form.value.nome);
+    formData.append("marca", form.value.marca);
+    formData.append("modelo", form.value.modelo);
+    formData.append("estado", form.value.estado);
+    formData.append("preco", form.value.preco);
+    formData.append("loja_id", form.value.loja_id);
+    formData.append("categoria_id", form.value.categoria_id);
+    formData.append("tipo_id", form.value.tipo_id);
+
     const response = await fetch("http://localhost:3000/api/equipamentos", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form.value)
-    })
+      body: formData,
+    });
 
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.message || "Erro ao registrar equipamento")
+    const data = await response.json();
 
-    successMessage.value = "Equipamento registrado com sucesso!"
-    resetForm()
+    if (!response.ok)
+      throw new Error(data.message || "Erro ao registrar equipamento");
+
+    successMessage.value = "Equipamento registrado com sucesso!";
+    resetForm();
   } catch (error) {
-    console.error("Erro:", error)
-    errorMessage.value = "Erro ao registrar equipamento: " + error.message
+    console.error("Erro:", error);
+    errorMessage.value = "Erro ao registrar equipamento: " + error.message;
   }
 }
 
@@ -170,14 +232,22 @@ function resetForm() {
     estado: "",
     preco: "",
     loja_id: "",
-    catalogo_id: ""
-  }
+    categoria_id: "",
+    tipo_id: "",
+    imagem: null,
+  };
+
+  // Resetar o input file manualmente
+  const fileInput = document.getElementById("imagem");
+  if (fileInput) fileInput.value = "";
 }
 
 function voltar() {
-  router.push("/home")
+  router.push("/home");
 }
 </script>
+
+
 
 <style scoped>
 /* Header */

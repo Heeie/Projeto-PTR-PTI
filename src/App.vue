@@ -1,15 +1,20 @@
 <template>
-  <div id="app">
-    <router-view /> <!-- Renderiza o componente correspondente à rota -->
+  <div>
+    <AppNavbar />
+    <router-view />
   </div>
 </template>
 
 <script>
-  export default {
-    name: 'App',
-  };
+import AppNavbar from './components/AppNavbar.vue';
+
+export default {
+  components: {
+    AppNavbar,
+  },
+};
 </script>
 
 <style>
-/* Adicione estilos globais, se necessário */
+/* Estilos globais, se necessário */
 </style>

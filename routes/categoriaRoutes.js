@@ -2,6 +2,7 @@ const express = require('express');
 const Categoria = require('../models/Categoria');
 const router = express.Router();
 
+
 // Criar uma nova categoria
 router.post('/', async (req, res) => {
     try {

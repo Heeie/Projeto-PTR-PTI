@@ -76,18 +76,29 @@ function finalizarCompra() {
 }
 
 function adicionarCategoria() {
+  console.log('Enviando categoria:', novaCategoria.value);
+
   fetch('http://localhost:3000/api/categorias', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(novaCategoria.value)
   })
-    .then(res => res.json())
-    .then(data => {
-      console.log('Categoria adicionada:', data)
-      novaCategoria.value = { nome: '', descricao: '' }
+    .then(res => {
+      console.log('Resposta status:', res.status);
+      if (!res.ok) {
+        return res.json().then(data => {
+          throw new Error(data.error || 'Erro desconhecido');
+        });
+      }
+      return res.json();
     })
-    .catch(err => alert('Erro ao adicionar categoria: ' + err.message))
+    .then(data => {
+      console.log('Categoria adicionada:', data);
+      novaCategoria.value = { nome: '', descricao: '' };
+    })
+    .catch(err => alert('Erro ao adicionar categoria: ' + err.message));
 }
+
 
 function adicionarTipo() {
   fetch('http://localhost:3000/api/tipos', {
