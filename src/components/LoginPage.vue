@@ -1,21 +1,8 @@
 <template>
   <div>
     <header>
-  <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+  <h1  style="cursor:pointer;">FromU2Me</h1>
 
-  <!-- Botão fora do retângulo -->
-  <button class="top-create-btn" @click="$router.push('/criar_conta')">
-    Criar Conta
-  </button>
-
-  <!-- Barra central de navegação -->
-  <nav class="nav-container">
-    <ul class="nav-center">
-      <li><a href="/home">Início</a></li>
-      <li><a href="/home#produtos">Produtos</a></li>
-      <li><a href="/home#contato">Contato</a></li>
-    </ul>
-  </nav>
 </header>
 
     <section>
@@ -105,7 +92,7 @@ export default {
 
         if (response.ok && data.token) {
           // Armazenar o token, se necessário
-          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('token', data.token);
 
           // Redirecionar para a página inicial
           this.$router.push("/home");

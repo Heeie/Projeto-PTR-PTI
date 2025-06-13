@@ -15,6 +15,7 @@ const lojaRoutes = require('./routes/lojaRoutes');
 const categoriaRoutes = require('./routes/categoriaRoutes');
 const tipoRoutes = require('./routes/tipoRoutes');
 const transacoesRouter = require('./routes/transacaoRoutes'); // exemplo do caminho
+const catalogoRoutes = require('./routes/catalogoRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -54,35 +55,28 @@ app.use(session({
   }
 }));
 
-
-
 // Servir arquivos estáticos (como imagens)
-
 app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
-
 // Rotas da API
 app.use('/api/equipamentos', equipamentoRoutes);
 app.use('/api', utilizadorRoutes);
-
+app.use('/api', catalogoRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/tipos', tipoRoutes);
 app.use('/api', lojaRoutes);
+const avaliacaoRoutes = require('./routes/AvaliacoesRoutes');
 
-
+app.use('/api/avaliacoes', avaliacaoRoutes);
 
 app.use('/api/transacoes', transacoesRouter); // <<<<<<<<<<
-
 app.listen(3000);
 
-
 //app.use('/api/lojas', lojaRoutes);
-
 // Tratamento de erros global
 app.use((err, req, res, next) => {
   console.error('🔥 Erro interno:', err.message);
   res.status(500).json({ error: 'Erro interno do servidor' });
 });
-
 
 const Equipamento = require('./models/Equipamento');
 
@@ -92,8 +86,6 @@ Equipamento.syncIndexes().then(() => {
 }).catch(err => {
   console.error('❌ Erro ao sincronizar índices:', err.message);
 });
-
-
 
 // Conexão com MongoDB
 mongoose.connect('mongodb://localhost:27017').then(() => {

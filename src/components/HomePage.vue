@@ -3,43 +3,63 @@
     <header>
 
       <h1>FromU2Me</h1>
-      <nav>
-        <ul>
-          <li><router-link to="/home">Início</router-link></li>
-          <li><a href="#produtos">Produtos</a></li>
-          <li><a href="#contato">Contato</a></li>
-          
-          <button type="button" id="regisbtn" 
-          v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
-          @click="router.push('/registroEquipamento')">Gerir equipamentos</button>
-          
-          <button type="button" id="catalogbtn"
-           v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
-          @click="router.push('/addToCatalog')">ADDCatalogo</button>
-
-          <button type="button" id="infobtn"  
-         
-          @click="router.push('/infoUtilizador')">Info do utilizador</button>
-          
-          <button type="button" id="infobtn" 
-          v-if="user && (user.role === 'admin' )"
-          @click="router.push('/criarLoja') ">Criar Loja</button>
-          
-          
-          <button
-            type="button"
-            id="chrbtn"
-            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
-            @click="router.push('/changerole')"
-          >
-            Alterar a Role
-          </button>
+      
 
 
+      <nav class="nav-container">
+  <ul class="nav-center">
+    <li><router-link to="/home">Início</router-link></li>
+    <li><a href="#produtos">Produtos</a></li>
+    <li><a href="#contato">Contato</a></li>
+  </ul>
 
-        </ul>
-        
-      </nav>
+  <div class="nav-right">
+    <button
+      v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+      @click="router.push('/registroEquipamento')"
+    >
+      Gerir Equipamentos
+    </button>
+
+    <button
+      v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+      @click="router.push('/addToCatalog')"
+    >
+      Adicionar ao Catálogo
+    </button>
+
+    <button
+      v-if="user"
+      @click="router.push('/infoUtilizador')"
+    >
+      Info do Utilizador
+    </button>
+
+    <button
+      v-if=" user && user.role === 'admin'"
+      @click="router.push('/criarLoja')"
+    >
+      Criar Loja
+    </button>
+
+    <button
+      v-if=" user && (user.role === 'admin' || user.role === 'empregado')"
+      @click="router.push('/changerole')"
+    >
+      Alterar Role
+    </button>
+
+    <button
+  v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+  @click="router.push('/avaliarEquipamento')"
+>
+  Avaliar Equipamento Avariado
+</button>
+
+
+  </div>
+</nav>
+
 
 
      <button @click="finalizarCompra()" id="carrinhoBtn">
@@ -57,14 +77,46 @@
       <p>Confira nossas ofertas e garanta já o seu.</p>
     </section>
 
+   <section>
+
+        <form @submit.prevent="filtrarEquipamentos">
+  <select v-model="filtro.nome">
+    <option value="">Todos os nomes</option>
+    <option v-for="n in nomesUnicos" :key="n" :value="n">{{ n }}</option>
+  </select>
+
+  <select v-model="filtro.marca">
+    <option value="">Todas as marcas</option>
+    <option v-for="m in marcasUnicas" :key="m" :value="m">{{ m }}</option>
+  </select>
+
+  <select v-model="filtro.modelo">
+    <option value="">Todos os modelos</option>
+    <option v-for="mod in modelosUnicos" :key="mod" :value="mod">{{ mod }}</option>
+  </select>
+
+  <button type="submit">Filtrar</button>
+</form>
+
+
+    <div v-if="resultados.length">
+      <div v-for="equipamento in resultados" :key="equipamento._id">
+        <strong>{{ equipamento.nome }}</strong> - {{ equipamento.marca }} - {{ equipamento.modelo }} - €{{ equipamento.preco }}
+      </div>
+    </div>
+    <p v-else>Nenhum equipamento encontrado.</p>
+
+
+</section>
 
      <section id="produtos" class="produtos">
-        <router-link
-        class="produto"
-        v-for="equipamento in equipamentos"
-        :key="equipamento._id"
-        :to="`/produto/${equipamento._id}`"
-      >
+  <router-link
+    class="produto"
+    v-for="equipamento in (resultados.length ? resultados : equipamentos)"
+    :key="equipamento._id"
+    :to="`/produto/${equipamento._id}`"
+  >
+
         <img :src="equipamento.imagem ? equipamento.imagem : '/images/default.jpg'" alt="Imagem do equipamento">
         <h3>{{ equipamento.nome }}</h3>
         <p>{{ equipamento.modelo }} - {{ equipamento.marca }}</p>
@@ -90,68 +142,82 @@
 </template>
 
 <script setup>
-
 import { ref, onMounted,  computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { useCarrinhoStore } from '@/stores/carrinho';
 
-
-// Store e router
 const carrinhoStore = useCarrinhoStore();
-
-
-// Computed: lista e total
 const carrinho = computed(() => carrinhoStore.equipamentos);
+const carrinhoCount = computed(() =>
+  carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
+);
 
 const router = useRouter();
 const equipamentos = ref([]);
 const token = localStorage.getItem('token');
 const user = ref(null);
-const carrinhoCount = computed(() =>
-  carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
-);
 
+const filtro = ref({
+  nome: '',
+  marca: '',
+  modelo: ''
+});
 
+const resultados = ref([]);
+const nomesUnicos = computed(() => {
+  const nomes = equipamentos.value.map(e => e.nome);
+  return [...new Set(nomes)].filter(Boolean);
+});
 
+const marcasUnicas = computed(() => {
+  const marcas = equipamentos.value.map(e => e.marca);
+  return [...new Set(marcas)].filter(Boolean);
+});
 
+const modelosUnicos = computed(() => {
+  const modelos = equipamentos.value.map(e => e.modelo);
+  return [...new Set(modelos)].filter(Boolean);
+});
 
-function finalizarCompra() {
-  router.push('/comprar');
-}
 
 function getQuantidade(id) {
   const item = carrinho.value.find(p => p._id === id);
   return item ? item.quantidade : 0;
 }
 
+function finalizarCompra() {
+  router.push('/comprar');
+}
 
-
-
+async function filtrarEquipamentos() {
+  try {
+    const params = new URLSearchParams(filtro.value).toString();
+    const res = await fetch(`http://localhost:3000/api/equipamentos/search?${params}`);
+    resultados.value = await res.json();
+  } catch (error) {
+    console.error('Erro ao filtrar equipamentos:', error);
+  }
+}
 
 onMounted(async () => {
-
+  
   try {
     const res = await axios.get('http://localhost:3000/api/equipamentos');
     equipamentos.value = res.data;
-
 
     const resUser = await axios.get('http://localhost:3000/api/perfil', {
       headers: {
         Authorization: `Bearer ${token}`
       }
-  });
-
-  console.log('Usuário carregado:', user.value);
-
-   user.value = resUser.data;
-
+    });
+    user.value = resUser.data;
   } catch (err) {
-    console.error('Erro ao buscar equipamentos:', err);
+    console.error('Erro ao buscar equipamentos ou usuário:', err);
   }
 });
-
 </script>
+
 
 <style scoped>
 /* Header */

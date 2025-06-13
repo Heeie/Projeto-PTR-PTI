@@ -16,7 +16,7 @@
       <div>
         <h2>{{ editandoCategoriaId ? 'Editar Categoria' : 'Adicionar Categoria' }}</h2>
         <form @submit.prevent="adicionarCategoria">
-          <input type="text" v-model="novaCategoria.nome" placeholder="Nome da categoria" required />
+          <input v-model="novaCategoria.nome" type="text" placeholder="Nome da categoria" required />
           <textarea v-model="novaCategoria.descricao" placeholder="Descrição da categoria"></textarea>
           <button type="submit">Salvar</button>
         </form>
@@ -38,7 +38,7 @@
       <div style="margin-top: 30px;">
         <h2>{{ editandoTipoId ? 'Editar Tipo' : 'Adicionar Tipo' }}</h2>
         <form @submit.prevent="adicionarTipo">
-          <input type="text" v-model="novoTipo.nome" placeholder="Nome do tipo" required />
+          <input v-model="novoTipo.nome" type="text" placeholder="Nome do tipo" required />
           <textarea v-model="novoTipo.descricao" placeholder="Descrição do tipo"></textarea>
           <button type="submit">Salvar</button>
         </form>
@@ -55,11 +55,48 @@
           </li>
         </ul>
       </div>
+
+      <!-- Formulário de Catálogo -->
+      <form @submit.prevent="adicionarCatalogo">
+        <input v-model="novoCatalogo.ean13" type="text" placeholder="EAN13 (13 dígitos)" required />
+        <input v-model="novoCatalogo.marca" type="text" placeholder="Marca" required />
+        <input v-model="novoCatalogo.modelo" type="text" placeholder="Modelo" required />
+        
+        <select v-model="novoCatalogo.tipo" required>
+          <option disabled value="">Selecione um tipo</option>
+          <option v-for="tipo in tipos" :key="tipo._id" :value="tipo._id">{{ tipo.nome }}</option>
+        </select>
+        
+        <select v-model="novoCatalogo.categoria">
+          <option disabled value="">Selecione uma categoria (opcional)</option>
+          <option v-for="categoria in categorias" :key="categoria._id" :value="categoria._id">{{ categoria.nome }}</option>
+        </select>
+        
+        <input v-model="novoCatalogo.anoLancamento" type="number" placeholder="Ano de lançamento" />
+        <input v-model="novoCatalogo.precoLancamento" type="number" placeholder="Preço de lançamento" />
+        <textarea v-model="novoCatalogo.descricao" placeholder="Descrição do catálogo"></textarea>
+
+        <input v-model="novoCatalogo.custosPecas['ecrã']" type="number" placeholder="Custo do ecrã (opcional)" />
+        <input v-model="novoCatalogo.custosPecas['bateria']" type="number" placeholder="Custo da bateria (opcional)" />
+
+        <button type="submit">Salvar</button>
+      </form>
+
+      <!-- Lista de Catálogos -->
+      <div>
+        <h3>Catálogos Existentes</h3>
+        <ul>
+          <li v-for="catalogo in catalogos" :key="catalogo._id">
+            {{ catalogo.modelo }} - {{ catalogo.descricao }}
+            <button @click="editarCatalogo(catalogo)">Editar</button>
+            <button @click="apagarCatalogo(catalogo._id)">Apagar</button>
+          </li>
+        </ul>
+      </div>
     </section>
 
     <div v-if="mensagem" :class="['mensagem', tipoMensagem]">
       {{ mensagem }}
-  
     </div>
 
     <section id="contato" class="contato">
@@ -74,7 +111,6 @@
   </div>
 </template>
 
-  
 <script>
 export default {
   data() {
@@ -83,27 +119,45 @@ export default {
       novoTipo: { nome: '', descricao: '' },
       categorias: [],
       tipos: [],
+      catalogos: [],
       editandoCategoriaId: null,
       editandoTipoId: null,
+      editandoCatalogoId: null,
       mensagem: '',
-      tipoMensagem: ''
+      tipoMensagem: '',
+      novoCatalogo: {
+        ean13: '',
+        marca: '',
+        modelo: '',
+        tipo: '',
+        categoria: '',
+        anoLancamento: '',
+        precoLancamento: '',
+        custosPecas: {},
+        descricao: ''
+      }
     };
   },
   mounted() {
     this.carregarCategorias();
     this.carregarTipos();
+    this.carregarCatalogos();
   },
   methods: {
     async carregarCategorias() {
       const res = await fetch('http://localhost:3000/api/categorias');
       this.categorias = await res.json();
     },
-
     async carregarTipos() {
       const res = await fetch('http://localhost:3000/api/tipos');
       this.tipos = await res.json();
     },
+    async carregarCatalogos() {
+      const res = await fetch('http://localhost:3000/api/catalogos');
+      this.catalogos = await res.json();
+    },
 
+    // -------- Categoria --------
     async adicionarCategoria() {
       const url = this.editandoCategoriaId
         ? `http://localhost:3000/api/categorias/${this.editandoCategoriaId}`
@@ -117,7 +171,6 @@ export default {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(this.novaCategoria)
         });
-
         const body = await res.json();
         if (!res.ok) throw new Error(body.message || res.statusText);
 
@@ -125,7 +178,6 @@ export default {
           ? 'Categoria atualizada com sucesso!'
           : 'Categoria adicionada com sucesso!';
         this.tipoMensagem = 'sucesso';
-
         this.novaCategoria = { nome: '', descricao: '' };
         this.editandoCategoriaId = null;
         this.carregarCategorias();
@@ -134,13 +186,11 @@ export default {
         this.tipoMensagem = 'erro';
       }
     },
-
     editarCategoria(categoria) {
       this.novaCategoria = { ...categoria };
       this.editandoCategoriaId = categoria._id;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
-
     async apagarCategoria(id) {
       if (confirm('Deseja realmente apagar esta categoria?')) {
         try {
@@ -156,6 +206,7 @@ export default {
       }
     },
 
+    // -------- Tipo --------
     async adicionarTipo() {
       const url = this.editandoTipoId
         ? `http://localhost:3000/api/tipos/${this.editandoTipoId}`
@@ -177,7 +228,6 @@ export default {
           ? 'Tipo atualizado com sucesso!'
           : 'Tipo adicionado com sucesso!';
         this.tipoMensagem = 'sucesso';
-
         this.novoTipo = { nome: '', descricao: '' };
         this.editandoTipoId = null;
         this.carregarTipos();
@@ -186,13 +236,11 @@ export default {
         this.tipoMensagem = 'erro';
       }
     },
-
     editarTipo(tipo) {
       this.novoTipo = { ...tipo };
       this.editandoTipoId = tipo._id;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
-
     async apagarTipo(id) {
       if (confirm('Deseja realmente apagar este tipo?')) {
         try {
@@ -206,12 +254,82 @@ export default {
           this.tipoMensagem = 'erro';
         }
       }
+    },
+
+    // -------- Catálogo --------
+    async adicionarCatalogo() {
+  const url = this.editandoCatalogoId
+    ? `http://localhost:3000/api/catalogos/${this.editandoCatalogoId}`
+    : 'http://localhost:3000/api/catalogos';
+
+  const method = this.editandoCatalogoId ? 'PUT' : 'POST';
+
+  try {
+    const payload = {
+      ean13: this.novoCatalogo.ean13,
+      marca: this.novoCatalogo.marca,
+      modelo: this.novoCatalogo.modelo,
+      tipo: this.novoCatalogo.tipo,
+      categoria: this.novoCatalogo.categoria || null, // opcional
+      anoLancamento: Number(this.novoCatalogo.anoLancamento) || null,
+      precoLancamento: Number(this.novoCatalogo.precoLancamento) || null,
+      descricao: this.novoCatalogo.descricao,
+      custosPecas: this.novoCatalogo.custosPecas || {}
+    };
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message || res.statusText);
+
+    this.mensagem = this.editandoCatalogoId
+      ? 'Catálogo atualizado com sucesso!'
+      : 'Catálogo adicionado com sucesso!';
+    this.tipoMensagem = 'sucesso';
+
+    // resetar o formulário corretamente
+    this.novoCatalogo = {
+      ean13: '',
+      marca: '',
+      modelo: '',
+      tipo: '',
+      categoria: '',
+      anoLancamento: '',
+      precoLancamento: '',
+      custosPecas: {},
+      descricao: ''
+    };
+
+    this.editandoCatalogoId = null;
+    this.carregarCatalogos();
+  } catch (err) {
+    this.mensagem = err.message;
+    this.tipoMensagem = 'erro';
+  }
+}
+,
+    async apagarCatalogo(id) {
+      if (confirm('Deseja realmente apagar este catálogo?')) {
+        try {
+          const res = await fetch(`http://localhost:3000/api/catalogos/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Erro ao apagar catálogo');
+          this.mensagem = 'Catálogo apagado com sucesso!';
+          this.tipoMensagem = 'sucesso';
+          this.carregarCatalogos();
+        } catch (err) {
+          this.mensagem = err.message;
+          this.tipoMensagem = 'erro';
+        }
+      }
     }
   }
 };
 </script>
 
-  
   
 
 <style scoped>

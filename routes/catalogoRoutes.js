@@ -1,26 +1,14 @@
 const express = require('express');
-const CatalogoEquipamentos = require('../models/CatalogoEquipamentos');
+const c = require('../controllers/CatalogoEquipamentosController');
 const router = express.Router();
 
-// Criar um novo catálogo
-router.post('/catalogos', async (req, res) => {
-    try {
-        const novoCatalogo = new CatalogoEquipamentos(req.body);
-        await novoCatalogo.save();
-        res.status(201).json(novoCatalogo);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
+router.route('/catalogos')
+      .post(c.create)
+      .get(c.list);
 
-// Listar todos os catálogos
-router.get('/catalogos', async (req, res) => {
-    try {
-        const catalogos = await CatalogoEquipamentos.find();
-        res.json(catalogos);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+router.route('/catalogos/:id')
+      .get(c.getOne)
+      .put(c.update)
+      .delete(c.remove);
 
 module.exports = router;

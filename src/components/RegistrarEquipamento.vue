@@ -85,9 +85,10 @@
             <label for="catalogo_id">Catálogo</label>
             <select v-model="form.catalogo_id" required>
               <option disabled value="">Selecione um catálogo</option>
-              <option v-for="catalogo in catalogos" :key="catalogo._id" :value="catalogo._id">
-                {{ catalogo.nome }} (ID: {{ catalogo._id }})
-              </option>
+                      <option v-for="catalogo in catalogos" :key="catalogo._id" :value="catalogo._id">
+          {{ catalogo.marca }} - {{ catalogo.modelo }}
+        </option>
+
             </select>
 
             <!-- Botões -->
@@ -202,11 +203,13 @@ export default {
         preco: "",
         loja_id: "",
         catalogo_id: "",
+         catalogos: [],
       },
       imagem: null,
       categorias: [], // novas listas
       tipos: [],
       lojas: [],  // 👈 novo array
+      catalogos: [],
       
       nomePesquisaApagar: '',
       equipamentoParaApagar: null,
@@ -312,8 +315,16 @@ export default {
     console.error('Erro:', error);
     this.mostrarMensagem('Erro ao registrar equipamento: ' + error.message);
   }
-}
-,
+}, 
+ 
+async carregarCatalogos() {
+      try {
+        const res = await fetch('http://localhost:3000/api/catalogos');
+        this.catalogos = await res.json();
+      } catch (err) {
+        console.error('Erro ao carregar catálogos:', err);
+      }
+    },
 
     async carregarCategoriasETipos() {
       try {

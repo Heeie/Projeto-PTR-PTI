@@ -12,15 +12,11 @@ import PaginaProduto from './components/PaginaProduto.vue';
 import Loja from './components/CriarLoja.vue';
 import Change from './components/ChangeRole.vue';
 import Compra from './components/CompraProduto.vue';
-import Carrinho from './components/PaginaCarrinho.vue'
+import Carrinho from './components/PaginaCarrinho.vue';
+import AvaliarEquipamento from './components/AvaliarEquipamento.vue';
 import { createPinia } from 'pinia';
-
-
-
-
-
-
 import axios from 'axios';
+
 // Configuração das rotas
 const router = createRouter({
   history: createWebHistory(),
@@ -39,9 +35,9 @@ const router = createRouter({
       { path: '/changerole', component: Change },
     { path: '/comprar', component: Compra },
      { path: '/carrinho', component: Carrinho },
-     
 
-    
+     {path: '/avaliarEquipamento', component: AvaliarEquipamento },
+
   ],
 });
 
@@ -49,13 +45,9 @@ const router = createRouter({
 const app = createApp(App);
 app.use(router); // Registrando o Vue Router
 app.mount('#app'); // Montando o app
-
 const pinia = createPinia();
 app.use(pinia);
-
-
 axios.defaults.baseURL = 'http://localhost:3000/api';
-
 // Adiciona o token automaticamente em cada requisição
 axios.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
