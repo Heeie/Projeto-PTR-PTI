@@ -16,45 +16,37 @@ function calcularCustoTotal(pecas = []) {
   return pecas.reduce((total, peca) => total + (peca.custoSubstituicao || 0), 0);
 }
 
-// Criar nova avaliação
+
 exports.criarAvaliacao = async (req, res) => {
   const {
+    lojaId,
     clienteId,
     equipamentoId,
+    numeroExemplar,
     descricaoProblema,
+    numeroPedidoOrcamento,
+    custoEstimadoReparacao,
     pecasASubstituir,
-    dataEntrega
+    estadoEquipamento,
   } = req.body;
 
-  if (!clienteId || !equipamentoId || !descricaoProblema || !Array.isArray(pecasASubstituir)) {
-    return res.status(400).json({ error: 'Todos os campos obrigatórios devem ser preenchidos.' });
+  if (!lojaId || !clienteId || !equipamentoId || !numeroExemplar || !descricaoProblema || !numeroPedidoOrcamento) {
+    return res.status(400).json({ error: 'Campos obrigatórios faltando.' });
   }
 
   try {
-    // Valida existência de cliente e equipamento
-    const cliente = await Cliente.findById(clienteId);
-    const equipamento = await Equipamento.findById(equipamentoId);
-
-    if (!cliente || !equipamento) {
-      return res.status(404).json({ error: 'Cliente ou equipamento não encontrado.' });
-    }
-
-    const lojaId = equipamento.lojaId || req.user.lojaId; // Assumindo que o funcionário pertence à loja
-    const numeroPedidoOrcamento = await gerarNumeroPedidoOrcamento(lojaId);
-    const custoEstimado = calcularCustoTotal(pecasASubstituir);
-
     const novaAvaliacao = await Avaliacao.create({
+      lojaId,
+      empregadoId: req.user.id, // do token autenticado
       clienteId,
       equipamentoId,
-      lojaId,
-      funcionario: req.user.id,
-      numeroPedidoOrcamento,
+      numeroExemplar,
       descricaoProblema,
-      dataEntrega: dataEntrega || new Date(),
+      numeroPedidoOrcamento,
+      custoEstimadoReparacao,
       pecasASubstituir,
-      custoEstimado,
-      statusOrcamento: 'pendente',
-      emailNotificacaoEnviado: false
+      estadoEquipamento,
+      dataEntrega: new Date()
     });
 
     res.status(201).json(novaAvaliacao);
@@ -63,6 +55,9 @@ exports.criarAvaliacao = async (req, res) => {
     res.status(500).json({ error: 'Erro ao salvar avaliação.' });
   }
 };
+
+
+
 
 // Listar todas as avaliações (admin/funcionário)
 exports.listarAvaliacoes = async (req, res) => {
