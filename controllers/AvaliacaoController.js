@@ -1,8 +1,6 @@
 const Avaliacao = require('../models/Avaliacao');
-const Cliente = require('../models/Cliente');
-const Equipamento = require('../models/Equipamento');
+const Utilizador = require('../models/Utilizador');
 
-// Função auxiliar para gerar número de pedido sequencial por loja
 async function gerarNumeroPedidoOrcamento(lojaId) {
   const ultima = await Avaliacao.find({ lojaId })
     .sort({ numeroPedidoOrcamento: -1 })
@@ -11,35 +9,34 @@ async function gerarNumeroPedidoOrcamento(lojaId) {
   return ultima.length > 0 ? ultima[0].numeroPedidoOrcamento + 1 : 1;
 }
 
-// Função para calcular custo total com base nas peças
 function calcularCustoTotal(pecas = []) {
   return pecas.reduce((total, peca) => total + (peca.custoSubstituicao || 0), 0);
 }
-
 
 exports.criarAvaliacao = async (req, res) => {
   const {
     lojaId,
     clienteId,
-    equipamentoId,
+    equipamento, // <-- Agora recebemos os dados do equipamento aqui
     numeroExemplar,
     descricaoProblema,
-    numeroPedidoOrcamento,
-    custoEstimadoReparacao,
-    pecasASubstituir,
-    estadoEquipamento,
+    pecasASubstituir = [],
+    estadoEquipamento
   } = req.body;
 
-  if (!lojaId || !clienteId || !equipamentoId || !numeroExemplar || !descricaoProblema || !numeroPedidoOrcamento) {
+  if (!lojaId || !clienteId || !equipamento || !numeroExemplar || !descricaoProblema) {
     return res.status(400).json({ error: 'Campos obrigatórios faltando.' });
   }
 
   try {
+    const numeroPedidoOrcamento = await gerarNumeroPedidoOrcamento(lojaId);
+    const custoEstimadoReparacao = calcularCustoTotal(pecasASubstituir);
+
     const novaAvaliacao = await Avaliacao.create({
       lojaId,
       empregadoId: req.user.id, // do token autenticado
       clienteId,
-      equipamentoId,
+      equipamento,
       numeroExemplar,
       descricaoProblema,
       numeroPedidoOrcamento,
@@ -58,14 +55,11 @@ exports.criarAvaliacao = async (req, res) => {
 
 
 
-
-// Listar todas as avaliações (admin/funcionário)
 exports.listarAvaliacoes = async (req, res) => {
   try {
     const avaliacoes = await Avaliacao.find()
-      .populate('funcionario', 'nome email')
-      .populate('clienteId', 'nome email')
-      .populate('equipamentoId', 'marca modelo tipo');
+      .populate('empregadoId', 'nome email')  // corrigir nome de campo
+      .populate('clienteId', 'nome email');
 
     res.json(avaliacoes);
   } catch (err) {
@@ -74,12 +68,11 @@ exports.listarAvaliacoes = async (req, res) => {
   }
 };
 
-// Listar avaliações por funcionário logado
+
 exports.avaliacoesDoFuncionario = async (req, res) => {
   try {
-    const avaliacoes = await Avaliacao.find({ funcionario: req.user.id })
-      .populate('clienteId', 'nome')
-      .populate('equipamentoId', 'modelo');
+    const avaliacoes = await Avaliacao.find({ empregadoId: req.user.id }) // corrigir campo
+      .populate('clienteId', 'nome');
 
     res.json(avaliacoes);
   } catch (err) {
@@ -87,3 +80,4 @@ exports.avaliacoesDoFuncionario = async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar avaliações.' });
   }
 };
+

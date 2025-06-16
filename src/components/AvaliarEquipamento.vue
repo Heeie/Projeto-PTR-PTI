@@ -1,7 +1,6 @@
 <template>
   <header>
     <h1>FromU2Me</h1>
-
     <nav class="nav-container">
       <ul class="nav-center">
         <li><router-link to="/home">Início</router-link></li>
@@ -13,40 +12,60 @@
     <h2>Avaliação de Equipamento Avariado</h2>
 
     <form @submit.prevent="submeterAvaliacao">
+      <!-- Loja -->
       <select v-model="avaliacao.lojaId" required>
         <option value="" disabled>Selecione a loja</option>
-        <option v-for="loja in lojas" :key="loja.id" :value="loja.id">
+        <option v-for="loja in lojas" :key="loja._id" :value="loja._id">
           {{ loja.nome }}
         </option>
       </select>
 
-      <input v-model="avaliacao.clienteId" placeholder="ID do cliente" required />
-      <input v-model="avaliacao.equipamentoId" placeholder="ID do equipamento" required />
+      <!-- Cliente -->
+      <select v-model="avaliacao.clienteId" required>
+        <option value="" disabled>Selecione o cliente</option>
+        <option v-for="cliente in clientes" :key="cliente._id" :value="cliente._id">
+          {{ cliente.nome }} ({{ cliente.email }})
+        </option>
+      </select>
+
+      <h3>Informações do Equipamento</h3>
+
+      <input v-model="avaliacao.equipamento.nome" placeholder="Nome do equipamento" required />
+      <input v-model="avaliacao.equipamento.marca" placeholder="Marca" />
+      <input v-model="avaliacao.equipamento.modelo" placeholder="Modelo" />
+
+      <!-- Categoria -->
+      <select v-model="avaliacao.equipamento.categoria" required>
+        <option value="" disabled>Selecione a categoria</option>
+        <option v-for="cat in categorias" :key="cat._id" :value="cat.nome">
+          {{ cat.nome }}
+        </option>
+      </select>
+
+      <!-- Tipo -->
+      <select v-model="avaliacao.equipamento.tipo" required>
+        <option value="" disabled>Selecione o tipo</option>
+        <option v-for="tipo in tipos" :key="tipo._id" :value="tipo.nome">
+          {{ tipo.nome }}
+        </option>
+      </select>
+
+      <input v-model="avaliacao.equipamento.estado" placeholder="Estado do equipamento" />
+
       <input
         type="number"
         v-model.number="avaliacao.numeroExemplar"
         placeholder="Número do exemplar"
         required
       />
+
       <textarea
         v-model="avaliacao.descricaoProblema"
         placeholder="Descrição do problema"
         required
       ></textarea>
-      <input
-        type="number"
-        v-model.number="avaliacao.numeroPedidoOrcamento"
-        placeholder="Número do pedido de orçamento"
-        required
-      />
-      <input
-        type="number"
-        v-model.number="avaliacao.custoEstimadoReparacao"
-        placeholder="Custo estimado (€)"
-      />
-      <input v-model="avaliacao.estadoEquipamento" placeholder="Estado do equipamento" />
 
-      <!-- para peçasASubstituir, precisaria de uma UI para adicionar objetos -->
+      <!-- futura UI para peçasASubstituir -->
 
       <button type="submit" :disabled="carregando">
         {{ carregando ? 'Salvando...' : 'Salvar Avaliação' }}
@@ -65,15 +84,23 @@ import axios from 'axios'
 const avaliacao = ref({
   lojaId: '',
   clienteId: '',
-  equipamentoId: '',
   numeroExemplar: null,
   descricaoProblema: '',
-  numeroPedidoOrcamento: null,
-  custoEstimadoReparacao: null,
-  estadoEquipamento: ''
+  estadoEquipamento: '',
+  equipamento: {
+    nome: '',
+    marca: '',
+    modelo: '',
+    tipo: '',
+    categoria: '',
+    estado: ''
+  }
 })
 
 const lojas = ref([])
+const clientes = ref([])
+const categorias = ref([])
+const tipos = ref([])
 
 const mensagemSucesso = ref('')
 const mensagemErro = ref('')
@@ -81,10 +108,20 @@ const carregando = ref(false)
 
 onMounted(async () => {
   try {
-    const response = await axios.get('http://localhost:3000/api/lojas')
-    lojas.value = response.data
+    const [resLojas, resClientes, resCategorias, resTipos] = await Promise.all([
+      axios.get('http://localhost:3000/api/lojas'),
+      axios.get('http://localhost:3000/api/utilizadores'),
+      axios.get('http://localhost:3000/api/categorias'),
+      axios.get('http://localhost:3000/api/tipos')
+    ])
+
+    lojas.value = resLojas.data
+    clientes.value = resClientes.data.filter(c => c.role === 'cliente')
+    categorias.value = resCategorias.data
+    tipos.value = resTipos.data
+
   } catch (error) {
-    console.error('Erro ao buscar lojas:', error)
+    console.error('Erro ao buscar dados:', error)
   }
 })
 
@@ -105,12 +142,17 @@ async function submeterAvaliacao() {
     avaliacao.value = {
       lojaId: '',
       clienteId: '',
-      equipamentoId: '',
       numeroExemplar: null,
       descricaoProblema: '',
-      numeroPedidoOrcamento: null,
-      custoEstimadoReparacao: null,
-      estadoEquipamento: ''
+      estadoEquipamento: '',
+      equipamento: {
+        nome: '',
+        marca: '',
+        modelo: '',
+        tipo: '',
+        categoria: '',
+        estado: ''
+      }
     }
   } catch (error) {
     mensagemErro.value =
@@ -121,6 +163,7 @@ async function submeterAvaliacao() {
   }
 }
 </script>
+
 
 <style scoped>
 .avaliacao-container {
@@ -168,7 +211,6 @@ button[disabled] {
   margin-top: 1rem;
 }
 
-/* Header */
 header {
   background: #0d6efd;
   padding: 20px;
@@ -185,6 +227,4 @@ h1 {
   font-size: 1.8rem;
   color: #ffffff;
 }
-
-/* ... resto do CSS permanece igual ... */
 </style>
