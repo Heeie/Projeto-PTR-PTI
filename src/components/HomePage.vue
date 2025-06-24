@@ -19,7 +19,7 @@
 
           <button type="button" id="infobtn"  
          
-          @click="goToUserInfo">Info do utilizador</button>
+          @click="router.push('/infoUtilizador')">Info do utilizador</button>
           
           <button type="button" id="infobtn" 
           v-if="user && (user.role === 'admin' )"
@@ -234,7 +234,6 @@ ul.nav-center li a:hover {
 
 
 
-<style scoped>
  #carrinhoBtn, #checkoutBtn {
   padding: 10px 20px;
   background-color: #198754;

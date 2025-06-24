@@ -45,6 +45,18 @@ const router = createRouter({
   ],
 });
 
+axios.defaults.baseURL = 'http://localhost:3000/api';
+
+// Adiciona o token automaticamente em cada requisição
+axios.interceptors.request.use(config => {
+  const storedUser = JSON.parse(localStorage.getItem('user'));
+  const token = storedUser?.token;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Criando a instância do Vue
 const app = createApp(App);
 app.use(router); // Registrando o Vue Router
@@ -54,14 +66,4 @@ const pinia = createPinia();
 app.use(pinia);
 
 
-axios.defaults.baseURL = 'http://localhost:3000/api';
-
-// Adiciona o token automaticamente em cada requisição
-axios.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 

@@ -8,14 +8,7 @@
     Login
   </button>
 
-  <!-- Barra central de navegação -->
-  <nav class="nav-container">
-    <ul class="nav-center">
-      <li><a href="/home">Início</a></li>
-      <li><a href="/home#produtos">Produtos</a></li>
-      <li><a href="/home#contato">Contato</a></li>
-    </ul>
-  </nav>
+  
 </header>
 
     <section>
@@ -208,7 +201,7 @@ export default {
         this.resetForm();
 
         setTimeout(() => {
-          this.$router.push("/home");
+          this.$router.push("/");
         }, 1500);
 
       } catch (error) {

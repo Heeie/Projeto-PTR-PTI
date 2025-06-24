@@ -14,17 +14,12 @@ router.get('/perfil', authMiddleware, async (req, res) => {
   try {
     let user;
 
-    // Se for login local (com JWT tradicional)
     if (req.user && req.user.id) {
       user = await Utilizador.findById(req.user.id).select('-senha');
-    }
-
-    // Se for login com Auth0
-    else if (req.auth && req.auth.sub) {
+    } else if (req.auth && req.auth.sub) {
       const sub = req.auth.sub;
       user = await Utilizador.findOne({ auth0Id: sub });
 
-      // Se não existir, cria
       if (!user) {
         user = new Utilizador({
           nome: req.auth.nickname || req.auth.name,
@@ -40,10 +35,16 @@ router.get('/perfil', authMiddleware, async (req, res) => {
       return res.status(404).json({ mensagem: 'Utilizador não encontrado' });
     }
 
+    // Retorna todos os campos relevantes
     res.json({
       id: user._id,
       nome: user.nome,
       email: user.email,
+      telefone: user.telefone,
+      nif: user.nif,
+      nic: user.nic,
+      morada: user.morada,
+      genero: user.genero,
       role: user.role
     });
 
@@ -52,6 +53,7 @@ router.get('/perfil', authMiddleware, async (req, res) => {
     res.status(500).json({ erro: 'Erro ao carregar perfil' });
   }
 });
+
 
 
 

@@ -1,74 +1,42 @@
 <template>
-    <div>
-      <header>
-        <h1>FromU2Me</h1>
-        <nav>
-        <ul>
-          <li><router-link to="/home">Início</router-link></li>
-          <li><a href="#produtos">Produtos</a></li>
-          <li><a href="#contato">Contato</a></li>
-          
-        </ul>
-      </nav>
-      </header>
-  
-      <section class="banner">
-        
-        <p>Informações do Utilizador</p>
-      </section>
-
-      <section class="perfil">
-  <h2>Perfil do Utilizador</h2>
-  
-  <div v-if="!editando">
-    <p><strong>Nome:</strong> {{ user.nome }}</p>
-    <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Telefone:</strong> {{ user.telefone }}</p>
-    <p><strong>NIF:</strong> {{ user.nif }}</p>
-    <p><strong>NIC:</strong> {{ user.nic }}</p>
-    <p><strong>Morada:</strong> {{ user.morada }}</p>
-    <p><strong>Gênero:</strong> {{ user.genero }}</p>
-    <p><strong>Role:</strong> {{ user.role }}</p>
-
-    <button id="regisbtn" @click="editando = true">Editar</button>
-  </div>
-
-  <div v-else>
-    <label>Nome: <input v-model="user.nome" /></label><br>
-    <label>Email: <input v-model="user.email" /></label><br>
-    <label>Telefone: <input v-model="user.telefone" /></label><br>
-    <label>NIF: <input v-model="user.nif" /></label><br>
-    <label>NIC: <input v-model="user.nic" /></label><br>
-    <label>Morada: <input v-model="user.morada" /></label><br>
-    <label>Gênero: 
-      <select v-model="user.genero">
-        <option>Masculino</option>
-        <option>Feminino</option>
-        <option>Outro</option>
-      </select>
-    </label><br>
-
-    <button id="regisbtn" @click="salvarAlteracoes">Guardar</button>
-    <button id="regisbtn" @click="editando = false">Cancelar</button>
-  </div>
-</section>
-
-  
-      
-      
-  
-      <section id="contato" class="contato">
-        <h2>Entre em contato</h2>
-        <p>Email: contato@fromu2me.com</p>
-        <p>Telefone: (11) 99999-9999</p>
-      </section>
-  
-      <footer>
-        <p>&copy; 2025 Loja Tech - Todos os direitos reservados.</p>
-      </footer>
+  <header>
+        <div class="voltar-container">
+  <button class="voltar-btn" @click="minhacCasa">⬅ Voltar à Página Principal</button>
+</div>
+  </header>
+  <div class="perfil">
+    <h2>Perfil do Utilizador</h2>
+    <div v-if="!editando">
+      <p><strong>Nome:</strong> {{ user.nome }}</p>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Telefone:</strong> {{ user.telefone }}</p>
+      <p><strong>NIF:</strong> {{ user.nif }}</p>
+      <p><strong>NIC:</strong> {{ user.nic }}</p>
+      <p><strong>Morada:</strong> {{ user.morada }}</p>
+      <p><strong>Gênero:</strong> {{ user.genero }}</p>
+      <p><strong>Role:</strong> {{ user.role }}</p>
+      <button @click="editando = true">Editar</button>
     </div>
-  </template>
 
+    <div v-else>
+      <label>Nome: <input v-model="user.nome" /></label><br>
+      <label>Email: <input v-model="user.email" /></label><br>
+      <label>Telefone: <input v-model="user.telefone" /></label><br>
+      <label>NIF: <input v-model="user.nif" /></label><br>
+      <label>NIC: <input v-model="user.nic" /></label><br>
+      <label>Morada: <input v-model="user.morada" /></label><br>
+      <label>Gênero: 
+        <select v-model="user.genero">
+          <option>Masculino</option>
+          <option>Feminino</option>
+          <option>Outro</option>
+        </select>
+      </label><br>
+      <button @click="salvarAlteracoes">Guardar</button>
+      <button @click="editando = false">Cancelar</button>
+    </div>
+  </div>
+</template>
 
 <script>
 import axios from 'axios';
@@ -77,55 +45,50 @@ export default {
   data() {
     return {
       user: {
-        nome: '',
-        email: '',
-        telefone: '',
-        nif: '',
-        nic: '',
-        morada: '',
-        genero: '',
-        role: ''
+        nome: '', email: '', telefone: '', nif: '', nic: '', morada: '',
+        genero: '', role: '', id: ''
       },
       editando: false
     };
   },
   async mounted() {
-  const token = localStorage.getItem('token');
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const token = storedUser?.token;
 
-  try {
-    const res = await axios.get('http://localhost:3000/api/perfil', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    console.log('Perfil carregado:', res.data);
-    this.user = { ...res.data, id: res.data._id }; // <- CORREÇÃO AQUI
-  } catch (err) {
-    console.error('Erro ao carregar perfil:', err.response?.data || err.message);
-  }
-}
-
-
-
-,
+    try {
+      const res = await axios.get('http://localhost:3000/api/perfil', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      this.user = { ...res.data, id: res.data.id };
+    } catch (err) {
+      console.error('Erro ao carregar perfil:', err.response?.data || err.message);
+    }
+  },
   methods: {
+    minhacCasa() {
+      this.$router.push('/home');
+    },
     async salvarAlteracoes() {
       try {
-        const res = await axios.put(`http://localhost:3000/api/utilizadores/${this.user.id}`, this.user, {
-          withCredentials: true
-        });
+        const storedUser = JSON.parse(localStorage.getItem('user'));
+        const token = storedUser?.token;
+        const res = await axios.put(
+          `http://localhost:3000/api/utilizadores/${this.user.id}`,
+          this.user,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         this.user = res.data;
         this.editando = false;
         alert('Informações atualizadas com sucesso!');
       } catch (err) {
-        console.error('Erro ao atualizar perfil:', err);
         alert('Erro ao atualizar informações');
       }
     }
   }
 };
 </script>
+
+
 
 
 <style scoped>
