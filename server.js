@@ -44,7 +44,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: 'mongodb://localhost:27017/sessoes',
+  mongoUrl: process.env.MONGO_URI,
     collectionName: 'sessions'
   }),
   cookie: {
@@ -96,7 +96,7 @@ Equipamento.syncIndexes().then(() => {
 
 
 // Conexão com MongoDB
-mongoose.connect('mongodb://localhost:27017').then(() => {
+mongoose.connect(process.env.MONGO_URI).then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 Servidor a correr em http://localhost:${PORT}`);
   });
