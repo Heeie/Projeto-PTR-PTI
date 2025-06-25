@@ -117,8 +117,8 @@ export default {
   async mounted() {
     try {
       const [lojasRes, catalogosRes] = await Promise.all([
-        fetch("http://localhost:3000/api/lojas"),
-        fetch("http://localhost:3000/api/catalogos"),
+        fetch("http://34.51.158.117:3000/api/lojas"),
+        fetch("http://34.51.158.117:3000/api/catalogos"),
       ]);
 
       this.lojas = await lojasRes.json();
@@ -143,7 +143,7 @@ export default {
       this.errorMessage = "";
 
       try {
-        const response = await fetch("http://localhost:3000/api/equipamentos", {
+        const response = await fetch("http://34.51.158.117:3000/api/equipamentos", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

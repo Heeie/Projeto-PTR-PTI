@@ -72,8 +72,6 @@ app.use('/api', lojaRoutes);
 
 app.use('/api/transacoes', transacoesRouter); // <<<<<<<<<<
 
-app.listen(3000);
-
 
 //app.use('/api/lojas', lojaRoutes);
 
