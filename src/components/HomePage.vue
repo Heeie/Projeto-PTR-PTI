@@ -2,6 +2,27 @@
   <div>
     <header>
 
+      <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+
+      <button class="top-create-btn" @click="loginOrRegister">
+        Login / Criar Conta
+      </button>
+
+<!-- 
+
+<nav class="nav-container">
+        <ul class="nav-center">
+          <li><a href="/home">Início</a></li>
+          <li><a href="/home#produtos">Produtos</a></li>
+          <li><a href="/home#contato">Contato</a></li>
+          <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
+          <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
+          <li><a @click="finalizarCompra()"> 🛒 Carrinho ({{ carrinhoCount }})</a></li>
+
+-->
+      
+
+
       <h1>FromU2Me</h1>
       <nav>
         <ul>
@@ -34,8 +55,6 @@
           >
             Alterar a Role
           </button>
-
-
 
         </ul>
         
@@ -113,6 +132,44 @@ const carrinhoCount = computed(() =>
 );
 
 
+
+
+
+
+function finalizarCompra() {
+  router.push('/comprar');
+}
+
+function getQuantidade(id) {
+  const item = carrinho.value.find(p => p._id === id);
+  return item ? item.quantidade : 0;
+}
+
+
+
+
+
+onMounted(async () => {
+
+  try {
+    const res = await axios.get('http://localhost:3000/api/equipamentos');
+    equipamentos.value = res.data;
+
+
+    const resUser = await axios.get('http://localhost:3000/api/perfil', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+  });
+
+  console.log('Usuário carregado:', user.value);
+
+   user.value = resUser.data;
+
+  } catch (err) {
+    console.error('Erro ao buscar equipamentos:', err);
+  }
+});
 
 
 

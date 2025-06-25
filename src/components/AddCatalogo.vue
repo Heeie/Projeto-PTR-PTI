@@ -1,17 +1,28 @@
 <template>
   <div>
     <header>
-      <h1>FromU2Me</h1>
-      <nav>
-        <ul>
-          <li><router-link to="/home">Início</router-link></li>
-          <li><a href="#produtos">Produtos</a></li>
-          <li><a href="#contato">Contato</a></li>
+
+     <h1 @click="irParaHome" style="cursor:pointer;">FromU2Me</h1>
+
+      <button class="top-create-btn" @click="loginOrRegister">
+        Login / Criar Conta
+      </button>
+
+      <nav class="nav-container">
+        <ul class="nav-center">
+          <li><a href="/home">Início</a></li>
+          <li><a href="/home#produtos">Produtos</a></li>
+          <li><a href="/home#contato">Contato</a></li>
+          <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
+          <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
+          <li><a @click="finalizarCompra">🛒 Carrinho ({{ carrinhoCount }})</a></li>
+
         </ul>
       </nav>
     </header>
 
     <section class="banner">
+
       <!-- Formulário de Categoria -->
       <div>
         <h2>{{ editandoCategoriaId ? 'Editar Categoria' : 'Adicionar Categoria' }}</h2>
@@ -192,6 +203,16 @@ export default {
       this.editandoTipoId = tipo._id;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
+     
+     irParaHome() {
+    this.$router.push('/home');
+  },
+  loginOrRegister() {
+    this.$router.push('/login');
+  },
+  finalizarCompra() {
+    this.$router.push('/comprar');
+  },
 
     async apagarTipo(id) {
       if (confirm('Deseja realmente apagar este tipo?')) {
@@ -210,9 +231,6 @@ export default {
   }
 };
 </script>
-
-  
-  
 
 <style scoped>
 /* Header */

@@ -6,6 +6,18 @@ const categoriaController = require('../controllers/CategoriaController');
 router.post('/', categoriaController.criarCategoria);
 
 
+// Criar uma nova categoria
+router.post('/', async (req, res) => {
+    try {
+        const novaCategoria = new Categoria(req.body);
+        await novaCategoria.save();
+        res.status(201).json(novaCategoria);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+
 // Listar todas as categorias
 router.get('/', async (req, res) => {
   try {

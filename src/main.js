@@ -1,6 +1,10 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import { createRouter, createWebHistory } from 'vue-router';
+import { createPinia } from 'pinia';
+import axios from 'axios';
+
+// Importação de componentes para as rotas
 import HomePage from './components/HomePage.vue';
 import LoginPage from './components/LoginPage.vue';
 import RegisEquipamento from './components/RegistrarEquipamento.vue';
@@ -12,42 +16,33 @@ import PaginaProduto from './components/PaginaProduto.vue';
 import Loja from './components/CriarLoja.vue';
 import Change from './components/ChangeRole.vue';
 import Compra from './components/CompraProduto.vue';
-import Carrinho from './components/PaginaCarrinho.vue'
+import Carrinho from './components/PaginaCarrinho.vue';
 import { createPinia } from 'pinia';
 
-
-
-
-
-
-import axios from 'axios';
 // Configuração das rotas
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/login', component: LoginPage },  // Rota para a página de login
-    { path: '/home', component: HomePage },  // Rota para a página inicial
-    { path: '/registroEquipamento', component: RegisEquipamento },
-
     { path: '/', component: Inicio },
+    { path: '/login', component: LoginPage },
+    { path: '/home', component: HomePage },
+    { path: '/registroEquipamento', component: RegisEquipamento },
     { path: '/criar_conta', component: CriarConta },
     { path: '/addToCatalog', component: ADDCatalogo },
     { path: '/infoUtilizador', component: InfoUser },
 
-    { path: '/produto/:id', name: 'DetalhesProduto', component: PaginaProduto},
-     { path: '/criarLoja', component: Loja },
-      { path: '/changerole', component: Change },
+    { path: '/produto/:id', name: 'DetalhesProduto', component: PaginaProduto },
+    { path: '/criarLoja', component: Loja },
+    { path: '/changerole', component: Change },
     { path: '/comprar', component: Compra },
-     { path: '/carrinho', component: Carrinho },
-     
-
-    
+    { path: '/carrinho', component: Carrinho },
   ],
 });
 
 axios.defaults.baseURL = 'http://34.51.158.117:3000/api';
 
-// Adiciona o token automaticamente em cada requisição
+
+// Adiciona o token a cada requisição (se existir)
 axios.interceptors.request.use(config => {
   const storedUser = JSON.parse(localStorage.getItem('user'));
   const token = storedUser?.token;
@@ -57,6 +52,7 @@ axios.interceptors.request.use(config => {
   return config;
 });
 
+
 // Criando a instância do Vue
 const app = createApp(App);
 app.use(router); // Registrando o Vue Router
@@ -64,6 +60,3 @@ app.mount('#app'); // Montando o app
 
 const pinia = createPinia();
 app.use(pinia);
-
-
-
