@@ -106,8 +106,8 @@ export default {
 
     async adicionarCategoria() {
       const url = this.editandoCategoriaId
-        ? `http://localhost:3000/api/categorias/${this.editandoCategoriaId}`
-        : 'http://localhost:3000/api/categorias';
+        ? `http://34.51.158.117/api/categorias/${this.editandoCategoriaId}`
+        : 'http://34.51.158.117/api/categorias';
 
       const method = this.editandoCategoriaId ? 'PUT' : 'POST';
 
@@ -144,7 +144,7 @@ export default {
     async apagarCategoria(id) {
       if (confirm('Deseja realmente apagar esta categoria?')) {
         try {
-          const res = await fetch(`http://localhost:3000/api/categorias/${id}`, { method: 'DELETE' });
+          const res = await fetch(`http://34.51.158.117/api/categorias/${id}`, { method: 'DELETE' });
           if (!res.ok) throw new Error('Erro ao apagar categoria');
           this.mensagem = 'Categoria apagada com sucesso!';
           this.tipoMensagem = 'sucesso';
@@ -158,8 +158,8 @@ export default {
 
     async adicionarTipo() {
       const url = this.editandoTipoId
-        ? `http://localhost:3000/api/tipos/${this.editandoTipoId}`
-        : 'http://localhost:3000/api/tipos';
+        ? `http://34.51.158.117/api/tipos/${this.editandoTipoId}`
+        : 'http://34.51.158.117/api/tipos';
 
       const method = this.editandoTipoId ? 'PUT' : 'POST';
 
@@ -196,7 +196,7 @@ export default {
     async apagarTipo(id) {
       if (confirm('Deseja realmente apagar este tipo?')) {
         try {
-          const res = await fetch(`http://localhost:3000/api/tipos/${id}`, { method: 'DELETE' });
+          const res = await fetch(`http://34.51.158.117/api/tipos/${id}`, { method: 'DELETE' });
           if (!res.ok) throw new Error('Erro ao apagar tipo');
           this.mensagem = 'Tipo apagado com sucesso!';
           this.tipoMensagem = 'sucesso';

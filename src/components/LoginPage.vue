@@ -85,7 +85,7 @@ export default {
       this.errorMessage = "";
 
       try {
-        const response = await fetch("https://34.51.158.117/api/login", {
+        const response = await fetch("http://34.51.158.117/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

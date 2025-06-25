@@ -56,12 +56,12 @@ const user = ref(null);
 
 onMounted(async () => {
   try {
-    const perfil = await axios.get('https://34.51.158.117/api/perfil', {
+    const perfil = await axios.get('http://34.51.158.117/api/perfil', {
       headers: { Authorization: `Bearer ${token}` }
     });
     user.value = perfil.data;
 
-    const res = await axios.get('https://34.51.158.117/api/utilizadores');
+    const res = await axios.get('http://34.51.158.117/api/utilizadores');
     utilizadores.value = res.data;
   } catch (err) {
     console.error('Erro:', err);
@@ -80,7 +80,7 @@ async function apagarUtilizador(id) {
 
 async function atualizarRole(utilizador) {
   try {
-    await axios.put(`https://34.51.158.117/api/utilizadores/${utilizador._id}`, {
+    await axios.put(`http://34.51.158.117/api/utilizadores/${utilizador._id}`, {
       role: utilizador.role,
     });
     mensagem.value = 'Role atualizada com sucesso.';
