@@ -129,11 +129,11 @@ function getQuantidade(id) {
 onMounted(async () => {
 
   try {
-    const res = await axios.get('http://34.51.158.117/api/equipamentos');
+    const res = await axios.get('http://34.51.158.117:3000/api/equipamentos');
     equipamentos.value = res.data;
 
 
-    const resUser = await axios.get('http://34.51.158.117/api/perfil', {
+    const resUser = await axios.get('http://34.51.158.117:3000/api/perfil', {
       headers: {
         Authorization: `Bearer ${token}`
       }

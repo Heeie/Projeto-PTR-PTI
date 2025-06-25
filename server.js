@@ -28,7 +28,7 @@ app.use(morgan('dev'));
 // CORS deve vir ANTES de session
 app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3001', 'https://34.51.158.117', 'https://grupomeu.com'];
+    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3001', 'http://34.51.158.117:3000', 'https://grupomeu.com'];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {

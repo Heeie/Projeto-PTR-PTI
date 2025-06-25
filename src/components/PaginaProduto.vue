@@ -71,7 +71,7 @@ function finalizarCompra() {
 onMounted(async () => {
   try {
     const id = route.params.id;
-    const res = await axios.get(`http://34.51.158.117/api/equipamentos/${id}`);
+    const res = await axios.get(`http://34.51.158.117:3000/api/equipamentos/${id}`);
     produto.value = res.data;
     console.log(produto.value.imagem)
   } catch (err) {
