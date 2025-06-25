@@ -28,7 +28,7 @@ app.use(morgan('dev'));
 // CORS deve vir ANTES de session
 app.use(cors({
   origin: function (origin, callback) {
-    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3001'];
+    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3001', 'https://34.51.158.117', 'https://grupomeu.com'];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -98,7 +98,7 @@ Equipamento.syncIndexes().then(() => {
 // Conexão com MongoDB
 mongoose.connect(process.env.MONGO_URI).then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 Servidor a correr em http://localhost:${PORT}`);
+    console.log(`🚀 Servidor a correr em https://34.51.158.117/api/${PORT}`);
   });
 }).catch(err => {
   console.error('❌ Erro ao conectar ao MongoDB:', err);

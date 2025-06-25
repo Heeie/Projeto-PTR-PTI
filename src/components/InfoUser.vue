@@ -56,7 +56,7 @@ export default {
     const token = storedUser?.token;
 
     try {
-      const res = await axios.get('http://localhost:3000/api/perfil', {
+      const res = await axios.get('https://34.51.158.117/api/perfil', {
         headers: { Authorization: `Bearer ${token}` }
       });
       this.user = { ...res.data, id: res.data.id };
@@ -73,7 +73,7 @@ export default {
         const storedUser = JSON.parse(localStorage.getItem('user'));
         const token = storedUser?.token;
         const res = await axios.put(
-          `http://localhost:3000/api/utilizadores/${this.user.id}`,
+          `https://34.51.158.117/api/api/utilizadores/${this.user.id}`,
           this.user,
           { headers: { Authorization: `Bearer ${token}` } }
         );
