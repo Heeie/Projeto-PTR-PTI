@@ -6,20 +6,56 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const authMiddleware = require('../middlewares/authMiddleware');
 const utilizadorController = require('../controllers/UtilizadorController');
-//const authMiddleware = require('../middlewares/authMiddleware');
-
-// Rota protegida que só usuários autenticados podem acessar
-//router.get('/perfil', authMiddleware, utilizadorController.getPerfil);
-
-// Outra rota protegida
-//router.post('/atualizar', authMiddleware, utilizadorController.atualizarPerfil);
-
-//module.exports = router;
-
+const checkJwt = require('../middlewares/auth0Middleware');
 
 router.post('/criar', utilizadorController.criarUtilizador);
 
-router.get('/perfil', authMiddleware, utilizadorController.getPerfil);
+router.get('/perfil', authMiddleware, async (req, res) => {
+  try {
+    let user;
+
+    if (req.user && req.user.id) {
+      user = await Utilizador.findById(req.user.id).select('-senha');
+    } else if (req.auth && req.auth.sub) {
+      const sub = req.auth.sub;
+      user = await Utilizador.findOne({ auth0Id: sub });
+
+      if (!user) {
+        user = new Utilizador({
+          nome: req.auth.nickname || req.auth.name,
+          email: req.auth.email,
+          role: 'cliente',
+          auth0Id: sub,
+        });
+        await user.save();
+      }
+    }
+
+    if (!user) {
+      return res.status(404).json({ mensagem: 'Utilizador não encontrado' });
+    }
+
+    // Retorna todos os campos relevantes
+    res.json({
+      id: user._id,
+      nome: user.nome,
+      email: user.email,
+      telefone: user.telefone,
+      nif: user.nif,
+      nic: user.nic,
+      morada: user.morada,
+      genero: user.genero,
+      role: user.role
+    });
+
+  } catch (err) {
+    console.error("Erro ao obter perfil:", err);
+    res.status(500).json({ erro: 'Erro ao carregar perfil' });
+  }
+});
+
+
+
 
 
 

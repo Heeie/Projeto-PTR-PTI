@@ -8,14 +8,7 @@
     Login
   </button>
 
-  <!-- Barra central de navegação -->
-  <nav class="nav-container">
-    <ul class="nav-center">
-      <li><a href="/home">Início</a></li>
-      <li><a href="/home#produtos">Produtos</a></li>
-      <li><a href="/home#contato">Contato</a></li>
-    </ul>
-  </nav>
+  
 </header>
 
     <section>
@@ -170,6 +163,9 @@ export default {
     },
 
     async submitForm() {
+
+     
+
       if (!this.validateForm()) {
         return;
       }
@@ -178,7 +174,7 @@ export default {
       this.errorMessage = "";
 
       try {
-        const response = await fetch("http://localhost:3000/api/criar", {
+        const response = await fetch("http://34.51.158.117:3000/api/criar", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -199,12 +195,13 @@ export default {
           throw new Error(data.error || "Erro ao registrar utilizador");
         }
 
+
         console.log("Utilizador salvo no MongoDB:", data);
         this.successMessage = "Utilizador registrado com sucesso!";
         this.resetForm();
 
         setTimeout(() => {
-          this.$router.push("/home");
+          this.$router.push("/");
         }, 1500);
 
       } catch (error) {

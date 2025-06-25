@@ -62,6 +62,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
 header {
   background: #0d6efd;
   padding: 20px;
@@ -254,5 +255,69 @@ footer {
   .nav-right button {
     width: 100%;
   }
+
+.carrinho-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.vazio {
+  text-align: center;
+  font-size: 18px;
+}
+
+.item-carrinho {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  gap: 20px;
+}
+
+.item-carrinho img {
+  width: 100px;
+  height: auto;
+  border-radius: 5px;
+}
+
+.item-carrinho button {
+  padding: 8px 12px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.item-carrinho button:hover {
+  background-color: #bb2d3b;
+}
+
+.total {
+  text-align: right;
+  margin-top: 30px;
+}
+
+.total button {
+  padding: 10px 20px;
+  background-color: #198754;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.total button:hover {
+  background-color: #157347;
+
 }
 </style>

@@ -1,21 +1,13 @@
 <template>
   <div>
     <header>
-  <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+  
 
   <!-- Botão fora do retângulo -->
   <button class="top-create-btn" @click="$router.push('/criar_conta')">
     Criar Conta
   </button>
 
-  <!-- Barra central de navegação -->
-  <nav class="nav-container">
-    <ul class="nav-center">
-      <li><a href="/home">Início</a></li>
-      <li><a href="/home#produtos">Produtos</a></li>
-      <li><a href="/home#contato">Contato</a></li>
-    </ul>
-  </nav>
 </header>
 
     <section>
@@ -85,11 +77,15 @@ export default {
     };
   },
   methods: {
+
+    
+
+
     async handleLogin() {
       this.errorMessage = "";
 
       try {
-        const response = await fetch("http://localhost:3000/api/login", {
+        const response = await fetch("http://34.51.158.117:3000/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -102,14 +98,18 @@ export default {
         console.log("API Response:", data);
 
         if (response.ok && data.token) {
-          // Armazenar o token, se necessário
-          localStorage.setItem('authToken', data.token);
+        const userData = {
+          token: data.token,
+          email: data.user?.email || '',
+          nome: data.user?.nome || '',
+          id: data.user?.id || ''
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+        this.$router.push("/home");
+      } else {
+        this.errorMessage = data.message || "Usuário ou senha incorretos.";
+      }
 
-          // Redirecionar para a página inicial
-          this.$router.push("/home");
-        } else {
-          this.errorMessage = data.message || "Usuário ou senha incorretos.";
-        }
       } catch (error) {
         this.errorMessage = "Erro ao conectar com o servidor.";
         console.error(error);
@@ -160,6 +160,7 @@ h1 {
   color: white;
   border-color: #ffffff;
 }
+
 
 /* Barra central de navegação */
 nav.nav-container {

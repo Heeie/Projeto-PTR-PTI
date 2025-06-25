@@ -1,9 +1,40 @@
 const mongoose = require("mongoose");
 const Equipamento = require("../models/Equipamento");
+const Loja = require('../models/Loja');
+
 
 exports.criarEquipamento = async (req, res) => {
   try {
-    const { nome, marca, modelo, estado, preco, loja_id, catalogo_id, imagem } = req.body;
+    const {
+      nome, marca, modelo, estado, preco,
+      loja_id, catalogo_id, imagem,
+      categoria_id, tipo_id
+    } = req.body;
+
+
+    const equipamentoExistente = await Equipamento.findOne({
+      nome: novoEquipamento.nome,
+      marca: novoEquipamento.marca,
+      modelo: novoEquipamento.modelo
+    });
+
+    if (equipamentoExistente) {
+      return res.status(400).json({ error: 'Equipamento já existe com nome, marca e modelo iguais.' });
+    }
+
+    if (!nome || !marca || !modelo || !estado || !preco || !loja_id) {
+      return res.status(400).json({ message: 'Campos obrigatórios ausentes.' });
+    }
+
+   // Verificação de duplicidade
+    const equipamentoDuplicado = await Equipamento.findOne({ nome, marca, modelo });
+    if (equipamentoDuplicado) {
+      return res.status(409).json({
+        message: '❌ Já existe um equipamento com esse nome, marca e modelo.',
+        equipamentoExistente: equipamentoDuplicado
+      });
+    }
+
 
     const equipamentoData = {
       nome,
@@ -11,25 +42,13 @@ exports.criarEquipamento = async (req, res) => {
       modelo,
       estado,
       preco,
-      loja_id: loja_id || "1", 
-      catalogo_id : catalogo_id || "1" ,
-      imagem: imagem || '../public/Images/default.jpg', // Caminho padrão se não for enviado
-      categoria_id,
-      tipo_id
+      imagem: imagem || '../public/Images/default.jpg'
     };
 
-    // Só adiciona loja_id se for um ObjectId válido
-    //if (loja_id && mongoose.Types.ObjectId.isValid(loja_id)) {
-    //  equipamentoData.loja_id = loja_id;
-    //}
-
-    // Só adiciona catalogo_id se for um ObjectId válido
-    //if (catalogo_id && mongoose.Types.ObjectId.isValid(catalogo_id)) {
-    //  equipamentoData.catalogo_id = catalogo_id;
-    //}
-
-    // Validação de ObjectIds
+    // Validações de ObjectId
     if (mongoose.Types.ObjectId.isValid(loja_id)) equipamentoData.loja_id = loja_id;
+    else return res.status(400).json({ message: "ID de loja inválido" });
+
     if (mongoose.Types.ObjectId.isValid(catalogo_id)) equipamentoData.catalogo_id = catalogo_id;
     if (mongoose.Types.ObjectId.isValid(categoria_id)) equipamentoData.categoria_id = categoria_id;
     if (mongoose.Types.ObjectId.isValid(tipo_id)) equipamentoData.tipo_id = tipo_id;

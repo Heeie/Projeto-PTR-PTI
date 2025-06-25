@@ -17,6 +17,7 @@ import Loja from './components/CriarLoja.vue';
 import Change from './components/ChangeRole.vue';
 import Compra from './components/CompraProduto.vue';
 import Carrinho from './components/PaginaCarrinho.vue';
+import { createPinia } from 'pinia';
 
 // Configuração das rotas
 const router = createRouter({
@@ -29,6 +30,7 @@ const router = createRouter({
     { path: '/criar_conta', component: CriarConta },
     { path: '/addToCatalog', component: ADDCatalogo },
     { path: '/infoUtilizador', component: InfoUser },
+
     { path: '/produto/:id', name: 'DetalhesProduto', component: PaginaProduto },
     { path: '/criarLoja', component: Loja },
     { path: '/changerole', component: Change },
@@ -37,27 +39,24 @@ const router = createRouter({
   ],
 });
 
-// Criação da instância do Vue
-const app = createApp(App);
+axios.defaults.baseURL = 'http://34.51.158.117:3000/api';
 
-// Uso do Pinia ANTES de montar
-const pinia = createPinia();
-app.use(pinia);
-
-// Registro do Vue Router
-app.use(router);
-
-// Monta o app no #app (do index.html)
-app.mount('#app');
-
-// Configuração global do Axios
-axios.defaults.baseURL = 'http://localhost:3000/api';
 
 // Adiciona o token a cada requisição (se existir)
 axios.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
+  const storedUser = JSON.parse(localStorage.getItem('user'));
+  const token = storedUser?.token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+
+// Criando a instância do Vue
+const app = createApp(App);
+app.use(router); // Registrando o Vue Router
+app.mount('#app'); // Montando o app
+
+const pinia = createPinia();
+app.use(pinia);

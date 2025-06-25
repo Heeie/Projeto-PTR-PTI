@@ -1,14 +1,16 @@
 <template>
   <div>
     <header>
+
       <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
 
       <button class="top-create-btn" @click="loginOrRegister">
         Login / Criar Conta
       </button>
 
+<!-- 
 
-      <nav class="nav-container">
+<nav class="nav-container">
         <ul class="nav-center">
           <li><a href="/home">Início</a></li>
           <li><a href="/home#produtos">Produtos</a></li>
@@ -16,9 +18,57 @@
           <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
           <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
           <li><a @click="finalizarCompra()"> 🛒 Carrinho ({{ carrinhoCount }})</a></li>
+
+-->
+      
+
+
+      <h1>FromU2Me</h1>
+      <nav>
+        <ul>
+          <li><router-link to="/home">Início</router-link></li>
+          <li><a href="#produtos">Produtos</a></li>
+          <li><a href="#contato">Contato</a></li>
+          
+          <button type="button" id="regisbtn" 
+          v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
+          @click="goToRegistro">Gerir equipamentos</button>
+          
+          <button type="button" id="catalogbtn"
+           v-if="user && (user.role === 'admin' || user.role === 'empregado' )"
+          @click="goToAddCatalog">ADDCatalogo</button>
+
+          <button type="button" id="infobtn"  
+         
+          @click="router.push('/infoUtilizador')">Info do utilizador</button>
+          
+          <button type="button" id="infobtn" 
+          v-if="user && (user.role === 'admin' )"
+          @click="router.push('/criarLoja') ">Criar Loja</button>
+          
+          
+          <button
+            type="button"
+            id="chrbtn"
+            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+            @click="router.push('/changerole')"
+          >
+            Alterar a Role
+          </button>
+
         </ul>
         
       </nav>
+
+
+     <button @click="finalizarCompra()" id="carrinhoBtn">
+  🛒 Carrinho ({{ carrinhoCount }})
+</button>
+
+
+
+
+
     </header>
 
     <section class="banner">
@@ -85,6 +135,7 @@ const carrinhoCount = computed(() =>
 
 
 
+
 function finalizarCompra() {
   router.push('/comprar');
 }
@@ -121,9 +172,38 @@ onMounted(async () => {
 });
 
 
-function loginOrRegister() {
-  router.push('/login');
+
+function finalizarCompra() {
+  router.push('/comprar');
 }
+
+function getQuantidade(id) {
+  const item = carrinho.value.find(p => p._id === id);
+  return item ? item.quantidade : 0;
+}
+
+
+onMounted(async () => {
+
+  try {
+    const res = await axios.get('http://34.51.158.117:3000/api/equipamentos');
+    equipamentos.value = res.data;
+
+
+    const resUser = await axios.get('http://34.51.158.117:3000/api/perfil', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+  });
+
+  console.log('Usuário carregado:', user.value);
+
+   user.value = resUser.data;
+
+  } catch (err) {
+    console.error('Erro ao buscar equipamentos:', err);
+  }
+});
 
 </script>
 
@@ -163,11 +243,13 @@ h1 {
   width: auto !important;
 }
 
+
 .top-create-btn:hover {
   background-color: #0d6efd;
   color: white;
   border-color: #ffffff;
 }
+
 
 /* Barra central de navegação */
 nav.nav-container {
@@ -209,6 +291,28 @@ ul.nav-center li a:hover {
 
 
 
+ #carrinhoBtn, #checkoutBtn {
+  padding: 10px 20px;
+  background-color: #198754;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 10px;
+}
+
+#carrinhoBtn:hover, #checkoutBtn:hover {
+  background-color: #157347;
+}
+
+  header {
+    background: #0d6efd;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
 
 
 .nav-right {

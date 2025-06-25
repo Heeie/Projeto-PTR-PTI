@@ -24,4 +24,5 @@ export const useCarrinhoStore = defineStore('carrinho', () => {
     contar,
     limparCarrinho
   };
+
 });

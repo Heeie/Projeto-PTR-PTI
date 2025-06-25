@@ -1,6 +1,7 @@
 <template>
   <div>
     <header>
+
       <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
 
       <button class="top-create-btn" @click="loginOrRegister">
@@ -22,6 +23,7 @@
     </header>
 
     <section class="banner">
+
       <h2>Itens no Carrinho</h2>
       <div v-if="carrinho.length > 0">
         <ul>
@@ -77,9 +79,11 @@ const carrinho = computed(() => carrinhoStore.equipamentos);
 const total = computed(() =>
   carrinho.value.reduce((soma, item) => soma + Number(item.preco), 0)
 );
+
 const carrinhoCount = computed(() =>
   carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
 );
+
 
 
 async function finalizarCompra() {
@@ -94,7 +98,9 @@ async function finalizarCompra() {
     // Simulação: substitui por ID real
     const lojaId = '6650dd0f26e3b38b9260b9f7';
 
-    const response = await fetch('http://localhost:3000/api/transacoes', {
+
+    const response = await fetch('http://34.51.158.117:3000/api/transacoes', {
+
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -127,6 +133,7 @@ async function finalizarCompra() {
 </script>
 
 <style scoped>
+
 /* Header */
 header {
   background: #0d6efd;
@@ -318,3 +325,4 @@ footer {
   }
 }
 </style>
+

@@ -4,6 +4,8 @@ const Equipamento = require('../models/Equipamento.js');
 const multer = require('multer');
 const path = require('path');  // IMPORTANTE: Adicione isso para usar 'path'
 const mongoose = require('mongoose');
+const Loja = require('../models/Loja');
+
 
 
 const storage = multer.diskStorage({
@@ -21,7 +23,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limite de 5MB para as imagens
+  limits: { fileSize: 10 * 1024 * 1024 }, // Limite de 5MB para as imagens
   fileFilter: (req, file, cb) => {
     const tiposValidos = ['image/jpeg', 'image/png', 'image/jpg'];
     if (tiposValidos.includes(file.mimetype)) {
@@ -32,29 +34,64 @@ const upload = multer({
   }
 });
 
+// Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
+router.get('/search', async (req, res) => {
+  try {
+    const { nome, marca, modelo } = req.query;
+
+    // Monta o filtro dinamicamente conforme query params enviados
+    let filtro = {};
+
+    if (nome) filtro.nome = { $regex: nome, $options: 'i' };       // busca case-insensitive parcial
+    if (marca) filtro.marca = { $regex: marca, $options: 'i' };
+    if (modelo) filtro.modelo = { $regex: modelo, $options: 'i' };
+
+    const equipamentos = await Equipamento.find(filtro);
+
+    if (equipamentos.length === 0) {
+      return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
+    }
+
+    res.json(equipamentos);
+  } catch (error) {
+    console.error('Erro ao buscar equipamentos:', error);
+    res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
+  }
+});
+
+
+
 // Criar um novo equipamento
 router.post('/', upload.single('imagem'), async (req, res) => {
   try {
-    console.log('Body recebido:', req.body);
-    console.log('Arquivo recebido:', req.file);
-
-    // Verificar se os campos obrigatórios foram fornecidos
-    
     const { nome, marca, modelo, estado, preco, loja_id, catalogo_id, categoria_id, tipo_id } = req.body;
 
-
-
-    if (!nome || !marca || !preco ) { //|| !loja_id || !catalogo_id
-      return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
+    if (!nome || !marca || !preco) {
+      return res.status(400).json({ message: 'Campos obrigatórios ausentes.' });
     }
 
-    // Salvar a imagem se o arquivo foi enviado
+    // Verificação da loja
+    const lojaExiste = await Loja.findById(loja_id);
+    if (!lojaExiste) {
+      return res.status(400).json({ message: 'Loja não encontrada.' });
+    }
+
+      // Verifica se equipamento já existe
+    const equipamentoExistente = await Equipamento.findOne({ nome, marca, modelo });
+    if (equipamentoExistente) {
+      return res.status(409).json({ message: 'Equipamento com esse nome, marca e modelo já existe.' });
+    }
+
+    // (Opcional) Verifique se os outros relacionamentos também existem
+    // const categoriaExiste = await Categoria.findById(categoria_id);
+    // const tipoExiste = await Tipo.findById(tipo_id);
+
     let imagem = null;
     if (req.file) {
-      imagem = `public/Images/${req.file.filename}`;
+     imagem = `/Images/${req.file.filename}`; // correto
+
     }
 
-    // Criar o novo equipamento
     const novoEquipamento = new Equipamento({
       nome,
       marca,
@@ -67,8 +104,7 @@ router.post('/', upload.single('imagem'), async (req, res) => {
       tipo_id,
       imagem
     });
-    
-    // Salvar no banco de dados
+
     await novoEquipamento.save();
     res.status(201).json(novoEquipamento);
   } catch (error) {
@@ -76,6 +112,7 @@ router.post('/', upload.single('imagem'), async (req, res) => {
     res.status(500).json({ message: 'Erro ao registrar equipamento', error: error.message });
   }
 });
+
 
 
 router.get('/equipamentos/:id', async (req, res) => {
@@ -97,21 +134,22 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-
-/*// Obter um equipamento por ID
-router.get('/equipamentos/:id', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const equipamento = await Equipamento.findById(req.params.id);
+    const { nome } = req.query;
 
-    if (!equipamento) {
-      return res.status(404).json({ mensagem: 'Equipamento não encontrado' });
+    // Se for enviada uma query string como ?nome=valor
+    if (nome) {
+      const equipamentos = await Equipamento.find({ nome: { $regex: nome, $options: 'i' } });
+      return res.json(equipamentos);
     }
 
-    res.json(equipamento);
+    const equipamentos = await Equipamento.find();
+    res.json(equipamentos);
   } catch (error) {
-    res.status(500).json({ erro: error.message });
+    res.status(500).json({ error: error.message });
   }
-});*/
+});
 
 
 
@@ -126,7 +164,7 @@ router.get('/', async (req, res) => {
 });
 
 // Apagar um equipamento por ID
-router.delete('/equipamentos/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const resultado = await Equipamento.findByIdAndDelete(id);
@@ -142,7 +180,7 @@ router.delete('/equipamentos/:id', async (req, res) => {
 });
 
 // Atualizar um equipamento por ID
-router.put('/equipamentos/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const atualizacoes = req.body;
@@ -158,5 +196,6 @@ router.put('/equipamentos/:id', async (req, res) => {
     res.status(500).json({ erro: error.message });
   }
 });
+
 
 module.exports = router;
