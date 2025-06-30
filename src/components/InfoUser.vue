@@ -1,74 +1,79 @@
 <template>
-    <div>
-      <header>
-        <h1>FromU2Me</h1>
-        <nav>
+  <div>
+    <header>
+      <h1>FromU2Me</h1> 
+      <nav>
         <ul>
           <li><router-link to="/home">Início</router-link></li>
           <li><a href="#produtos">Produtos</a></li>
           <li><a href="#contato">Contato</a></li>
-          
         </ul>
       </nav>
-      </header>
-  
-      <section class="banner">
-        
-        <p>Informações do Utilizador</p>
-      </section>
+    </header>
 
-      <section class="perfil">
-  <h2>Perfil do Utilizador</h2>
-  
-  <div v-if="!editando">
-    <p><strong>Nome:</strong> {{ user.nome }}</p>
-    <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Telefone:</strong> {{ user.telefone }}</p>
-    <p><strong>NIF:</strong> {{ user.nif }}</p>
-    <p><strong>NIC:</strong> {{ user.nic }}</p>
-    <p><strong>Morada:</strong> {{ user.morada }}</p>
-    <p><strong>Gênero:</strong> {{ user.genero }}</p>
-    <p><strong>Role:</strong> {{ user.role }}</p>
+    <section class="banner">
+      <p>Informações do Utilizador</p>
+    </section>
 
-    <button id="regisbtn" @click="editando = true">Editar</button>
+    <section class="perfil">
+      <h2>Perfil do Utilizador</h2>
+
+      <div v-if="!editando">
+        <p><strong>Nome:</strong> {{ user.nome }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Telefone:</strong> {{ user.telefone }}</p>
+        <p><strong>NIF:</strong> {{ user.nif }}</p>
+        <p><strong>NIC:</strong> {{ user.nic }}</p>
+        <p><strong>Morada:</strong> {{ user.morada }}</p>
+        <p><strong>Gênero:</strong> {{ user.genero }}</p>
+        <p><strong>Role:</strong> {{ user.role }}</p>
+
+        <button id="regisbtn" @click="editando = true">Editar</button>
+      </div>
+
+      <div v-else>
+        <label>Nome: <input v-model="user.nome" /></label><br>
+        <label>Email: <input v-model="user.email" /></label><br>
+        <label>Telefone: <input v-model="user.telefone" /></label><br>
+        <label>NIF: <input v-model="user.nif" /></label><br>
+        <label>NIC: <input v-model="user.nic" /></label><br>
+        <label>Morada: <input v-model="user.morada" /></label><br>
+        <label>Gênero: 
+          <select v-model="user.genero">
+            <option>Masculino</option>
+            <option>Feminino</option>
+            <option>Outro</option>
+          </select>
+        </label><br>
+
+        <button id="regisbtn" @click="salvarAlteracoes">Guardar</button>
+        <button id="regisbtn" @click="editando = false">Cancelar</button>
+        <button id="regisbtn" @click="mostrarConfirmacao = true" style="background-color: crimson; color: white;">
+          Apagar Conta
+        </button>
+      </div>
+
+      <div v-if="mostrarConfirmacao" class="confirm-box">
+        <h3>⚠️ Confirmar Exclusão da Conta</h3>
+        <p>Digite sua palavra-passe para confirmar:</p>
+        <input type="password" v-model="senhaConfirmacao" placeholder="Palavra-passe" />
+        <br />
+        <button @click="apagarConta" style="background-color: crimson; color: white;">Confirmar Apagar</button>
+        <button @click="mostrarConfirmacao = false">Cancelar</button>
+      </div>
+    </section>
+
+    <section id="contato" class="contato">
+      <h2>Entre em contato</h2>
+      <p>Email: contato@fromu2me.com</p>
+      <p>Telefone: (11) 99999-9999</p>
+    </section>
+
+    <footer>
+      <p>&copy; 2025 Loja Tech - Todos os direitos reservados.</p>
+    </footer>
   </div>
-
-  <div v-else>
-    <label>Nome: <input v-model="user.nome" /></label><br>
-    <label>Email: <input v-model="user.email" /></label><br>
-    <label>Telefone: <input v-model="user.telefone" /></label><br>
-    <label>NIF: <input v-model="user.nif" /></label><br>
-    <label>NIC: <input v-model="user.nic" /></label><br>
-    <label>Morada: <input v-model="user.morada" /></label><br>
-    <label>Gênero: 
-      <select v-model="user.genero">
-        <option>Masculino</option>
-        <option>Feminino</option>
-        <option>Outro</option>
-      </select>
-    </label><br>
-
-    <button id="regisbtn" @click="salvarAlteracoes">Guardar</button>
-    <button id="regisbtn" @click="editando = false">Cancelar</button>
-  </div>
-</section>
-
-  
-      
-      
-  
-      <section id="contato" class="contato">
-        <h2>Entre em contato</h2>
-        <p>Email: contato@fromu2me.com</p>
-        <p>Telefone: (11) 99999-9999</p>
-      </section>
-  
-      <footer>
-        <p>&copy; 2025 Loja Tech - Todos os direitos reservados.</p>
-      </footer>
-    </div>
-  </template>
-
+</template>
 
 <script>
 import axios from 'axios';
@@ -84,51 +89,112 @@ export default {
         nic: '',
         morada: '',
         genero: '',
-        role: ''
+        role: '',
+        id: ''
       },
-      editando: false
+      editando: false,
+      mostrarConfirmacao: false,
+      senhaConfirmacao: ''
     };
   },
+
   async mounted() {
-  const token = localStorage.getItem('token');
+    await this.recuperarInfo();
+  },
 
-  try {
-    const res = await axios.get('http://localhost:3000/api/perfil', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    console.log('Perfil carregado:', res.data);
-    this.user = { ...res.data, id: res.data._id }; // <- CORREÇÃO AQUI
-  } catch (err) {
-    console.error('Erro ao carregar perfil:', err.response?.data || err.message);
-  }
-}
-
-
-
-,
   methods: {
+    async recuperarInfo() {
+      const token = localStorage.getItem('token');
+
+      try {
+        const res = await axios.get('http://localhost:3000/api/perfil', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        this.user = {
+          ...res.data,
+          id: res.data._id || res.data.id
+        };
+      } catch (err) {
+        console.error('Erro ao carregar perfil:', err.response?.data || err.message);
+      }
+    },
+
     async salvarAlteracoes() {
+      if (!this.user.id) {
+        alert('ID do utilizador ausente. Tente recarregar a página.');
+        return;
+      }
+
+      if (!this.user.nome || !this.user.email) {
+        alert('Nome e email são obrigatórios.');
+        return;
+      }
+
       try {
         const res = await axios.put(`http://localhost:3000/api/utilizadores/${this.user.id}`, this.user, {
           withCredentials: true
         });
-        this.user = res.data;
+
+        this.user = {
+          ...res.data,
+          id: res.data._id || res.data.id
+        };
+
         this.editando = false;
         alert('Informações atualizadas com sucesso!');
       } catch (err) {
-        console.error('Erro ao atualizar perfil:', err);
-        alert('Erro ao atualizar informações');
+        console.error('Erro ao atualizar perfil:', err.response?.data || err.message);
+        alert('Erro ao atualizar informações.');
+      }
+    },
+
+    async apagarConta() {
+      if (!this.senhaConfirmacao) {
+        alert('Por favor, insira sua palavra-passe.');
+        return;
+      }
+
+      try {
+        const verificar = await axios.post(`http://localhost:3000/api/utilizadores/${this.user.id}/verificarSenha`, {
+          senha: this.senhaConfirmacao
+        });
+
+        if (!verificar.data.valido) {
+          alert('Palavra-passe incorreta.');
+          return;
+        }
+
+        await axios.delete(`http://localhost:3000/api/utilizadores/${this.user.id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        alert('Conta apagada com sucesso.');
+        localStorage.removeItem('token');
+        this.$router.push('/inicio'); // ou '/login'
+
+      } catch (err) {
+        console.error('Erro ao apagar conta:', err.response?.data || err.message);
+        alert('Erro ao apagar conta.');
       }
     }
   }
 };
 </script>
 
-
 <style scoped>
+.confirm-box {
+  background-color: #fff0f0;
+  border: 1px solid red;
+  padding: 16px;
+  margin-top: 16px;
+  border-radius: 8px;
+}
+
 header {
   background: #0d6efd;
   color: #fff;

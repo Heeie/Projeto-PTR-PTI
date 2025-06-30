@@ -1,32 +1,17 @@
 const express = require('express');
 const Transacao = require('../models/Transacao');
 const auth = require('../middlewares/authMiddleware');
+const transacaoController = require('../controllers/TransacaoController.js');
 const router = express.Router();
 
-router.post('/', auth, async (req, res) => {
-  const { loja_id, equipamentos, total } = req.body;
+// Criar transação
+router.post('/', auth, transacaoController.criarTransacao);
 
-  try {
-    const novaTransacao = new Transacao({
-      tipo: 'compra',
-      cliente_id: req.user.id,  // CORRETO aqui
-      loja_id,
-      equipamentos,
-      total
-    });
+// Obter transações do utilizador autenticado
+router.get('/', auth, transacaoController.obterTransacoesPorUtilizador);
 
-    await novaTransacao.save();
-
-    res.status(201).json({
-      message: "Transação registrada com sucesso!",
-      transacao: novaTransacao
-    });
-  } catch (error) {
-    console.error('Erro ao criar transação:', error);
-    res.status(400).json({ error: 'Erro ao processar pagamento. Tente novamente.' });
-  }
-});
-
+// Obter todas as transações (talvez admin)
+router.get('/todas', auth, transacaoController.obterTodasTransacoes);
 
 
 

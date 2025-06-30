@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');  // IMPORTANTE: Adicione isso para usar 'path'
 const mongoose = require('mongoose');
 const Loja = require('../models/Loja');
+const equipamentoController = require('../controllers/equipamento.controller.js');
 
 
 
@@ -34,25 +35,60 @@ const upload = multer({
   }
 });
 
+
+
+// Rota que retorna todos equipamentos — deve ficar antes
+router.get('/todos', async (req, res) => {
+  try {
+    const equipamentos = await Equipamento.find({});
+    res.json(equipamentos);
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao buscar equipamentos' });
+  }
+});
+
+// Rota para buscar equipamento por ID — fica depois
+router.get('/:id', async (req, res) => {
+  try {
+    const equipamento = await Equipamento.findById(req.params.id);
+    if (!equipamento) {
+      return res.status(404).send('Equipamento não encontrado');
+    }
+    res.json(equipamento);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erro no servidor');
+  }
+});
+
+
+router.post('/vender', upload.single('imagem'), equipamentoController.venderEquipamento);
+
+
+
 // Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
 router.get('/search', async (req, res) => {
-  try {
-    const { nome, marca, modelo } = req.query;
+    try {
+      const filtros = {};
 
-    // Monta o filtro dinamicamente conforme query params enviados
-    let filtro = {};
+      // Se existir nome
+      if (req.query.nome) {
+        filtros.nome = new RegExp(req.query.nome, 'i'); // ou $regex
+      }
 
-    if (nome) filtro.nome = { $regex: nome, $options: 'i' };       // busca case-insensitive parcial
-    if (marca) filtro.marca = { $regex: marca, $options: 'i' };
-    if (modelo) filtro.modelo = { $regex: modelo, $options: 'i' };
+      // Marca e modelo
+      if (req.query.marca) filtros.marca = req.query.marca;
+      if (req.query.modelo) filtros.modelo = req.query.modelo;
 
-    const equipamentos = await Equipamento.find(filtro);
+      // 🔧 Adicione esta linha obrigatoriamente
+      filtros.estadoDisponibilidade = 'disponivel';
+      const equipamentos = await Equipamento.find(filtros);
 
-    if (equipamentos.length === 0) {
-      return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
-    }
+        if (resultados.length === 0) {
+          return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
+        }
 
-    res.json(equipamentos);
+        res.json(equipamentos);
   } catch (error) {
     console.error('Erro ao buscar equipamentos:', error);
     res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
@@ -115,53 +151,34 @@ router.post('/', upload.single('imagem'), async (req, res) => {
 
 
 
-router.get('/equipamentos/:id', async (req, res) => {
+/*router.get('/equipamentos/:id', async (req, res) => {
   const equipamento = await db.collection('equipamentos').findOne({ _id: new ObjectId(req.params.id) });
   if (!equipamento) return res.status(404).json({ mensagem: "Não encontrado" });
   res.json(equipamento);
 });
+*/
 
-router.get('/:id', async (req, res) => {
-  try {
-    const equipamento = await Equipamento.findById(req.params.id);
-    if (!equipamento) {
-      return res.status(404).send('Equipamento não encontrado');
-    }
-    res.json(equipamento);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erro no servidor');
-  }
-});
-
+// /api/equipamentos
 router.get('/', async (req, res) => {
   try {
-    const { nome } = req.query;
-
-    // Se for enviada uma query string como ?nome=valor
-    if (nome) {
-      const equipamentos = await Equipamento.find({ nome: { $regex: nome, $options: 'i' } });
-      return res.json(equipamentos);
-    }
-
-    const equipamentos = await Equipamento.find();
+    const equipamentos = await Equipamento.find({ estadoDisponibilidade: 'disponivel' });
     res.json(equipamentos);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao buscar equipamentos' });
   }
 });
 
 
-
-// Listar todos os equipamentos
-router.get('/', async (req, res) => {
+// No seu controller ou rota Express
+router.get('/equipamentos', async (req, res) => {
   try {
-    const equipamentos = await Equipamento.find();
-    res.json(equipamentos);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    const equipamentosDisponiveis = await Equipamento.find({ estadoDisponibilidade: 'disponivel' });
+    res.json(equipamentosDisponiveis);
+  } catch (err) {
+    res.status(500).json({ error: 'Erro ao buscar equipamentos' });
   }
 });
+
 
 // Apagar um equipamento por ID
 router.delete('/:id', async (req, res) => {

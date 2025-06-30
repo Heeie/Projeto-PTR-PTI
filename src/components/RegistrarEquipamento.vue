@@ -64,6 +64,29 @@
             <label for="modelo">Modelo</label>
             <input type="text" placeholder="Introduza um modelo" v-model="form.modelo" required />
 
+                        <!-- Categoria -->
+            <label for="categoria_id">Categoria</label>
+            <select v-model="form.categoria_id" required>
+              <option disabled value="">Selecionar categoria</option>
+              <option v-for="cat in categorias" :key="cat._id" :value="cat._id">
+                {{ cat.nome }}
+              </option>
+            </select>
+
+            <!-- Tipo -->
+            <label for="tipo_id">Tipo</label>
+            <select v-model="form.tipo_id" required>
+              <option disabled value="">Selecionar tipo</option>
+              <option v-for="tipo in tipos" :key="tipo._id" :value="tipo._id">
+                {{ tipo.nome }}
+              </option>
+            </select>
+
+            
+            <label for="imagem">Imagem:</label>
+      <input type="file" name="imagem" id="imagem" accept="image/png, image/jpeg, image/jpg" @change="handleFileUpload">
+
+
             <!-- Preço -->
             <label for="preco">Preço</label>
             <input type="number" placeholder="Introduza um preço" v-model="form.preco" required />
@@ -98,90 +121,71 @@
         </form>
 
 
-        <!-- Editar Equipamento -->
-        <div class="container">
-          <h2>Modificar Equipamento</h2>
 
-          <label for="nome_pesquisa_editar">Nome do Equipamento</label>
-          <input
-            type="text"
-            placeholder="Nome do equipamento"
-            v-model="nomePesquisaEditar"
-          />
-          <button @click="buscarParaEditar()">Pesquisar</button>
+      <!-- Gerir Equipamentos -->
+       <div class="container">
+  <h2>Gerir Equipamentos</h2>
 
-          <div v-if="formEditar._id">
-            <!-- Os mesmos campos do formulário de registro -->
-            <label>Nome</label>
-            <input type="text" v-model="formEditar.nome" required />
+  <div v-if="equipamentos.length === 0">Nenhum equipamento encontrado.</div>
 
-            <label>Modelo</label>
-            <input type="text" v-model="formEditar.modelo" required />
+  <div class="equipamento-lista">
+    <div v-for="equip in equipamentos" :key="equip._id" class="equipamento-card">
+      <label>Nome:</label>
+      <input type="text" v-model="equip.nome" />
 
-            <label>Estado</label>
-            <select v-model="formEditar.estado" required>
-              <option disabled value="">Selecionar estado</option>
-              <option value="novo">Novo</option>
-              <option value="usado">Usado</option>
-              <option value="avariado">Avariado</option>
-            </select>
+      <label>Modelo:</label>
+      <input type="text" v-model="equip.modelo" />
 
-            <label>Preço</label>
-            <input type="number" v-model="formEditar.preco" required />
+      <label>Estado:</label>
+      <select v-model="equip.estado">
+        <option value="novo">Novo</option>
+        <option value="usado">Usado</option>
+        <option value="avariado">Avariado</option>
+      </select>
 
-            <label>Categoria</label>
-            <select v-model="formEditar.categoria_id" required>
-              <option disabled value="">Selecionar categoria</option>
-              <option v-for="cat in categorias" :key="cat._id" :value="cat._id">
-                {{ cat.nome }}
-              </option>
-            </select>
+      <label>Preço:</label>
+      <input type="number" v-model="equip.preco" />
 
-            <label>Tipo</label>
-            <select v-model="formEditar.tipo_id" required>
-              <option disabled value="">Selecionar tipo</option>
-              <option v-for="tipo in tipos" :key="tipo._id" :value="tipo._id">
-                {{ tipo.nome }}
-              </option>
-            </select>
+      <label>Categoria:</label>
+      <select v-model="equip.categoria_id">
+        <option v-for="cat in categorias" :key="cat._id" :value="cat._id">
+          {{ cat.nome }}
+        </option>
+      </select>
 
-            <label>Loja</label>
-            <select v-model="formEditar.loja_id" required>
-              <option disabled value="">Selecionar loja</option>
-              <option v-for="loja in lojas" :key="loja._id" :value="loja._id">
-                {{ loja.nome }}
-              </option>
-            </select>
+      <label>Tipo:</label>
+      <select v-model="equip.tipo_id">
+        <option v-for="tipo in tipos" :key="tipo._id" :value="tipo._id">
+          {{ tipo.nome }}
+        </option>
+      </select>
 
-            <button @click="editarEquipamento()">Salvar Alterações</button>
-          </div>
-        </div>
+      <label>Disponibilidade:</label>
+<select v-model="equip.estadoDisponibilidade">
+  <option value="disponivel">Disponível</option>
+  <option value="indisponivel">Indisponível</option>
+  <option value="para_analise">Para Análise</option>
+</select>
 
 
-        <!-- Apagar Equipamento -->
-        <div class="container">
-          <h2>Apagar Equipamento</h2>
+      <label>Loja:</label>
+      <select v-model="equip.loja_id">
+        <option v-for="loja in lojas" :key="loja._id" :value="loja._id">
+          {{ loja.nome }}
+        </option>
+      </select>
 
-          <label for="nome_pesquisa_apagar">Nome do Equipamento</label>
-          <input
-            type="text"
-            placeholder="Nome do equipamento"
-            v-model="nomePesquisaApagar"
-          />
-          <button @click="buscarParaApagar()">Pesquisar</button>
-
-          <div v-if="equipamentoParaApagar">
-            <p><strong>Modelo:</strong> {{ equipamentoParaApagar.modelo }}</p>
-            <p><strong>Preço:</strong> {{ equipamentoParaApagar.preco }}€</p>
-            <p><strong>Estado:</strong> {{ equipamentoParaApagar.estado }}</p>
-            <button @click="apagarEquipamento()">Confirmar Apagar</button>
-          </div>
-        </div>
-
-
-        
+      <div class="btns">
+        <button @click="salvarAlteracoes(equip)">Salvar</button>
+        <button @click="apagarEquipamentoDireto(equip._id)">Apagar</button>
+      </div>
     </div>
+  </div>
+</div>
 
+          
+
+ </div>
     </section>
 
     <footer>
@@ -196,15 +200,19 @@ export default {
   data() {
     return {
       form: {
-        nome: "",
-        marca: "",
-        modelo: "",
-        estado: "",
-        preco: "",
-        loja_id: "",
-        catalogo_id: "",
-         catalogos: [],
+          nome: '',
+          marca: '',
+          modelo: '',
+          estado: '',
+          preco: '',
+          loja_id: '',
+          catalogo_id: '',
+          categoria_id: '',
+          tipo_id: '',
+        
+         
       },
+      equipamentos: [],
       imagem: null,
       categorias: [], // novas listas
       tipos: [],
@@ -231,24 +239,26 @@ export default {
     };
   },
   async mounted() {
-    try {
-      const [lojasRes, catalogosRes] = await Promise.all([
-        fetch("http://localhost:3000/api/lojas"),
-        fetch("http://localhost:3000/api/catalogos"),
-      ]);
+  try {
+    const [lojasRes, catalogosRes] = await Promise.all([
+      fetch("http://localhost:3000/api/lojas/lojas"),
+      fetch("http://localhost:3000/api/catalogos"),
+    ]);
 
-      this.lojas = await lojasRes.json();
-      this.catalogos = await catalogosRes.json();
+    this.lojas = await lojasRes.json();
+    this.catalogos = await catalogosRes.json();
 
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        this.user = JSON.parse(storedUser);
-      }
-    } catch (err) {
-      console.error("Erro ao carregar lojas/catalogos:", err);
-      this.errorMessage = "Erro ao carregar dados.";
+    //this.carregarCategoriasETipos(); // 👈 adicionar esta linha
+
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      this.user = JSON.parse(storedUser);
     }
-  },
+  } catch (err) {
+    console.error("Erro ao carregar lojas/catalogos:", err);
+    this.errorMessage = "Erro ao carregar dados.";
+  }
+},
   methods: {
 
 
@@ -374,7 +384,8 @@ async carregarCatalogos() {
           return;
         }
 
-        alert('Equipamento apagado com sucesso!');
+        this.mostrarMensagem('Equipamento apagado com sucesso!');
+
         this.nomePesquisaApagar = '';
         this.equipamentoParaApagar = null;
 
@@ -383,6 +394,61 @@ async carregarCatalogos() {
          this.mostrarMensagem('Erro ao apagar equipamento: ' + err.message);
       }
     },
+
+
+
+    async carregarEquipamentos() {
+  try {
+    const res = await fetch('http://localhost:3000/api/equipamentos/todos');
+    const data = await res.json();
+    this.equipamentos = data;
+  } catch (err) {
+    console.error('Erro ao carregar equipamentos:', err);
+    this.mostrarMensagem('Erro ao carregar equipamentos');
+  }
+},
+
+async salvarAlteracoes(equip) {
+  try {
+    const res = await fetch(`http://localhost:3000/api/equipamentos/${equip._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(equip)
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      this.mostrarMensagem(error.message || 'Erro ao salvar');
+      return;
+    }
+
+    this.mostrarMensagem('Equipamento atualizado com sucesso!');
+  } catch (err) {
+    console.error(err);
+    this.mostrarMensagem('Erro ao salvar alterações: ' + err.message);
+  }
+},
+
+async apagarEquipamentoDireto(id) {
+  try {
+    const res = await fetch(`http://localhost:3000/api/equipamentos/${id}`, {
+      method: 'DELETE'
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      this.mostrarMensagem('Erro ao apagar equipamento: ' + errorText);
+      return;
+    }
+
+    this.mostrarMensagem('Equipamento apagado com sucesso!');
+    this.equipamentos = this.equipamentos.filter(e => e._id !== id);
+  } catch (err) {
+    console.error(err);
+    this.mostrarMensagem('Erro ao apagar: ' + err.message);
+  }
+},
+
 
     async buscarParaEditar() {
       try {
@@ -431,20 +497,59 @@ async carregarCatalogos() {
         console.error(err);
          this.mostrarMensagem('Erro ao editar equipamento: ' + err.message);
       }
-    },
-
- 
-
- 
+    }, 
 } ,
  created() {
-    this.carregarCategoriasETipos();
+     this.carregarCategoriasETipos(); 
+     this.carregarEquipamentos(); 
   }
-
 };
 </script>
 
 <style scoped>
+.equipamento-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.equipamento-card {
+  background-color: #ffffff;
+  border: 2px solid #e0e0e0;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  width: 300px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.equipamento-card label {
+  margin-top: 10px;
+  font-weight: 600;
+  color: #444;
+}
+
+.equipamento-card input,
+.equipamento-card select {
+  margin-top: 5px;
+}
+
+.equipamento-card .btns {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.equipamento-card button {
+  flex: 1;
+}
+
+
 /* Header */
 header {
   background: #0d6efd;
@@ -580,11 +685,7 @@ ul.nav-center li a {
 ul.nav-center li a:hover {
   background-color: #084298;
   cursor: pointer;
-}
-
-
-
-
+}s
 
 .nav-right {
   margin-left: auto;
@@ -747,4 +848,5 @@ footer {
     margin: 20px 10px 40px 10px;
   }
 }
+
 </style>

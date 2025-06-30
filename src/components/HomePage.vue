@@ -1,75 +1,94 @@
 <template>
   <div>
     <header>
-
       <h1>FromU2Me</h1>
-      
-
 
       <nav class="nav-container">
-  <ul class="nav-center">
-    <li><router-link to="/home">Início</router-link></li>
-    <li><a href="#produtos">Produtos</a></li>
-    <li><a href="#contato">Contato</a></li>
-  </ul>
+        <ul class="nav-center">
+          <li><router-link to="/home">Início</router-link></li>
+          <li><a href="#produtos">Produtos</a></li>
+          <li><a href="#contato">Contato</a></li>
+        </ul>
 
-  <div class="nav-right">
-    <button
-      v-if="user && (user.role === 'admin' || user.role === 'empregado')"
-      @click="router.push('/registroEquipamento')"
-    >
-      Gerir Equipamentos
-    </button>
+        <div class="nav-right">
+          <button
+            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+            @click="goTo('/registroEquipamento')"
+          >
+            Gerir Equipamentos
+          </button>
 
-    <button
-      v-if="user && (user.role === 'admin' || user.role === 'empregado')"
-      @click="router.push('/addToCatalog')"
-    >
-      Adicionar ao Catálogo
-    </button>
+          <button
+            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+            @click="goTo('/addToCatalog')"
+          >
+            Adicionar ao Catálogo
+          </button>
 
-    <button
-      v-if="user"
-      @click="router.push('/infoUtilizador')"
-    >
-      Info do Utilizador
-    </button>
+          <button
+            v-if="user"
+            @click="goTo('/infoUtilizador')"
+          >
+            {{ user.nome }}
+          </button>
 
-    <button
-      v-if=" user && user.role === 'admin'"
-      @click="router.push('/criarLoja')"
-    >
-      Criar Loja
-    </button>
+          <button
+            v-if="user && user.role === 'admin'"
+            @click="goTo('/criarLoja')"
+          >
+            Criar Loja
+          </button>
 
-    <button
-      v-if=" user && (user.role === 'admin' || user.role === 'empregado')"
-      @click="router.push('/changerole')"
-    >
-      Alterar Role
-    </button>
+          
 
-    <button
-  v-if="user && (user.role === 'admin' || user.role === 'empregado')"
-  @click="router.push('/avaliarEquipamento')"
->
-  Avaliar Equipamento Avariado
-</button>
+              <button
+            v-if="user && (user.role === 'admin' || user.role === 'empregado' || user.role === 'organizador' )"
+            @click="goTo('/gestao-projetos')"
+          >
+            Gerir Projetos
+          </button>
 
+           <button
+            v-if="user && user.role === 'admin'"
+            @click="goTo('/historicoTransaccoesGeral')"
+          >
+            Hístórico de transações
+          </button>
 
-  </div>
-</nav>
-
-
-
-     <button @click="finalizarCompra()" id="carrinhoBtn">
-  🛒 Carrinho ({{ carrinhoCount }})
-</button>
-
+          <button
+            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+            @click="goTo('/changerole')"
+          >
+            Alterar Role
+          </button>
 
 
+         <button
+        v-if="user"
+        @click="goTo('/vender')"
+        aria-label="Vender equipamento"
+      >
+        Vender equipamento
+      </button>
 
 
+          <button
+            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+            @click="goTo('/avaliarEquipamento')"
+          >
+            Avaliar Equipamento Avariado
+          </button>
+        </div>
+
+        <!-- Botão Logout -->
+        <button v-if="user" @click="logout">
+          Logout
+        </button>
+      </nav>
+
+      <button @click="finalizarCompra()" id="carrinhoBtn">
+        🛒 Carrinho ({{ carrinhoCount }})
+      </button>
     </header>
 
     <section class="banner">
@@ -77,57 +96,73 @@
       <p>Confira nossas ofertas e garanta já o seu.</p>
     </section>
 
-   <section>
-
-        <form @submit.prevent="filtrarEquipamentos">
-  <select v-model="filtro.nome">
-    <option value="">Todos os nomes</option>
-    <option v-for="n in nomesUnicos" :key="n" :value="n">{{ n }}</option>
-  </select>
-
-  <select v-model="filtro.marca">
-    <option value="">Todas as marcas</option>
-    <option v-for="m in marcasUnicas" :key="m" :value="m">{{ m }}</option>
-  </select>
-
-  <select v-model="filtro.modelo">
-    <option value="">Todos os modelos</option>
-    <option v-for="mod in modelosUnicos" :key="mod" :value="mod">{{ mod }}</option>
-  </select>
-
-  <button type="submit">Filtrar</button>
-</form>
+    <section>
+      <form @submit.prevent="filtrarEquipamentos">
+        <input
+          type="text"
+          v-model="filtro.nome"
+          placeholder="Pesquisar por nome"
+        />
 
 
-    <div v-if="resultados.length">
-      <div v-for="equipamento in resultados" :key="equipamento._id">
-        <strong>{{ equipamento.nome }}</strong> - {{ equipamento.marca }} - {{ equipamento.modelo }} - €{{ equipamento.preco }}
+        <select v-model="filtro.marca">
+          <option value="">Todas as marcas</option>
+          <option v-for="m in marcasUnicas" :key="m" :value="m">{{ m }}</option>
+        </select>
+
+        <select v-model="filtro.modelo">
+          <option value="">Todos os modelos</option>
+          <option v-for="mod in modelosUnicos" :key="mod" :value="mod">{{ mod }}</option>
+        </select>
+
+        <button type="submit">Filtrar</button>
+      </form>
+
+      <div v-if="resultados.length">
+        <div v-for="equipamento in resultados" :key="equipamento._id">
+          <strong>{{ equipamento.nome }}</strong> - {{ equipamento.marca }} - {{ equipamento.modelo }} - €{{ equipamento.preco }}
+        </div>
       </div>
-    </div>
-    <p v-else>Nenhum equipamento encontrado.</p>
+      <p v-else>Nenhum equipamento encontrado.</p>
+      
+    
+    </section>
 
-
-</section>
-
-     <section id="produtos" class="produtos">
-  <router-link
+  <section id="produtos" class="produtos" v-if="!carregando">
+  <div
     class="produto"
-    v-for="equipamento in (resultados.length ? resultados : equipamentos)"
+    v-for="equipamento in equipamentosDisponiveis"
     :key="equipamento._id"
-    :to="`/produto/${equipamento._id}`"
+    @click="goTo(`/produto/${equipamento._id}`)"
+    style="cursor: pointer;"
   >
-
-        <img :src="equipamento.imagem ? equipamento.imagem : '/images/default.jpg'" alt="Imagem do equipamento">
+        <img
+          :src="equipamento.imagem ? equipamento.imagem : '/images/default.jpg'"
+          alt="Imagem do equipamento"
+        />
         <h3>{{ equipamento.nome }}</h3>
         <p>{{ equipamento.modelo }} - {{ equipamento.marca }}</p>
-            <p v-if="getQuantidade(equipamento._id) > 0">
-      Já no carrinho: {{ getQuantidade(equipamento._id) }}x
-    </p>
 
-        <span>Euros {{ Number(equipamento.preco).toLocaleString('pt-Pt', { minimumFractionDigits: 2 }) }}</span>
-      </router-link>
+        <p v-if="getQuantidade(equipamento._id) > 0">
+          Já no carrinho: {{ getQuantidade(equipamento._id) }}x
+        </p>
+        <span>Euros {{Number(equipamento.preco || 0).toLocaleString('pt-PT', {minimumFractionDigits: 2})}}</span>
 
-    </section>
+        
+        <button
+            v-if="user"
+            class="favoritar-btn"
+            :class="{ favorito: favoritosMap[equipamento._id] }"
+            @click.stop.prevent="alternarFavorito(equipamento._id)"
+          >
+           {{ favoritosMap[equipamento._id] ? '★ Remover Favorito' : '☆ Favoritar' }}
+          </button>
+        </div>
+      </section>
+
+
+    
+
 
     <section id="contato" class="contato">
       <h2>Entre em contato</h2>
@@ -142,10 +177,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted,  computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { useCarrinhoStore } from '@/stores/carrinho';
+
+// Para enviar cookies de sessão em todas as requisições
+axios.defaults.withCredentials = true;
+
 
 const carrinhoStore = useCarrinhoStore();
 const carrinho = computed(() => carrinhoStore.equipamentos);
@@ -155,8 +194,19 @@ const carrinhoCount = computed(() =>
 
 const router = useRouter();
 const equipamentos = ref([]);
-const token = localStorage.getItem('token');
 const user = ref(null);
+const favoritos = ref([]);
+const favoritosCarregados = ref(false);
+const favoritosMap = ref({});
+const carregando = ref(true);
+
+
+const equipamentosDisponiveis = computed(() =>
+  (resultados.value.length ? resultados.value : equipamentos.value).filter(
+    e => e.disponivel !== false && e.quantidade !== 0
+  )
+);
+
 
 const filtro = ref({
   nome: '',
@@ -165,11 +215,6 @@ const filtro = ref({
 });
 
 const resultados = ref([]);
-const nomesUnicos = computed(() => {
-  const nomes = equipamentos.value.map(e => e.nome);
-  return [...new Set(nomes)].filter(Boolean);
-});
-
 const marcasUnicas = computed(() => {
   const marcas = equipamentos.value.map(e => e.marca);
   return [...new Set(marcas)].filter(Boolean);
@@ -180,6 +225,77 @@ const modelosUnicos = computed(() => {
   return [...new Set(modelos)].filter(Boolean);
 });
 
+function logout() {
+  // Chama API de logout para destruir sessão no backend, caso exista.
+  axios.post('http://localhost:3000/api/logout', {}, { withCredentials: true })
+    .then(() => {
+      user.value = null;
+      router.push('/login');
+    })
+    .catch(() => {
+      // Mesmo em erro, remove usuário local e redireciona
+      user.value = null;
+      router.push('/login');
+    });
+}
+
+// Função para carregar todos os favoritos do usuário ao montar o componente
+async function carregarFavoritos() {
+  try {
+    const res = await axios.get('http://localhost:3000/api/favoritos', {
+      withCredentials: true
+    });
+   console.log(res.data);
+    favoritosMap.value = {};
+res.data.forEach(e => {
+  favoritosMap.value[e._id] = true;
+});
+
+    favoritos.value = res.data.map(e => String(e._id));
+     console.log(favoritos);
+
+  } catch (err) {
+    console.error('Erro ao carregar favoritos:', err);
+  } finally {
+    favoritosCarregados.value = true;
+  }
+}
+
+async function alternarFavorito(idEquipamento) {
+  const favoritoAtual = favoritosMap.value[idEquipamento];
+
+  try {
+    if (favoritoAtual) {
+      await axios.post(
+        `http://localhost:3000/api/remover-favorito/${idEquipamento}`,
+        {},
+        { withCredentials: true }
+      );
+      favoritosMap.value[idEquipamento] = false;
+    } else {
+      await axios.post(
+        `http://localhost:3000/api/favoritar/${idEquipamento}`,
+        {},
+        { withCredentials: true }
+      );
+      favoritosMap.value[idEquipamento] = true;
+    }
+  } catch (err) {
+    console.error('Erro ao alternar favorito:', err);
+    alert('Erro ao atualizar favorito');
+  }
+}
+
+async function verificarFavorito(idEquipamento) {
+  try {
+    const res = await axios.get(`http://localhost:3000/api/favorito/${idEquipamento}`, {
+      withCredentials: true
+    });
+    favoritosMap.value[idEquipamento] = res.data.favorito;
+  } catch (err) {
+    console.error(`Erro ao verificar favorito para o equipamento ${idEquipamento}:`, err);
+  }
+}
 
 function getQuantidade(id) {
   const item = carrinho.value.find(p => p._id === id);
@@ -190,36 +306,83 @@ function finalizarCompra() {
   router.push('/comprar');
 }
 
+function goTo(path) {
+  router.push(path);
+}
+
 async function filtrarEquipamentos() {
   try {
-    const params = new URLSearchParams(filtro.value).toString();
-    const res = await fetch(`http://localhost:3000/api/equipamentos/search?${params}`);
-    resultados.value = await res.json();
+    const paramsObj = {};
+    Object.entries(filtro.value).forEach(([key, val]) => {
+      if (val) paramsObj[key] = val;
+    });
+
+    const res = await axios.get('http://localhost:3000/api/equipamentos/search', {
+      params: paramsObj
+    });
+
+    resultados.value = res.data;
+
+    // Atualizar favoritos para os resultados filtrados
+    if (user.value) {
+      for (const equipamento of resultados.value) {
+        await verificarFavorito(equipamento._id);
+      }
+    }
   } catch (error) {
     console.error('Erro ao filtrar equipamentos:', error);
   }
 }
 
 onMounted(async () => {
-  
   try {
+    const resSessao = await axios.get('http://localhost:3000/api/session', { withCredentials: true });
+    console.log('Sessão ativa?', resSessao.data.authenticated);
+
+    // Pega equipamentos
     const res = await axios.get('http://localhost:3000/api/equipamentos');
     equipamentos.value = res.data;
 
+    // Busca usuário
     const resUser = await axios.get('http://localhost:3000/api/perfil', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      withCredentials: true
     });
     user.value = resUser.data;
+
+    // Carrega favoritos depois de termos os equipamentos
+    if (user.value) {
+      await carregarFavoritos();
+    }
+
   } catch (err) {
-    console.error('Erro ao buscar equipamentos ou usuário:', err);
+    console.error('Erro ao buscar dados iniciais:', err);
+  } finally {
+    carregando.value = false;
   }
 });
+
 </script>
 
-
 <style scoped>
+
+.favoritar-btn.favorito {
+  color: gold;
+  font-weight: bold;
+}
+
+.favoritar-btn {
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+  font-size: 1.2em;
+  transition: color 0.3s ease;
+}
+
+.favoritar-btn.favorito {
+  color: red; /* Coração vermelho quando favoritado */
+  font-weight: bold;
+}
+
 /* Header */
 header {
   background: #0d6efd;

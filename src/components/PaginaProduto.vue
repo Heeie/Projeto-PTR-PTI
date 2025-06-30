@@ -14,6 +14,14 @@
       <p><strong>Modelo:</strong> {{ produto.modelo }}</p>
       <p><strong>Estado:</strong> {{ produto.estado }}</p>
       <p><strong>Preço:</strong> € {{ Number(produto.preco).toLocaleString('pt-PT', { minimumFractionDigits: 2 }) }}</p>
+      <button
+  v-if="user"
+  class="favoritar-btn"
+  @click="favoritarEquipamento(produto._id)"
+>
+  ❤️ Favoritar
+</button>
+
 
      <button class="comprar-btn" @click="comprarProduto">Adicionar ao Carrinho</button>
      <button class="finalizar-btn" @click="finalizarCompra">Finalizar Compra</button>
@@ -46,6 +54,8 @@ import { useCarrinhoStore } from '@/stores/carrinho'; // caminho pode variar
 const route = useRoute();
 const router = useRouter();
 const produto = ref(null);
+const user = ref(null);
+
 
 const carrinhoStore = useCarrinhoStore();
 const alertaVisivel = ref(false);
@@ -67,21 +77,50 @@ function finalizarCompra() {
   router.push('/comprar');
 }
 
+async function favoritarEquipamento(idEquipamento) {
+  try {
+    await axios.post(
+      `http://localhost:3000/api/favoritar/${idEquipamento}`,
+      {},
+      { withCredentials: true }
+    );
+    alert('Equipamento adicionado aos favoritos!');
+  } catch (err) {
+    console.error('Erro ao favoritar:', err);
+    alert('Erro ao favoritar equipamento.');
+  }
+}
 
 onMounted(async () => {
   try {
     const id = route.params.id;
     const res = await axios.get(`http://localhost:3000/api/equipamentos/${id}`);
     produto.value = res.data;
-    console.log(produto.value.imagem)
+
+    const resUser = await axios.get('http://localhost:3000/api/perfil', {
+      withCredentials: true
+    });
+    user.value = resUser.data;
+
   } catch (err) {
-    console.error('Erro ao carregar produto:', err);
+    console.error('Erro ao carregar produto ou usuário:', err);
   }
 });
+
 </script>
 
   
   <style scoped>
+
+.favoritar-btn {
+  background-color: transparent;
+  border: 1px solid red;
+  padding: 6px 10px;
+  color: red;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 10px;
+}
 
   .finalizar-btn {
   margin-top: 12px;

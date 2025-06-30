@@ -15,7 +15,28 @@ const UtilizadorSchema = new mongoose.Schema({
   nic: { type: String, required: true },
   morada: { type: String, required: true },
   genero: { type: String, enum: ['Masculino', 'Feminino', 'Outro'], required: true },
-  role: { type: String, enum: ['cliente', 'empregado', 'organizador', 'doador', 'admin'], default: 'cliente' }
+  role: { type: String, enum: ['cliente', 'empregado', 'organizador', 'doador', 'admin'], default: 'cliente' },
+
+  // Novos campos:
+  notificacoes: [
+    {
+      mensagem: { type: String, required: true },
+      data: { type: Date, default: Date.now }
+    }
+  ],
+
+ equipamentosFavoritos: {
+  type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Equipamento' }],
+  default: []
+},
+
+  transacoes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Transacao'
+    }
+  ]
+
 }, {
   timestamps: true
 });

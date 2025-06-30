@@ -1,9 +1,8 @@
 <template>
   <div>
     <header>
-  <h1  style="cursor:pointer;">FromU2Me</h1>
-
-</header>
+      <h1 style="cursor:pointer;">FromU2Me</h1>
+    </header>
 
     <section>
       <div id="login">
@@ -37,19 +36,14 @@
             <button type="submit">Login</button>
 
             <label>
-              <input type="checkbox" checked="checked" name="remember" />
+              <input type="checkbox" v-model="rememberMe" />
               Remember me
             </label>
           </div>
 
-          <div
-            class="container"
-            style="background-color:#f1f1f1; display: flex; justify-content: space-between; align-items: center;"
-          >
+          <div class="container" style="background-color:#f1f1f1; display: flex; justify-content: space-between; align-items: center;">
             <span class="psw">
-              <router-link to="/recuperar_senha"
-                >Esqueceste-te da tua palavra-passe?</router-link
-              >
+              <router-link to="/recuperar_senha">Esqueceste-te da tua palavra-passe?</router-link>
             </span>
           </div>
         </form>
@@ -63,50 +57,65 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
       username: "",
       password: "",
+      rememberMe: false,
       errorMessage: "",
     };
   },
+  mounted() {
+    const savedUsername = localStorage.getItem("rememberedUsername");
+    if (savedUsername) {
+      this.username = savedUsername;
+      this.rememberMe = true;
+    }
+  },
   methods: {
-
-
     async handleLogin() {
       this.errorMessage = "";
 
       try {
-        const response = await fetch("http://localhost:3000/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        const response = await axios.post(
+          "http://localhost:3000/api/login",
+          {
             username: this.username,
             password: this.password,
-          }),
-        });
+          },
+          {
+            withCredentials: true, // necessário para cookies de sessão
+          }
+        );
 
-        const data = await response.json();
-        console.log("API Response:", data);
+        console.log("API Response:", response.data);
 
-        if (response.ok && data.token) {
-          // Armazenar o token, se necessário
-          localStorage.setItem('token', data.token);
-
-          // Redirecionar para a página inicial
-          this.$router.push("/home");
+        // Salvar ou apagar username local
+        if (this.rememberMe) {
+          localStorage.setItem("rememberedUsername", this.username);
         } else {
-          this.errorMessage = data.message || "Usuário ou senha incorretos.";
+          localStorage.removeItem("rememberedUsername");
         }
+
+        // Redirecionar após login
+        this.$router.push("/home");
+
       } catch (error) {
-        this.errorMessage = "Erro ao conectar com o servidor.";
-        console.error(error);
+        if (error.response && error.response.data && error.response.data.erro) {
+          this.errorMessage = error.response.data.erro;
+        } else {
+          this.errorMessage = "Erro ao conectar com o servidor.";
+        }
+        console.error("Login error:", error);
       }
     },
   },
 };
 </script>
+
 
 <style scoped>
 

@@ -1,99 +1,79 @@
 const express = require('express');
 const router = express.Router();
 const Utilizador = require('../models/Utilizador.js');
-
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const authMiddleware = require('../middlewares/authMiddleware');
 const utilizadorController = require('../controllers/UtilizadorController');
-const checkJwt = require('../middlewares/auth0Middleware');
 
 router.post('/criar', utilizadorController.criarUtilizador);
 
-router.get('/perfil', authMiddleware, async (req, res) => {
+router.get('/perfil', async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Não autenticado (sessão ausente)' });
+  }
   try {
-    let user;
-
-    // Se for login local (com JWT tradicional)
-    if (req.user && req.user.id) {
-      user = await Utilizador.findById(req.user.id).select('-senha');
-    }
-
-    // Se for login com Auth0
-    else if (req.auth && req.auth.sub) {
-      const sub = req.auth.sub;
-      user = await Utilizador.findOne({ auth0Id: sub });
-
-      // Se não existir, cria
-      if (!user) {
-        user = new Utilizador({
-          nome: req.auth.nickname || req.auth.name,
-          email: req.auth.email,
-          role: 'cliente',
-          auth0Id: sub,
-        });
-        await user.save();
-      }
-    }
-
-    if (!user) {
-      return res.status(404).json({ mensagem: 'Utilizador não encontrado' });
-    }
+    const user = await Utilizador.findById(req.session.userId);
+    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
     res.json({
       id: user._id,
       nome: user.nome,
       email: user.email,
-      role: user.role
+      telefone: user.telefone,
+      nif: user.nif,
+      nic: user.nic,
+      morada: user.morada,
+      genero: user.genero,
+      role: user.role,
     });
-
   } catch (err) {
-    console.error("Erro ao obter perfil:", err);
-    res.status(500).json({ erro: 'Erro ao carregar perfil' });
+    res.status(500).json({ error: 'Erro no servidor' });
   }
 });
 
 
-
-
+// Rota para buscar utilizadores, podendo filtrar por role
+router.get('/utilizadores', async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.role) {
+      filter.role = req.query.role;
+    }
+    const usuarios = await Utilizador.find(filter);
+    res.json(usuarios);
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
 
 
 // Login de utilizador
 // 🔐 Login de utilizador
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-
-  console.log("Tentativa de login:", username);
-
   try {
     const user = await Utilizador.findOne({ nome: username });
-
     if (!user) {
       return res.status(404).json({ erro: 'Usuário não encontrado' });
     }
-
     const senhaCorreta = await bcrypt.compare(password, user.senha);
-
     if (!senhaCorreta) {
       return res.status(401).json({ erro: 'Senha incorreta' });
     }
-
-    // ✅ Gerar token JWT
-    const token = jwt.sign(
-      { id: user._id, nome: user.nome, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    // 🔐 Retornar token e dados do utilizador (sem a senha)
+    
+    req.session.userId = user._id;
     res.json({
-      token,
-      user: {
-        id: user._id,
-        nome: user.nome,
-        email: user.email,
-        role: user.role
-      }
+      id: user._id,
+      nome: user.nome,
+      email: user.email,
+      telefone: user.telefone,
+      nif: user.nif,
+      nic: user.nic,
+      morada: user.morada,
+      genero: user.genero,
+      role: user.role,
+      mensagem: 'Login efetuado com sucesso via sessão'
     });
 
   } catch (err) {
@@ -102,16 +82,27 @@ router.post('/login', async (req, res) => {
   }
 });
 
+
+router.post('/session-login', async (req, res) => {
+  const { username, password } = req.body;
+  const user = await Utilizador.findOne({ nome: username });
+  if (!user || !(await bcrypt.compare(password, user.senha))) {
+    return res.status(401).json({ erro: 'Credenciais inválidas' });
+  }
+  // Armazena o ID na sessão
+  req.session.userId = user._id;
+  res.json({ mensagem: 'Login com sucesso!', user: { nome: user.nome, role: user.role } });
+});
+
+
 // Buscar um utilizador pelo nome
 router.get('/utilizadores/nome/:nome', async (req, res) => {
   try {
     const nome = req.params.nome;  // Pega o nome do parâmetro da URL
     const utilizador = await Utilizador.findOne({ nome: nome });  // Busca um utilizador com o nome fornecido
-
     if (!utilizador) {
       return res.status(404).json({ mensagem: 'Utilizador não encontrado' });
     }
-
     res.json(utilizador);  // Retorna o utilizador encontrado
   } catch (err) {
     res.status(500).json({ erro: err.message });
@@ -130,16 +121,31 @@ router.get('/utilizadores', async (req, res) => {
 });
 
 
-// Atualizar
 router.put('/utilizadores/:id', async (req, res) => {
   try {
-    const atualizado = await Utilizador.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { nome, email, telefone, nif, nic, morada, genero, role } = req.body;
+
+    // Construir objeto update só com campos permitidos (validados/sanitizados)
+    const updateData = {
+      nome, email, telefone, nif, nic, morada, genero, role
+    };
+
+    // Remove campos undefined ou vazios (opcional)
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === undefined) delete updateData[key];
+    });
+
+    const atualizado = await Utilizador.findByIdAndUpdate(req.params.id, updateData, { new: true });
+
     if (!atualizado) return res.status(404).json({ mensagem: 'Utilizador não encontrado' });
+
     res.json(atualizado);
+
   } catch (err) {
     res.status(500).json({ erro: err.message });
   }
 });
+
 
 // Apagar
 router.delete('/utilizadores/:id', async (req, res) => {
@@ -151,5 +157,56 @@ router.delete('/utilizadores/:id', async (req, res) => {
     res.status(500).json({ erro: err.message });
   }
 });
+
+router.post('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) return res.status(500).json({ erro: 'Erro ao sair' });
+    res.clearCookie('connect.sid'); // nome padrão do cookie de sessão
+    res.json({ mensagem: 'Logout feito com sucesso' });
+  });
+});
+
+
+// Recuperar senha - redefine a senha de um utilizador
+router.post('/recuperar_senha', async (req, res) => {
+  const { username, novaSenha } = req.body;
+
+  try {
+    const utilizador = await Utilizador.findOne({ nome: username });
+
+    if (!utilizador) {
+      return res.status(404).json({ erro: 'Utilizador não encontrado' });
+    }
+
+    const senhaHash = await bcrypt.hash(novaSenha, 10);
+    utilizador.senha = senhaHash;
+
+    await utilizador.save();
+
+    res.json({ mensagem: 'Senha atualizada com sucesso' });
+  } catch (err) {
+    console.error('Erro ao recuperar senha:', err);
+    res.status(500).json({ erro: 'Erro ao recuperar senha' });
+  }
+});
+
+
+
+// Transações
+router.post('/transacoes', utilizadorController.adicionarTransacao);
+router.get('/transacoes', utilizadorController.listarTransacoes);
+
+// Notificações
+router.get('/notificacoes', utilizadorController.listarNotificacoes);
+
+// Favoritos
+
+// Verificar se um equipamento está nos favoritos do usuário autenticado
+router.get('/favorito/:idEquipamento', utilizadorController.verificarFavoritoEquipamento);
+
+router.get('/favoritos', utilizadorController.listarFavoritos);
+router.post('/favoritar/:equipamentoId', utilizadorController.favoritarEquipamento);
+router.post('/remover-favorito/:equipamentoId', utilizadorController.removerFavoritoEquipamento);
+
 
 module.exports = router;

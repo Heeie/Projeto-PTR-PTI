@@ -16,6 +16,8 @@ const categoriaRoutes = require('./routes/categoriaRoutes');
 const tipoRoutes = require('./routes/tipoRoutes');
 const transacoesRouter = require('./routes/transacaoRoutes'); // exemplo do caminho
 const catalogoRoutes = require('./routes/catalogoRoutes');
+const avaliacaoRoutes = require('./routes/AvaliacoesRoutes');
+const projetoBeneficenteRoutes = require('./routes/projetoRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,18 +28,21 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(morgan('dev'));
 
-// CORS deve vir ANTES de session
+
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:3001', 'http://localhost:3000'];
+
 app.use(cors({
-  origin: function (origin, callback) {
-    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3001'];
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true); // Permite Postman, etc.
+    if (allowedOrigins.includes(origin)) {
+      callback(null, origin);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Não permitido pelo CORS'));
     }
   },
-  credentials: true
+  credentials: true,
 }));
+
 
 //LOGIN
 app.use(session({
@@ -63,15 +68,15 @@ app.use('/api', utilizadorRoutes);
 app.use('/api', catalogoRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/tipos', tipoRoutes);
-app.use('/api', lojaRoutes);
-const avaliacaoRoutes = require('./routes/AvaliacoesRoutes');
 
+
+app.use('/api/projetos', projetoBeneficenteRoutes);
 app.use('/api/avaliacoes', avaliacaoRoutes);
-
 app.use('/api/transacoes', transacoesRouter); // <<<<<<<<<<
 app.listen(3000);
+app.use('/api/lojas', lojaRoutes);
 
-//app.use('/api/lojas', lojaRoutes);
+
 // Tratamento de erros global
 app.use((err, req, res, next) => {
   console.error('🔥 Erro interno:', err.message);
@@ -85,6 +90,15 @@ Equipamento.syncIndexes().then(() => {
   console.log('✔️ Índices sincronizados com sucesso!');
 }).catch(err => {
   console.error('❌ Erro ao sincronizar índices:', err.message);
+});
+
+
+app.get('/api/session', (req, res) => {
+  if (req.session && req.session.userId) {
+    return res.json({ authenticated: true });
+  } else {
+    return res.json({ authenticated: false });
+  }
 });
 
 // Conexão com MongoDB

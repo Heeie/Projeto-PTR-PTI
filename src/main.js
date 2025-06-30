@@ -14,6 +14,12 @@ import Change from './components/ChangeRole.vue';
 import Compra from './components/CompraProduto.vue';
 import Carrinho from './components/PaginaCarrinho.vue';
 import AvaliarEquipamento from './components/AvaliarEquipamento.vue';
+import RecuperarSenha from './components/RecuperarSenha.vue';
+import TransacoesGeral  from './components/HistoricoTransacoesGeral.vue';
+import VenderEquipamento  from './components/VenderEquipamento.vue';
+import GestaoProjeto  from './components/GestaoProjetos.vue';
+
+
 import { createPinia } from 'pinia';
 import axios from 'axios';
 
@@ -24,19 +30,20 @@ const router = createRouter({
     { path: '/login', component: LoginPage },  // Rota para a página de login
     { path: '/home', component: HomePage },  // Rota para a página inicial
     { path: '/registroEquipamento', component: RegisEquipamento },
-
     { path: '/', component: Inicio },
     { path: '/criar_conta', component: CriarConta },
     { path: '/addToCatalog', component: ADDCatalogo },
     { path: '/infoUtilizador', component: InfoUser },
-
     { path: '/produto/:id', name: 'DetalhesProduto', component: PaginaProduto},
-     { path: '/criarLoja', component: Loja },
-      { path: '/changerole', component: Change },
+    { path: '/criarLoja', component: Loja },
+    { path: '/changerole', component: Change },
     { path: '/comprar', component: Compra },
-     { path: '/carrinho', component: Carrinho },
-
-     {path: '/avaliarEquipamento', component: AvaliarEquipamento },
+    { path: '/carrinho', component: Carrinho },
+    { path: '/avaliarEquipamento', component: AvaliarEquipamento },
+    { path: '/recuperar_senha', component: RecuperarSenha },
+    { path: '/historicoTransaccoesGeral', component: TransacoesGeral },
+    { path: '/vender', component: VenderEquipamento }, 
+    { path: '/gestao-projetos', component: GestaoProjeto }, 
 
   ],
 });
