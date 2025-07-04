@@ -1,7 +1,10 @@
 <template>
   <div>
-    <header>
-      <h1 style="cursor:pointer;">FromU2Me</h1>
+    <header style="position: relative;">
+      <h1 @click="$router.push('/login')" style="cursor:pointer;">FromU2Me</h1>
+      <router-link to="/criar_conta">
+        <button class="top-create-btn">Criar Conta</button>
+      </router-link>
     </header>
 
     <section>
@@ -87,20 +90,18 @@ export default {
             password: this.password,
           },
           {
-            withCredentials: true, // necessário para cookies de sessão
+            withCredentials: true,
           }
         );
 
         console.log("API Response:", response.data);
 
-        // Salvar ou apagar username local
         if (this.rememberMe) {
           localStorage.setItem("rememberedUsername", this.username);
         } else {
           localStorage.removeItem("rememberedUsername");
         }
 
-        // Redirecionar após login
         this.$router.push("/home");
 
       } catch (error) {
@@ -116,9 +117,7 @@ export default {
 };
 </script>
 
-
 <style scoped>
-
 header {
   background: #0d6efd;
   padding: 20px;
@@ -127,6 +126,7 @@ header {
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   border-radius: 0 0 10px 10px;
   margin-bottom: 30px;
+  position: relative;
 }
 
 h1 {
@@ -136,10 +136,10 @@ h1 {
   color: #ffffff;
 }
 
-/* Botão "Criar Conta" fora da barra central */
+/* Botão "Criar Conta" */
 .top-create-btn {
   position: absolute;
-  top: auto;
+  top: 20px;
   right: 20px;
   background-color: white;
   color: #0d6efd;
@@ -157,71 +157,6 @@ h1 {
   background-color: #0d6efd;
   color: white;
   border-color: #ffffff;
-}
-
-
-/* Barra central de navegação */
-nav.nav-container {
-  max-width: max-content;
-  margin: 0 auto 40px auto;
-  background: #0d6efd;
-  border: 2px solid white;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  padding: 10px 20px;
-  box-sizing: border-box;
-}
-
-ul.nav-center {
-  list-style: none;
-  display: flex;
-  gap: auto;
-  margin: 0;
-  padding: 0;
-  flex-grow: 1;
-  justify-content: center;
-}
-
-ul.nav-center li a {
-  color: white;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 10px 15px;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
-}
-
-ul.nav-center li a:hover {
-  background-color: #084298;
-  cursor: pointer;
-}
-
-
-
-
-
-.nav-right {
-  margin-left: auto;
-}
-
-.nav-right button {
-  background-color: white;
-  color: #0d6efd;
-  border: 3px solid #0d6efd;
-  padding: 12px 25px;
-  font-weight: 700;
-  font-family: 'Poppins', sans-serif;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.nav-right button:hover {
-  background-color: #0d6efd;
-  color: white;
-  border-color: white;
 }
 
 /* Login Form */
@@ -262,7 +197,6 @@ button:hover {
 form {
   border: 3px solid #f1f1f1;
 }
-
 
 input[type="text"],
 input[type="password"] {
@@ -312,21 +246,15 @@ footer {
 
 /* Responsivo */
 @media (max-width: 600px) {
-  nav.nav-container {
-    flex-direction: column;
-    gap: 10px;
+  .top-create-btn {
+    top: 10px;
+    right: 10px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
   }
 
-  ul.nav-center {
-    justify-content: center;
-  }
-
-  .nav-right {
-    margin-left: 0;
-  }
-
-  .nav-right button {
-    width: 100%;
+  .container {
+    padding: 10px;
   }
 }
- </style>
+</style>

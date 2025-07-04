@@ -1,22 +1,13 @@
 <template>
   <div>
       <header>
-  <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+  <h1 @click="$router.push('/login')" style="cursor:pointer;">FromU2Me</h1>
 
   <!-- Botão fora do retângulo -->
   <button class="top-create-btn" @click="$router.push('/login')">
     Login
   </button>
-
-  <!-- Barra central de navegação -->
-  <nav class="nav-container">
-    <ul class="nav-center">
-      <li><a href="/home">Início</a></li>
-      <li><a href="/home#produtos">Produtos</a></li>
-      <li><a href="/home#contato">Contato</a></li>
-    </ul>
-  </nav>
-</header>
+  </header>
 
     <section>
       <div id="login">
@@ -259,7 +250,7 @@ h1 {
 /* Botão "Criar Conta" fora da barra central */
 .top-create-btn {
   position: absolute;
-  top: auto;
+  top: 20px;
   right: 20px;
   background-color: white;
   color: #0d6efd;
