@@ -102,7 +102,7 @@ app.get('/api/session', (req, res) => {
 });
 
 // Conexão com MongoDB
-mongoose.connect('mongodb://10.0.2.8:27017,10.0.2.9:27017/?replicaSet=rs0').then(() => {
+mongoose.connect('mongodb://10.0.2.8:27017').then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 Servidor a correr em http://localhost:${PORT}`);
   });
