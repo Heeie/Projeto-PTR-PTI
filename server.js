@@ -29,17 +29,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(morgan('dev'));
 
+// CORS
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3001',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://34.51.158.117' // Adiciona o IP público do servidor
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // Postman etc.
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, origin);
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
     } else {
       return callback(new Error('Não permitido pelo CORS'));
     }
@@ -47,7 +48,7 @@ app.use(cors({
   credentials: true,
 }));
 
-// Sessões com replicação
+// Sessões com replicação MongoDB
 app.use(session({
   secret: process.env.SESSION_SECRET || 'segredo',
   resave: false,
@@ -57,13 +58,13 @@ app.use(session({
     collectionName: 'sessions'
   }),
   cookie: {
-    secure: false, // true em produção com HTTPS
+    secure: false, // Coloca true se tiveres HTTPS (ex: com um proxy)
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 2
   }
 }));
 
-// Conteúdo estático
+// Conteúdo estático (como imagens)
 app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
 
 // Rotas
@@ -79,11 +80,7 @@ app.use('/api/lojas', lojaRoutes);
 
 // Verificação de sessão
 app.get('/api/session', (req, res) => {
-  if (req.session && req.session.userId) {
-    return res.json({ authenticated: true });
-  } else {
-    return res.json({ authenticated: false });
-  }
+  res.json({ authenticated: !!req.session?.userId });
 });
 
 // Erros globais
@@ -98,10 +95,10 @@ const Equipamento = require('./models/Equipamento');
 mongoose.connect('mongodb://10.0.2.8:27017,10.0.2.9:27017/lojaVirtual?replicaSet=rs0')
   .then(() => {
     console.log('✔️ Conectado ao MongoDB com replicação!');
-    Equipamento.syncIndexes()
-      .then(() => console.log('✔️ Índices sincronizados com sucesso!'))
-      .catch(err => console.error('❌ Erro ao sincronizar índices:', err.message));
-
+    return Equipamento.syncIndexes();
+  })
+  .then(() => {
+    console.log('✔️ Índices sincronizados com sucesso!');
     app.listen(PORT, () => {
       console.log(`🚀 Servidor a correr em http://localhost:${PORT}`);
     });
@@ -110,3 +107,4 @@ mongoose.connect('mongodb://10.0.2.8:27017,10.0.2.9:27017/lojaVirtual?replicaSet
     console.error('❌ Erro ao conectar ao MongoDB:', err);
     process.exit(1);
   });
+      //diferente
