@@ -113,6 +113,7 @@
 
 <script>
 export default {
+
   data() {
     return {
       novaCategoria: { nome: '', descricao: '' },
@@ -145,23 +146,23 @@ export default {
   },
   methods: {
     async carregarCategorias() {
-      const res = await fetch('http://localhost:3000/api/categorias');
+      const res = await fetch('/api/categorias');
       this.categorias = await res.json();
     },
     async carregarTipos() {
-      const res = await fetch('http://localhost:3000/api/tipos');
+      const res = await fetch('/api/tipos');
       this.tipos = await res.json();
     },
     async carregarCatalogos() {
-      const res = await fetch('http://localhost:3000/api/catalogos');
+      const res = await fetch('/api/catalogos');
       this.catalogos = await res.json();
     },
 
     // -------- Categoria --------
     async adicionarCategoria() {
       const url = this.editandoCategoriaId
-        ? `http://localhost:3000/api/categorias/${this.editandoCategoriaId}`
-        : 'http://localhost:3000/api/categorias';
+        ? `/categorias/${this.editandoCategoriaId}`
+        : '/categorias';
 
       const method = this.editandoCategoriaId ? 'PUT' : 'POST';
 
@@ -194,7 +195,7 @@ export default {
     async apagarCategoria(id) {
       if (confirm('Deseja realmente apagar esta categoria?')) {
         try {
-          const res = await fetch(`http://localhost:3000/api/categorias/${id}`, { method: 'DELETE' });
+          const res = await fetch(`/api/categorias/${id}`, { method: 'DELETE' });
           if (!res.ok) throw new Error('Erro ao apagar categoria');
           this.mensagem = 'Categoria apagada com sucesso!';
           this.tipoMensagem = 'sucesso';
@@ -209,8 +210,8 @@ export default {
     // -------- Tipo --------
     async adicionarTipo() {
       const url = this.editandoTipoId
-        ? `http://localhost:3000/api/tipos/${this.editandoTipoId}`
-        : 'http://localhost:3000/api/tipos';
+        ? `/tipos/${this.editandoTipoId}`
+        : '/tipos';
 
       const method = this.editandoTipoId ? 'PUT' : 'POST';
 
@@ -244,7 +245,7 @@ export default {
     async apagarTipo(id) {
       if (confirm('Deseja realmente apagar este tipo?')) {
         try {
-          const res = await fetch(`http://localhost:3000/api/tipos/${id}`, { method: 'DELETE' });
+          const res = await fetch(`/api/tipos/${id}`, { method: 'DELETE' });
           if (!res.ok) throw new Error('Erro ao apagar tipo');
           this.mensagem = 'Tipo apagado com sucesso!';
           this.tipoMensagem = 'sucesso';
@@ -259,8 +260,8 @@ export default {
     // -------- Catálogo --------
     async adicionarCatalogo() {
   const url = this.editandoCatalogoId
-    ? `http://localhost:3000/api/catalogos/${this.editandoCatalogoId}`
-    : 'http://localhost:3000/api/catalogos';
+    ? `/catalogos/${this.editandoCatalogoId}`
+    : '/catalogos';
 
   const method = this.editandoCatalogoId ? 'PUT' : 'POST';
 
@@ -315,7 +316,7 @@ export default {
     async apagarCatalogo(id) {
       if (confirm('Deseja realmente apagar este catálogo?')) {
         try {
-          const res = await fetch(`http://localhost:3000/api/catalogos/${id}`, { method: 'DELETE' });
+          const res = await fetch(`/api/catalogos/${id}`, { method: 'DELETE' });
           if (!res.ok) throw new Error('Erro ao apagar catálogo');
           this.mensagem = 'Catálogo apagado com sucesso!';
           this.tipoMensagem = 'sucesso';

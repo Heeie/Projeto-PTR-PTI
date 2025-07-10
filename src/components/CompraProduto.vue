@@ -79,7 +79,7 @@ async function finalizarCompra() {
     // Simulação: substitui por ID real
     const lojaId = '6650dd0f26e3b38b9260b9f7';
 
-    const response = await fetch('http://localhost:3000/api/transacoes', {
+    const response = await fetch('/api/transacoes', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

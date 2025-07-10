@@ -64,7 +64,7 @@ export default {
           formData.append('imagem', this.imagem);
         }
 
-        await axios.post('http://localhost:3000/api/equipamentos/vender', formData, {
+        await axios.post('/equipamentos/vender', formData, {
           withCredentials: true,
           headers: { 'Content-Type': 'multipart/form-data' }
         });

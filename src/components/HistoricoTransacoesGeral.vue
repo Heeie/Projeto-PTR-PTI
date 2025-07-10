@@ -33,7 +33,7 @@ const formatarData = (data) => new Date(data).toLocaleString('pt-PT')
 onMounted(async () => {
   try {
     const token = localStorage.getItem('token') // ou onde você guardar o JWT
-    const response = await axios.get('http://localhost:3000/api/transacoes/todas', {
+    const response = await axios.get('/transacoes/todas', {
 
       headers: {
         Authorization: `Bearer ${token}`

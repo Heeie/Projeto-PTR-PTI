@@ -80,7 +80,7 @@ function finalizarCompra() {
 async function favoritarEquipamento(idEquipamento) {
   try {
     await axios.post(
-      `http://localhost:3000/api/favoritar/${idEquipamento}`,
+      `/favoritar/${idEquipamento}`,
       {},
       { withCredentials: true }
     );
@@ -94,10 +94,10 @@ async function favoritarEquipamento(idEquipamento) {
 onMounted(async () => {
   try {
     const id = route.params.id;
-    const res = await axios.get(`http://localhost:3000/api/equipamentos/${id}`);
+    const res = await axios.get(`/equipamentos/${id}`);
     produto.value = res.data;
 
-    const resUser = await axios.get('http://localhost:3000/api/perfil', {
+    const resUser = await axios.get('/perfil', {
       withCredentials: true
     });
     user.value = resUser.data;

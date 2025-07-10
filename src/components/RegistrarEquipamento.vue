@@ -241,8 +241,8 @@ export default {
   async mounted() {
   try {
     const [lojasRes, catalogosRes] = await Promise.all([
-      fetch("http://localhost:3000/api/lojas/lojas"),
-      fetch("http://localhost:3000/api/catalogos"),
+      fetch("/api/lojas/lojas"),
+      fetch("/api/catalogos"),
     ]);
 
     this.lojas = await lojasRes.json();
@@ -287,7 +287,7 @@ export default {
       formData.append('imagem', this.imagem);
     }
 
-    const response = await fetch('http://localhost:3000/api/equipamentos', {
+    const response = await fetch('/api/equipamentos', {
       method: 'POST',
       body: formData
     });
@@ -329,7 +329,7 @@ export default {
  
 async carregarCatalogos() {
       try {
-        const res = await fetch('http://localhost:3000/api/catalogos');
+        const res = await fetch('/api/catalogos');
         this.catalogos = await res.json();
       } catch (err) {
         console.error('Erro ao carregar catálogos:', err);
@@ -339,9 +339,9 @@ async carregarCatalogos() {
     async carregarCategoriasETipos() {
       try {
         const [catRes, tipoRes, lojaRes] = await Promise.all([
-          fetch('http://localhost:3000/api/categorias'),
-          fetch('http://localhost:3000/api/tipos'),
-          fetch('http://localhost:3000/api/lojas') // 👈 nova rota
+          fetch('/api/categorias'),
+          fetch('/api/tipos'),
+          fetch('/api/lojas') // 👈 nova rota
         ]);
 
         this.categorias = await catRes.json();
@@ -352,7 +352,7 @@ async carregarCatalogos() {
       }
     }, async buscarParaApagar() {
       try {
-        const res = await fetch(`http://localhost:3000/api/equipamentos?nome=${this.nomePesquisaApagar}`);
+        const res = await fetch(`/api/equipamentos?nome=${this.nomePesquisaApagar}`);
         const data = await res.json();
         this.equipamentoParaApagar = data[0] || null;
 
@@ -372,7 +372,7 @@ async carregarCatalogos() {
           return;
         }
 
-        const url = `http://localhost:3000/api/equipamentos/${this.equipamentoParaApagar._id}`;
+        const url = `/api/equipamentos/${this.equipamentoParaApagar._id}`;
         console.log('Apagando via URL:', url);
 
         const res = await fetch(url, { method: 'DELETE' });
@@ -399,7 +399,7 @@ async carregarCatalogos() {
 
     async carregarEquipamentos() {
   try {
-    const res = await fetch('http://localhost:3000/api/equipamentos/todos');
+    const res = await fetch('/api/equipamentos/todos');
     const data = await res.json();
     this.equipamentos = data;
   } catch (err) {
@@ -410,7 +410,7 @@ async carregarCatalogos() {
 
 async salvarAlteracoes(equip) {
   try {
-    const res = await fetch(`http://localhost:3000/api/equipamentos/${equip._id}`, {
+    const res = await fetch(`/api/equipamentos/${equip._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(equip)
@@ -431,7 +431,7 @@ async salvarAlteracoes(equip) {
 
 async apagarEquipamentoDireto(id) {
   try {
-    const res = await fetch(`http://localhost:3000/api/equipamentos/${id}`, {
+    const res = await fetch(`/api/equipamentos/${id}`, {
       method: 'DELETE'
     });
 
@@ -452,7 +452,7 @@ async apagarEquipamentoDireto(id) {
 
     async buscarParaEditar() {
       try {
-        const res = await fetch(`http://localhost:3000/api/equipamentos?nome=${this.nomePesquisaEditar}`);
+        const res = await fetch(`/api/equipamentos?nome=${this.nomePesquisaEditar}`);
         const data = await res.json();
 
         if (!data.length) {
@@ -469,7 +469,7 @@ async apagarEquipamentoDireto(id) {
 
     async editarEquipamento() {
       try {
-        const res = await fetch(`http://localhost:3000/api/equipamentos/${this.formEditar._id}`, {
+        const res = await fetch(`/api/equipamentos/${this.formEditar._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(this.formEditar)
@@ -685,7 +685,7 @@ ul.nav-center li a {
 ul.nav-center li a:hover {
   background-color: #084298;
   cursor: pointer;
-}s
+}
 
 .nav-right {
   margin-left: auto;

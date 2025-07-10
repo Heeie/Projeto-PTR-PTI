@@ -86,7 +86,7 @@ export default {
 
     async carregarProjetos() {
       try {
-        const res = await axios.get("http://localhost:3000/api/projetos/projetos", {
+        const res = await axios.get("/projetos/projetos", {
           withCredentials: true,
         });
         this.projetos = res.data;
@@ -98,7 +98,7 @@ export default {
 
     async carregarOrganizadores() {
       try {
-        const res = await axios.get("http://localhost:3000/api/utilizadores?role=organizador", {
+        const res = await axios.get("/utilizadores?role=organizador", {
           withCredentials: true,
         });
         this.organizadores = res.data;
@@ -112,14 +112,14 @@ export default {
       try {
         if (this.form._id) {
           const res = await axios.put(
-            `http://localhost:3000/api/projetos/projetos/${this.form._id}`,
+            `/projetos/projetos/${this.form._id}`,
             this.form,
             { withCredentials: true }
           );
           alert(res.data.message);
         } else {
           const res = await axios.post(
-            "http://localhost:3000/api/projetos/cria-projeto",
+            "/projetos/cria-projeto",
             this.form,
             { withCredentials: true }
           );
@@ -161,7 +161,7 @@ export default {
       if (!confirm("Tem certeza que deseja apagar este projeto?")) return;
       try {
         const res = await axios.delete(
-          `http://localhost:3000/api/projetos/projetos/${id}`,
+          `/projetos/projetos/${id}`,
           { withCredentials: true }
         );
         alert(res.data.message);

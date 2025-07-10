@@ -109,10 +109,10 @@ const carregando = ref(false)
 onMounted(async () => {
   try {
     const [resLojas, resClientes, resCategorias, resTipos] = await Promise.all([
-      axios.get('http://localhost:3000/api/lojas'),
-      axios.get('http://localhost:3000/api/utilizadores'),
-      axios.get('http://localhost:3000/api/categorias'),
-      axios.get('http://localhost:3000/api/tipos')
+      axios.get('/api/lojas'),
+      axios.get('/api/utilizadores'),
+      axios.get('/api/categorias'),
+      axios.get('/api/tipos')
     ])
 
     lojas.value = resLojas.data
@@ -132,7 +132,7 @@ async function submeterAvaliacao() {
 
   try {
     const token = localStorage.getItem('token')
-    await axios.post('http://localhost:3000/api/avaliacoes', avaliacao.value, {
+    await axios.post('/api/avaliacoes', avaliacao.value, {
       headers: {
         Authorization: `Bearer ${token}`
       }

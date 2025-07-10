@@ -107,7 +107,7 @@ export default {
       const token = localStorage.getItem('token');
 
       try {
-        const res = await axios.get('http://localhost:3000/api/perfil', {
+        const res = await axios.get('/perfil', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -134,7 +134,7 @@ export default {
       }
 
       try {
-        const res = await axios.put(`http://localhost:3000/api/utilizadores/${this.user.id}`, this.user, {
+        const res = await axios.put(`/utilizadores/${this.user.id}`, this.user, {
           withCredentials: true
         });
 
@@ -158,7 +158,7 @@ export default {
       }
 
       try {
-        const verificar = await axios.post(`http://localhost:3000/api/utilizadores/${this.user.id}/verificarSenha`, {
+        const verificar = await axios.post(`/utilizadores/${this.user.id}/verificarSenha`, {
           senha: this.senhaConfirmacao
         });
 
@@ -167,7 +167,7 @@ export default {
           return;
         }
 
-        await axios.delete(`http://localhost:3000/api/utilizadores/${this.user.id}`, {
+        await axios.delete(`/utilizadores/${this.user.id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }

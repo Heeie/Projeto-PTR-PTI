@@ -199,7 +199,7 @@ export default {
         this.resetForm();
 
         setTimeout(() => {
-          this.$router.push("/home");
+          this.$router.push("/login");
         }, 1500);
 
       } catch (error) {

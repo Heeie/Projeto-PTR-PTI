@@ -227,7 +227,7 @@ const modelosUnicos = computed(() => {
 
 function logout() {
   // Chama API de logout para destruir sessão no backend, caso exista.
-  axios.post('http://localhost:3000/api/logout', {}, { withCredentials: true })
+  axios.post('/logout', {}, { withCredentials: true })
     .then(() => {
       user.value = null;
       router.push('/login');
@@ -242,7 +242,7 @@ function logout() {
 // Função para carregar todos os favoritos do usuário ao montar o componente
 async function carregarFavoritos() {
   try {
-    const res = await axios.get('http://localhost:3000/api/favoritos', {
+    const res = await axios.get('/favoritos', {
       withCredentials: true
     });
    console.log(res.data);
@@ -267,14 +267,14 @@ async function alternarFavorito(idEquipamento) {
   try {
     if (favoritoAtual) {
       await axios.post(
-        `http://localhost:3000/api/remover-favorito/${idEquipamento}`,
+        `/remover-favorito/${idEquipamento}`,
         {},
         { withCredentials: true }
       );
       favoritosMap.value[idEquipamento] = false;
     } else {
       await axios.post(
-        `http://localhost:3000/api/favoritar/${idEquipamento}`,
+        `/favoritar/${idEquipamento}`,
         {},
         { withCredentials: true }
       );
@@ -288,7 +288,7 @@ async function alternarFavorito(idEquipamento) {
 
 async function verificarFavorito(idEquipamento) {
   try {
-    const res = await axios.get(`http://localhost:3000/api/favorito/${idEquipamento}`, {
+    const res = await axios.get(`/favorito/${idEquipamento}`, {
       withCredentials: true
     });
     favoritosMap.value[idEquipamento] = res.data.favorito;
@@ -317,7 +317,7 @@ async function filtrarEquipamentos() {
       if (val) paramsObj[key] = val;
     });
 
-    const res = await axios.get('http://localhost:3000/api/equipamentos/search', {
+    const res = await axios.get('/equipamentos/search', {
       params: paramsObj
     });
 
@@ -336,15 +336,15 @@ async function filtrarEquipamentos() {
 
 onMounted(async () => {
   try {
-    const resSessao = await axios.get('http://localhost:3000/api/session', { withCredentials: true });
+    const resSessao = await axios.get('/session', { withCredentials: true });
     console.log('Sessão ativa?', resSessao.data.authenticated);
 
     // Pega equipamentos
-    const res = await axios.get('http://localhost:3000/api/equipamentos');
+    const res = await axios.get('/equipamentos');
     equipamentos.value = res.data;
 
     // Busca usuário
-    const resUser = await axios.get('http://localhost:3000/api/perfil', {
+    const resUser = await axios.get('/perfil', {
       withCredentials: true
     });
     user.value = resUser.data;
