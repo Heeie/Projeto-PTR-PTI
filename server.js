@@ -54,7 +54,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: 'mongodb://10.0.2.8:27017,10.0.2.9:27017/sessoes?replicaSet=rs0',
+    mongoUrl: process.env.MONGO_SESSION_URI,
     collectionName: 'sessions'
   }),
   cookie: {
@@ -92,7 +92,7 @@ app.use((err, req, res, next) => {
 // Mongo + índices
 const Equipamento = require('./models/Equipamento');
 
-mongoose.connect('mongodb://10.0.2.8:27017,10.0.2.9:27017/lojaVirtual?replicaSet=rs0')
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✔️ Conectado ao MongoDB com replicação!');
     return Equipamento.syncIndexes();
