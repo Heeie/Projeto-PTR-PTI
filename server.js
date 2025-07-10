@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -31,9 +32,7 @@ app.use(morgan('dev'));
 
 // CORS
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3001',
-  'http://localhost:3000',
+  'https://www.grupomeu.com', // Adiciona o domínio do frontend
   'http://34.51.158.117' // Adiciona o IP público do servidor
 ];
 

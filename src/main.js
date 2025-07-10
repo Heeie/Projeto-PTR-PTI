@@ -54,7 +54,7 @@ app.use(router); // Registrando o Vue Router
 app.mount('#app'); // Montando o app
 const pinia = createPinia();
 app.use(pinia);
-axios.defaults.baseURL = 'http://localhost:3000/api';
+axios.defaults.baseURL = 'https://www.grupomeu.com/api';
 // Adiciona o token automaticamente em cada requisição
 axios.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
