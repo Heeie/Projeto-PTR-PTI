@@ -50,7 +50,7 @@ const router = createRouter({
 
 
 axios.defaults.baseURL = 'https://www.grupomeu.com/api';
-axios.defaults.withCredentials = true; // <- adiciona aqui
+axios.defaults.withCredentials = true; 
 
 // (opcional, se fores mesmo usar JWT mais tarde)
 axios.interceptors.request.use(config => {
