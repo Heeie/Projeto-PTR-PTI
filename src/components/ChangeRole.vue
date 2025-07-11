@@ -101,6 +101,7 @@ const router = useRouter();
 
 const utilizadores = ref([]);
 const mensagem = ref('');
+// eslint-disable-next-line no-unused-vars
 const token = localStorage.getItem('token');
 const user = ref(null);
 
