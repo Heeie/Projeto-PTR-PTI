@@ -89,6 +89,7 @@ router.get('/', async (req, res) => {
 
 // Atualizar
 router.put('/:id', async (req, res) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) return next();
   try {
     const update = { ...req.body };
     Object.keys(update).forEach(k => update[k] === undefined && delete update[k]);
@@ -104,6 +105,7 @@ router.put('/:id', async (req, res) => {
 
 // Apagar
 router.delete('/:id', async (req, res) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) return next();
   try {
     const apagado = await Utilizador.findByIdAndDelete(req.params.id);
     if (!apagado) return res.status(404).json({ mensagem: 'Utilizador não encontrado' });

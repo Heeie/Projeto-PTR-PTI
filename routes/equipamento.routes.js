@@ -48,7 +48,8 @@ router.get('/todos', async (req, res) => {
 });
 
 // Rota para buscar equipamento por ID — fica depois
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req, res, next) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) return next();
   try {
     const equipamento = await Equipamento.findById(req.params.id);
     if (!equipamento) {
@@ -182,6 +183,7 @@ router.get('/equipamentos', async (req, res) => {
 
 // Apagar um equipamento por ID
 router.delete('/:id', async (req, res) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) return next();
   try {
     const { id } = req.params;
     const resultado = await Equipamento.findByIdAndDelete(id);
@@ -198,6 +200,7 @@ router.delete('/:id', async (req, res) => {
 
 // Atualizar um equipamento por ID
 router.put('/:id', async (req, res) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) return next();
   try {
     const { id } = req.params;
     const atualizacoes = req.body;

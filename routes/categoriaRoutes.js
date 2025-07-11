@@ -19,6 +19,7 @@ router.get('/', async (req, res) => {
 
 // DELETE /api/categorias/:id
 router.delete('/:id', async (req, res) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) return next();
   try {
     await Categoria.findByIdAndDelete(req.params.id);
     res.json({ message: 'Categoria apagada com sucesso.' });
@@ -29,6 +30,7 @@ router.delete('/:id', async (req, res) => {
 
 // PUT /api/categorias/:id
 router.put('/:id', async (req, res) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) return next();
   try {
     const { nome, descricao } = req.body;
     const atualizada = await Categoria.findByIdAndUpdate(
