@@ -24,6 +24,11 @@ const PORT = process.env.PORT || 3000;
 
 app.set('trust proxy', 1); // Necessário para HTTPS + Secure cookies
 
+// CORS
+app.use(cors({
+  origin: 'https://www.grupomeu.com',
+  credentials: true
+}));
 
 
 // Middlewares
@@ -49,11 +54,6 @@ app.use(session({
   }
 }));
 
-// CORS
-app.use(cors({
-  origin: 'https://www.grupomeu.com',
-  credentials: true
-}));
 
 // Imagens públicas
 app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
