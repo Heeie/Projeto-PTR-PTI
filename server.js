@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,7 +9,6 @@ const path = require('path');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 
-// Rotas
 const equipamentoRoutes = require('./routes/equipamento.routes');
 const utilizadorRoutes = require('./routes/utilizadorRoutes');
 const lojaRoutes = require('./routes/lojaRoutes');
@@ -24,7 +22,7 @@ const projetoBeneficenteRoutes = require('./routes/projetoRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.set('trust proxy', 1); // necessário para HTTPS + secure cookies
+app.set('trust proxy', 1); // Necessário para HTTPS + Secure cookies
 
 // Middlewares
 app.use(express.json());
@@ -32,7 +30,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(morgan('dev'));
 
-// Sessões com replicação MongoDB
+// Sessões
 app.use(session({
   secret: process.env.SESSION_SECRET || 'segredo',
   resave: false,
@@ -42,43 +40,26 @@ app.use(session({
     collectionName: 'sessions'
   }),
   cookie: {
-    secure: true,         // necessário para HTTPS
+    secure: true,
     httpOnly: true,
-    sameSite: 'none',     // necessário para cross-domain
+    sameSite: 'none',
     maxAge: 1000 * 60 * 60 * 2
   }
 }));
 
-// CORS (vem depois de session!)
+// CORS
 app.use(cors({
   origin: 'https://www.grupomeu.com',
   credentials: true
 }));
 
-// Sessões com replicação MongoDB
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'segredo',
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGO_SESSION_URI,
-    collectionName: 'sessions'
-  }),
-  cookie: {
-    secure: true, // Coloca true se tiveres HTTPS (ex: com um proxy)
-    httpOnly: true,
-    sameSite: 'none',         // necessário para cross-domain cookies
-    maxAge: 1000 * 60 * 60 * 2
-  }
-}));
-
-// Conteúdo estático (como imagens)
+// Imagens públicas
 app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
 
-// Rotas
+// Rotas organizadas
 app.use('/api/equipamentos', equipamentoRoutes);
-app.use('/api', utilizadorRoutes);
-app.use('/api', catalogoRoutes);
+app.use('/api/utilizadores', utilizadorRoutes);
+app.use('/api/catalogos', catalogoRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/tipos', tipoRoutes);
 app.use('/api/projetos', projetoBeneficenteRoutes);
@@ -115,4 +96,3 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('❌ Erro ao conectar ao MongoDB:', err);
     process.exit(1);
   });
-      //diferente
