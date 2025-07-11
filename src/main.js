@@ -48,12 +48,7 @@ const router = createRouter({
   ],
 });
 
-// Criando a instância do Vue
-const app = createApp(App);
-app.use(router); // Registrando o Vue Router
-app.mount('#app'); // Montando o app
-const pinia = createPinia();
-app.use(pinia);
+
 axios.defaults.baseURL = 'https://www.grupomeu.com/api';
 axios.defaults.withCredentials = true; // <- adiciona aqui
 
@@ -65,4 +60,11 @@ axios.interceptors.request.use(config => {
   }
   return config;
 });
+
+// Criando a instância do Vue
+const app = createApp(App);
+app.use(router); // Registrando o Vue Router
+app.mount('#app'); // Montando o app
+const pinia = createPinia();
+app.use(pinia);
 
