@@ -72,8 +72,10 @@ app.use('/api/lojas', lojaRoutes);
 // Verificação de sessão
 app.get('/session', (req, res, next) => {
   try {
+    console.log('Sessão recebida:', req.session);
     res.json({ authenticated: !!req.session?.userId });
   } catch (err) {
+    console.error('Erro na rota /session:', err);
     next(err);
   }
 });
