@@ -57,7 +57,7 @@ app.use(session({
     collectionName: 'sessions'
   }),
   cookie: {
-    secure: true, // Coloca true se tiveres HTTPS (ex: com um proxy)
+    secure: false, // Coloca true se tiveres HTTPS (ex: com um proxy)
     httpOnly: true,
     sameSite: 'none',         // necessário para cross-domain cookies
     maxAge: 1000 * 60 * 60 * 2
