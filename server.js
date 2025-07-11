@@ -24,27 +24,35 @@ const projetoBeneficenteRoutes = require('./routes/projetoRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', 1); // necessário para HTTPS + secure cookies
+
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(morgan('dev'));
 
-// CORS
-const allowedOrigins = [
-  'https://www.grupomeu.com', // Adiciona o domínio do frontend
-  'http://34.51.158.117' // Adiciona o IP público do servidor
-];
+// Sessões com replicação MongoDB
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'segredo',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_SESSION_URI,
+    collectionName: 'sessions'
+  }),
+  cookie: {
+    secure: true,         // necessário para HTTPS
+    httpOnly: true,
+    sameSite: 'none',     // necessário para cross-domain
+    maxAge: 1000 * 60 * 60 * 2
+  }
+}));
 
+// CORS (vem depois de session!)
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error('Não permitido pelo CORS'));
-    }
-  },
-  credentials: true,
+  origin: 'https://www.grupomeu.com',
+  credentials: true
 }));
 
 // Sessões com replicação MongoDB
