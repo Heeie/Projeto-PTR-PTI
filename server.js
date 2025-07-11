@@ -70,7 +70,7 @@ app.use('/api/transacoes', transacoesRouter);
 app.use('/api/lojas', lojaRoutes);
 
 // Verificação de sessão
-app.get('/api/session', (req, res, next) => {
+app.get('/session', (req, res, next) => {
   try {
     res.json({ authenticated: !!req.session?.userId });
   } catch (err) {
