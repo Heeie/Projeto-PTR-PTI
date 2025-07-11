@@ -131,6 +131,7 @@ async function submeterAvaliacao() {
   mensagemSucesso.value = ''
 
   try {
+    // eslint-disable-next-line no-unused-vars
     const token = localStorage.getItem('token')
     await axios.post('/api/avaliacoes', avaliacao.value, {
       headers: {
