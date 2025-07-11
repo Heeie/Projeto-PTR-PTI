@@ -58,6 +58,15 @@ app.use(session({
 // Imagens públicas
 app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
 
+// Verificação de sessão
+app.get('/session', (req, res, next) => {
+  try {
+    res.json({ authenticated: !!req.session?.userId });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Rotas organizadas
 app.use('/api/equipamentos', equipamentoRoutes);
 app.use('/api', utilizadorRoutes);
@@ -69,16 +78,8 @@ app.use('/api/avaliacoes', avaliacaoRoutes);
 app.use('/api/transacoes', transacoesRouter);
 app.use('/api/lojas', lojaRoutes);
 
-// Verificação de sessão
-app.get('/session', (req, res, next) => {
-  try {
-    console.log('Sessão recebida:', req.session);
-    res.json({ authenticated: !!req.session?.userId });
-  } catch (err) {
-    console.error('Erro na rota /session:', err);
-    next(err);
-  }
-});
+
+
 
 // Erros globais
 app.use((err, req, res, next) => {
