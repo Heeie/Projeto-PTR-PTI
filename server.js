@@ -59,7 +59,7 @@ app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
 // Rotas organizadas
 app.use('/api/equipamentos', equipamentoRoutes);
 app.use('/api', utilizadorRoutes);
-app.use('/api/catalogos', catalogoRoutes);
+app.use('/api', catalogoRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/tipos', tipoRoutes);
 app.use('/api/projetos', projetoBeneficenteRoutes);

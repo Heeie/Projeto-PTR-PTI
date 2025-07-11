@@ -134,7 +134,7 @@ async function submeterAvaliacao() {
     const token = localStorage.getItem('token')
     await axios.post('/api/avaliacoes', avaliacao.value, {
       headers: {
-        Authorization: `Bearer ${token}`
+        withCredentials: true
       }
     })
 
@@ -144,7 +144,6 @@ async function submeterAvaliacao() {
       clienteId: '',
       numeroExemplar: null,
       descricaoProblema: '',
-      estadoEquipamento: '',
       equipamento: {
         nome: '',
         marca: '',
