@@ -59,7 +59,7 @@ app.use(session({
 app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
 
 // Verificação de sessão
-app.get('/session', (req, res, next) => {
+app.get('/api/session', (req, res, next) => {
   try {
     res.json({ authenticated: !!req.session?.userId });
   } catch (err) {
