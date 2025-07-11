@@ -24,11 +24,7 @@ const PORT = process.env.PORT || 3000;
 
 app.set('trust proxy', 1); // Necessário para HTTPS + Secure cookies
 
-// CORS
-app.use(cors({
-  origin: 'https://www.grupomeu.com',
-  credentials: true
-}));
+
 
 // Middlewares
 app.use(express.json());
@@ -53,7 +49,11 @@ app.use(session({
   }
 }));
 
-
+// CORS
+app.use(cors({
+  origin: 'https://www.grupomeu.com',
+  credentials: true
+}));
 
 // Imagens públicas
 app.use('/Images', express.static(path.join(__dirname, 'public/Images')));
@@ -70,8 +70,12 @@ app.use('/api/transacoes', transacoesRouter);
 app.use('/api/lojas', lojaRoutes);
 
 // Verificação de sessão
-app.get('/session', (req, res) => {
-  res.json({ authenticated: !!req.session?.userId });
+app.get('/api/session', (req, res, next) => {
+  try {
+    res.json({ authenticated: !!req.session?.userId });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Erros globais

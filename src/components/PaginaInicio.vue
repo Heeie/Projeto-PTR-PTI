@@ -23,7 +23,7 @@ export default {
 
   mounted() {
     // Verifica sessão no backend via cookie de sessão
-    axios.get('/session', { withCredentials: true })
+    axios.get('/api/session', { withCredentials: true })
       .then(response => {
         if (response.data.authenticated) {
           console.log('Usuário autenticado');
