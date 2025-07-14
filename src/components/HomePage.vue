@@ -5,7 +5,7 @@
 
       <nav class="nav-container">
         <ul class="nav-center">
-          <li><router-link to="/home">Início</router-link></li>
+          <li><router-link to="/home">Fuckyou</router-link></li>
           <li><a href="#produtos">Produtos</a></li>
           <li><a href="#contato">Contato</a></li>
         </ul>
