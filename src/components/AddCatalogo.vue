@@ -161,8 +161,8 @@ export default {
     // -------- Categoria --------
     async adicionarCategoria() {
       const url = this.editandoCategoriaId
-        ? `/categorias/${this.editandoCategoriaId}`
-        : '/categorias';
+        ? `/api/categorias/${this.editandoCategoriaId}`
+        : '/api/categorias';
 
       const method = this.editandoCategoriaId ? 'PUT' : 'POST';
 
@@ -210,8 +210,8 @@ export default {
     // -------- Tipo --------
     async adicionarTipo() {
       const url = this.editandoTipoId
-        ? `/tipos/${this.editandoTipoId}`
-        : '/tipos';
+        ? `/api/tipos/${this.editandoTipoId}`
+        : '/api/tipos';
 
       const method = this.editandoTipoId ? 'PUT' : 'POST';
 
@@ -260,8 +260,8 @@ export default {
     // -------- Catálogo --------
     async adicionarCatalogo() {
   const url = this.editandoCatalogoId
-    ? `/catalogos/${this.editandoCatalogoId}`
-    : '/catalogos';
+    ? `/api/catalogos/${this.editandoCatalogoId}`
+    : '/api/catalogos';
 
   const method = this.editandoCatalogoId ? 'PUT' : 'POST';
 
