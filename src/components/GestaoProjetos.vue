@@ -115,92 +115,131 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import axios from "axios";
 
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+export default {
+  name: "GestaoProjetos",
 
-// Para enviar cookies de sessão em todas as requisições
-axios.defaults.withCredentials = true;
+  data() {
+    return {
+      projetos: [],
+      form: {
+        _id: null,
+        nome: "",
+        descricao: "",
+        organizador_id: "",
+        estado: "",
+      },
+      organizadores: [],
+    };
+  },
 
+  created() {
+    this.carregarProjetos();
+    this.carregarOrganizadores();
+  },
 
+  methods: {
+    voltarParaHome() {
+      this.$router.push('/home');
+    },
 
+    async carregarProjetos() {
+      try {
+        const res = await axios.get("/projetos/projetos", {
+          withCredentials: true,
+        });
+        this.projetos = res.data;
+      } catch (error) {
+        console.error("Erro ao carregar projetos:", error);
+        alert("Erro ao carregar projetos.");
+      }
+    },
 
+    async carregarOrganizadores() {
+      try {
+        const res = await axios.get("/utilizadores?role=organizador", {
+          withCredentials: true,
+        });
+        this.organizadores = res.data;
+      } catch (error) {
+        console.error("Erro ao carregar organizadores:", error);
+        alert("Erro ao carregar organizadores.");
+      }
+    },
 
-const router = useRouter();
-const equipamentos = ref([]);
-const user = ref(null);
-const favoritos = ref([]);
-const favoritosCarregados = ref(false);
-const favoritosMap = ref({});
-const carregando = ref(true);
+    async salvarProjeto() {
+      try {
+        if (this.form._id) {
+          const res = await axios.put(
+            `/projetos/projetos/${this.form._id}`,
+            this.form,
+            { withCredentials: true }
+          );
+          alert(res.data.message);
+        } else {
+          const res = await axios.post(
+            "/projetos/cria-projeto",
+            this.form,
+            { withCredentials: true }
+          );
+          alert(res.data.message);
+        }
+        this.limparFormulario();
+        this.carregarProjetos();
+      } catch (error) {
+        console.error("Erro ao salvar projeto:", error);
+        alert("Erro ao salvar projeto.");
+      }
+    },
 
+    editarProjeto(projeto) {
+      this.form = {
+        ...projeto,
+        organizador_id:
+          typeof projeto.organizador_id === "object" && projeto.organizador_id !== null
+            ? projeto.organizador_id._id
+            : projeto.organizador_id,
+      };
+    },
 
+    cancelarEdicao() {
+      this.limparFormulario();
+    },
 
+    limparFormulario() {
+      this.form = {
+        _id: null,
+        nome: "",
+        descricao: "",
+        organizador_id: "",
+        estado: "",
+      };
+    },
 
+    async removerProjeto(id) {
+      if (!confirm("Tem certeza que deseja apagar este projeto?")) return;
+      try {
+        const res = await axios.delete(
+          `/projetos/projetos/${id}`,
+          { withCredentials: true }
+        );
+        alert(res.data.message);
+        this.carregarProjetos();
+      } catch (error) {
+        console.error("Erro ao apagar projeto:", error);
+        alert("Erro ao apagar projeto.");
+      }
+    },
 
-
-
-// Função para carregar todos os favoritos do usuário ao montar o componente
-async function carregarFavoritos() {
-  try {
-    const res = await axios.get('/utilizadores/favoritos', {
-      withCredentials: true
-    });
-   console.log(res.data);
-    favoritosMap.value = {};
-res.data.forEach(e => {
-  favoritosMap.value[e._id] = true;
-});
-
-    favoritos.value = res.data.map(e => String(e._id));
-     console.log(favoritos);
-
-  } catch (err) {
-    console.error('Erro ao carregar favoritos:', err);
-  } finally {
-    favoritosCarregados.value = true;
-  }
-}
-
-
-
-
-
-function goTo(path) {
-  router.push(path);
-}
-
-
-onMounted(async () => {
-  try {
-    const resSessao = await axios.get('/session', { withCredentials: true });
-    console.log('Sessão ativa?', resSessao.data.authenticated);
-
-    // Pega equipamentos
-    const res = await axios.get('/equipamentos');
-    equipamentos.value = res.data;
-
-    // Busca usuário
-    const resUser = await axios.get('/utilizadores/perfil', {
-      withCredentials: true
-    });
-    user.value = resUser.data;
-
-    // Carrega favoritos depois de termos os equipamentos a
-    if (user.value) {
-      await carregarFavoritos();
-    }
-
-  } catch (err) {
-    console.error('Erro ao buscar dados iniciais:', err);
-  } finally {
-    carregando.value = false;
-  }
-});
-
+    getOrganizadorNome(id) {
+      const organizadorId = typeof id === "object" && id !== null ? id._id : id;
+      const org = this.organizadores.find((o) => String(o._id) === String(organizadorId));
+      return org ? org.nome : "Desconhecido";
+    },
+  },
+};
 </script>
 
 
@@ -441,6 +480,7 @@ footer {
     width: 100%;
   }
 }
+
 .gestao-projetos {
   max-width: 600px;
   margin: 20px auto;
