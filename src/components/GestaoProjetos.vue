@@ -118,20 +118,16 @@
 <script setup>
 import axios from "axios";
 
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-import { useCarrinhoStore } from '@/stores/carrinho';
 
 // Para enviar cookies de sessão em todas as requisições
 axios.defaults.withCredentials = true;
 
 
-const carrinhoStore = useCarrinhoStore();
-const carrinho = computed(() => carrinhoStore.equipamentos);
-const carrinhoCount = computed(() =>
-  carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
-);
+
+
 
 const router = useRouter();
 const equipamentos = ref([]);
@@ -142,43 +138,10 @@ const favoritosMap = ref({});
 const carregando = ref(true);
 
 
-const equipamentosDisponiveis = computed(() =>
-  (resultados.value.length ? resultados.value : equipamentos.value).filter(
-    e => e.disponivel !== false && e.quantidade !== 0
-  )
-);
 
 
-const filtro = ref({
-  nome: '',
-  marca: '',
-  modelo: ''
-});
 
-const resultados = ref([]);
-const marcasUnicas = computed(() => {
-  const marcas = equipamentos.value.map(e => e.marca);
-  return [...new Set(marcas)].filter(Boolean);
-});
 
-const modelosUnicos = computed(() => {
-  const modelos = equipamentos.value.map(e => e.modelo);
-  return [...new Set(modelos)].filter(Boolean);
-});
-
-function logout() {
-  // Chama API de logout para destruir sessão no backend, caso exista.
-  axios.post('/utilizadores/logout', {}, { withCredentials: true })
-    .then(() => {
-      user.value = null;
-      router.push('/login');
-    })
-    .catch(() => {
-      // Mesmo em erro, remove usuário local e redireciona
-      user.value = null;
-      router.push('/login');
-    });
-}
 
 // Função para carregar todos os favoritos do usuário ao montar o componente
 async function carregarFavoritos() {
@@ -202,78 +165,14 @@ res.data.forEach(e => {
   }
 }
 
-async function alternarFavorito(idEquipamento) {
-  const favoritoAtual = favoritosMap.value[idEquipamento];
 
-  try {
-    if (favoritoAtual) {
-      await axios.post(
-        `/remover-favorito/${idEquipamento}`,
-        {},
-        { withCredentials: true }
-      );
-      favoritosMap.value[idEquipamento] = false;
-    } else {
-      await axios.post(
-        `/favoritar/${idEquipamento}`,
-        {},
-        { withCredentials: true }
-      );
-      favoritosMap.value[idEquipamento] = true;
-    }
-  } catch (err) {
-    console.error('Erro ao alternar favorito:', err);
-    alert('Erro ao atualizar favorito');
-  }
-}
 
-async function verificarFavorito(idEquipamento) {
-  try {
-    const res = await axios.get(`/favorito/${idEquipamento}`, {
-      withCredentials: true
-    });
-    favoritosMap.value[idEquipamento] = res.data.favorito;
-  } catch (err) {
-    console.error(`Erro ao verificar favorito para o equipamento ${idEquipamento}:`, err);
-  }
-}
 
-function getQuantidade(id) {
-  const item = carrinho.value.find(p => p._id === id);
-  return item ? item.quantidade : 0;
-}
-
-function finalizarCompra() {
-  router.push('/comprar');
-}
 
 function goTo(path) {
   router.push(path);
 }
 
-async function filtrarEquipamentos() {
-  try {
-    const paramsObj = {};
-    Object.entries(filtro.value).forEach(([key, val]) => {
-      if (val) paramsObj[key] = val;
-    });
-
-    const res = await axios.get('/equipamentos/search', {
-      params: paramsObj
-    });
-
-    resultados.value = res.data;
-
-    // Atualizar favoritos para os resultados filtrados
-    if (user.value) {
-      for (const equipamento of resultados.value) {
-        await verificarFavorito(equipamento._id);
-      }
-    }
-  } catch (error) {
-    console.error('Erro ao filtrar equipamentos:', error);
-  }
-}
 
 onMounted(async () => {
   try {
