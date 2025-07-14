@@ -152,22 +152,8 @@ export default {
     validateEmail() {
       const regex = /^[^@]+@[^@]+$/;
       this.emailError = !regex.test(this.loja.email);
-    }
-  
+    },
     
-  },
-  computed: {
-    resultadoPesquisa() {
-      const termo = this.pesquisa.toLowerCase();
-      return this.lojas.filter(loja =>
-        loja.nome.toLowerCase().includes(termo) || loja.email.toLowerCase().includes(termo)
-      );
-    }
-  },
-  mounted() {
-    this.carregarLojas();
-  },
-  methods: {
     async carregarLojas() {
       const res = await axios.get('/lojas');
       this.lojas = res.data;
@@ -213,7 +199,20 @@ export default {
         }
       }
     }
-  }
+    
+  },
+  computed: {
+    resultadoPesquisa() {
+      const termo = this.pesquisa.toLowerCase();
+      return this.lojas.filter(loja =>
+        loja.nome.toLowerCase().includes(termo) || loja.email.toLowerCase().includes(termo)
+      );
+    }
+  },
+  mounted() {
+    this.carregarLojas();
+  },
+
 };
 </script>
 
