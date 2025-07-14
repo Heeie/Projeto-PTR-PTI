@@ -8,6 +8,20 @@
   <div>
     <header>
       <h1 @click="$router.push('/home')" style="cursor:pointer;">FromU2Me</h1>
+      
+
+
+
+      <nav class="nav-container">
+        <ul class="nav-center">
+          <li><a href="/home">Início</a></li>
+          <li><a href="/home#produtos">Produtos</a></li>
+          <li><a href="/home#contato">Contato</a></li>
+          <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
+          <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
+        </ul>
+        
+      </nav>
       <div class="nav-right">
 
                 <button
@@ -75,19 +89,6 @@
                 Logout
               </button>
               </div>
-
-
-
-      <nav class="nav-container">
-        <ul class="nav-center">
-          <li><a href="/home">Início</a></li>
-          <li><a href="/home#produtos">Produtos</a></li>
-          <li><a href="/home#contato">Contato</a></li>
-          <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
-          <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
-        </ul>
-        
-      </nav>
     </header>
 
     <section>
