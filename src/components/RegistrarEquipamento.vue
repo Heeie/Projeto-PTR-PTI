@@ -241,7 +241,7 @@ export default {
   async mounted() {
   try {
     const [lojasRes, catalogosRes] = await Promise.all([
-      fetch("/api/lojas/lojas"),
+      fetch("/api/lojas"),
       fetch("/api/catalogos"),
     ]);
 
