@@ -349,7 +349,7 @@ onMounted(async () => {
     });
     user.value = resUser.data;
 
-    // Carrega favoritos depois de termos os equipamentos
+    // Carrega favoritos depois de termos os equipamentos a
     if (user.value) {
       await carregarFavoritos();
     }
