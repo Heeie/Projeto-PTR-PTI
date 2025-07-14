@@ -3,17 +3,17 @@ const router = express.Router();
 const lojaController = require('../controllers/LojaController');
 
 // Criar uma nova loja usando o controlador
-router.post('/lojas', lojaController.criarLoja);
+router.post('/', lojaController.criarLoja);
 
 
 // Listar todas as lojas
-router.get('/lojas', lojaController.listarLojas);
+router.get('/', lojaController.listarLojas);
 
 // Atualizar loja
-router.put('/lojas/:id', lojaController.atualizarLoja);
+router.put('/:id', lojaController.atualizarLoja);
 
 // Deletar loja
-router.delete('/lojas/:id', lojaController.apagarLoja);
+router.delete('/:id', lojaController.apagarLoja);
 
 
 module.exports = router;
