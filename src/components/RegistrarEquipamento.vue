@@ -14,15 +14,13 @@
 
       <nav class="nav-container">
         <ul class="nav-center">
-          <li><a href="/home">Início</a></li>
+          <li><a href="/home">Iníciu</a></li>
           <li><a href="/home#produtos">Produtos</a></li>
           <li><a href="/home#contato">Contato</a></li>
           <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
           <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
         </ul>
-        
-      </nav>
-      <div class="nav-right">
+        <div class="nav-right">
 
                 <button
                   v-if="user && (user.role === 'admin' || user.role === 'empregado')"
@@ -89,6 +87,8 @@
                 Logout
               </button>
               </div>
+      </nav>
+      
     </header>
 
     <section>
