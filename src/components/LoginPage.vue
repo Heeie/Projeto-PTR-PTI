@@ -84,7 +84,7 @@ export default {
 
       try {
         const response = await axios.post(
-          "/login",
+          "/utilizadores/login",
           {
             username: this.username,
             password: this.password,
