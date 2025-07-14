@@ -111,7 +111,7 @@ onMounted(async () => {
     const perfil = await axios.get('/utilizadores/perfil');
     user.value = perfil.data;
 
-    const res = await axios.get('/api/utilizadores');
+    const res = await axios.get('/utilizadores');
     // Adiciona propriedades para controle da edição
     utilizadores.value = res.data.map(u => ({
       ...u,
@@ -151,7 +151,7 @@ async function salvarEdicao(u) {
       return;
     }
 
-    const res = await axios.put(`/api/utilizadores/${u._id}`, u.editandoDados);
+    const res = await axios.put(`/utilizadores/${u._id}`, u.editandoDados);
     Object.assign(u, res.data);
     u.editando = false;
     mensagem.value = 'Utilizador atualizado com sucesso.';
@@ -174,7 +174,7 @@ async function apagarUtilizador(id) {
       return;
     }
 
-    await axios.delete(`/api/utilizadores/${id}`);
+    await axios.delete(`/utilizadores/${id}`);
     utilizadores.value = utilizadores.value.filter(u => u._id !== id);
     mensagem.value = 'Utilizador apagado com sucesso.';
   } catch (err) {
