@@ -72,6 +72,10 @@
             Avaliar Equipamento Avariado
           </button>
         </div>
+        <!-- Botão Logout -->
+        <button v-if="user" @click="logout">
+          Logout
+        </button>
   </header>
 
   <div class="form-container">
@@ -89,12 +93,14 @@
 
       <div class="form-group">
         <label for="telemovel">Telemóvel</label>
-        <input type="text" v-model="loja.telemovel" id="telemovel" required />
+        <input type="text" v-model="loja.telemovel" id="telemovel" required @blur="validateTelemovel" />
+        <small v-if="telemovelError" style="color: red;">Número inválido (9 dígitos obrigatórios)</small>
       </div>
 
       <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" v-model="loja.email" id="email" required />
+        <input type="email" placeholder="Enter email" v-model="loja.email" id="email" required @blur="validateEmail" />
+        <small v-if="emailError" style="color: red;">Email inválido (tem de conter @)</small>
       </div>
 
       <button type="submit">{{ editandoId ? 'Atualizar Loja' : 'Criar Loja' }}</button>
@@ -134,7 +140,21 @@ export default {
       mensagem: '',
       editandoId: null,
       pesquisa: '',
+      telemovelError: false,
+      emailError: false
     };
+  },
+  methods: {
+    validateTelemovel() {
+      const regex = /^\d{9}$/;
+      this.telemovelError = !regex.test(this.loja.telemovel);
+    },
+    validateEmail() {
+      const regex = /^[^@]+@[^@]+$/;
+      this.emailError = !regex.test(this.loja.email);
+    }
+  
+    
   },
   computed: {
     resultadoPesquisa() {
