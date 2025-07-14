@@ -55,14 +55,22 @@
           </button>
 
 
-        <button
+         <button
         v-if="user"
         @click="goTo('/vender')"
         aria-label="Vender equipamento"
-        >
-          Vender Equipamento
-        </button>
-      </div>
+      >
+        Vender equipamento
+      </button>
+
+
+          <button
+            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+            @click="goTo('/avaliarEquipamento')"
+          >
+            Avaliar Equipamento Avariado
+          </button>
+        </div>
           
     </header>
 

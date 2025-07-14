@@ -108,7 +108,7 @@ const user = ref(null);
 // Buscar dados ao montar componente
 onMounted(async () => {
   try {
-    const perfil = await axios.get('/api/perfil');
+    const perfil = await axios.get('/utilizadores/perfil');
     user.value = perfil.data;
 
     const res = await axios.get('/api/utilizadores');

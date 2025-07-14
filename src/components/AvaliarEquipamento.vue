@@ -6,6 +6,68 @@
         <li><router-link to="/home">Início</router-link></li>
       </ul>
     </nav>
+    <div class="nav-right">
+          <button
+            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+            @click="goTo('/registroEquipamento')"
+          >
+            Gerir Equipamentos
+          </button>
+
+          <button
+            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+            @click="goTo('/addToCatalog')"
+          >
+            Adicionar ao Catálogo
+          </button>
+
+          <button
+            v-if="user"
+            @click="goTo('/infoUtilizador')"
+          >
+            {{ user.nome }}
+          </button>
+
+          <button
+            v-if="user && user.role === 'admin'"
+            @click="goTo('/criarLoja')"
+          >
+            Criar Loja
+          </button>
+
+          
+
+              <button
+            v-if="user && (user.role === 'admin' || user.role === 'empregado' || user.role === 'organizador' )"
+            @click="goTo('/gestao-projetos')"
+          >
+            Gerir Projetos
+          </button>
+
+           <button
+            v-if="user && user.role === 'admin'"
+            @click="goTo('/historicoTransaccoesGeral')"
+          >
+            Hístórico de transações
+          </button>
+
+          <button
+            v-if="user && (user.role === 'admin' || user.role === 'empregado')"
+            @click="goTo('/changerole')"
+          >
+            Alterar Role
+          </button>
+
+
+         <button
+        v-if="user"
+        @click="goTo('/vender')"
+        aria-label="Vender equipamento"
+      >
+        Vender equipamento
+      </button>
+
+        </div>
   </header>
 
   <div class="avaliacao-container">
