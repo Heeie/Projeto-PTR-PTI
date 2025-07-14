@@ -227,7 +227,7 @@ const modelosUnicos = computed(() => {
 
 function logout() {
   // Chama API de logout para destruir sessão no backend, caso exista.
-  axios.post('/logout', {}, { withCredentials: true })
+  axios.post('/utilizadores/logout', {}, { withCredentials: true })
     .then(() => {
       user.value = null;
       router.push('/login');
