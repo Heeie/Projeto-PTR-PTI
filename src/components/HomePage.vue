@@ -242,7 +242,7 @@ function logout() {
 // Função para carregar todos os favoritos do usuário ao montar o componente
 async function carregarFavoritos() {
   try {
-    const res = await axios.get('/favoritos', {
+    const res = await axios.get('/utilizadores/favoritos', {
       withCredentials: true
     });
    console.log(res.data);

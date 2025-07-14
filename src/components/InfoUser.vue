@@ -192,7 +192,7 @@ onMounted(async () => {
     equipamentos.value = res.data;
 
     // Busca usuário
-    const resUser = await axios.get('/perfil', {
+    const resUser = await axios.get('/utilizadores/perfil', {
       withCredentials: true
     });
     user.value = resUser.data;
