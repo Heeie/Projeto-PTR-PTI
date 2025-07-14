@@ -62,11 +62,15 @@
           </button>
 
 
-         <button
+        <button
         v-if="user"
         @click="goTo('/vender')"
         aria-label="Vender equipamento"
-      >
+        >
+          Vender Equipamento
+        </button>
+      </div>
+          
     </header>
 
     <section class="banner">
