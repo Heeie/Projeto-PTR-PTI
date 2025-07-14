@@ -172,7 +172,7 @@ export default {
       this.errorMessage = "";
 
       try {
-        const response = await fetch("/api/criar", {
+        const response = await fetch("/utilizadores/criar", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
