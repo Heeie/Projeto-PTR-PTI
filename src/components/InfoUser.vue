@@ -130,115 +130,191 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
+import { useCarrinhoStore } from '@/stores/carrinho';
 
-export default {
-  data() {
-    return {
-      user: {
-        nome: '',
-        email: '',
-        telefone: '',
-        nif: '',
-        nic: '',
-        morada: '',
-        genero: '',
-        role: '',
-        id: ''
-      },
-      editando: false,
-      mostrarConfirmacao: false,
-      senhaConfirmacao: ''
-    };
-  },
+// Para enviar cookies de sessão em todas as requisições
+axios.defaults.withCredentials = true;
 
-  async mounted() {
-    await this.recuperarInfo();
-  },
 
-  methods: {
-    async recuperarInfo() {
-      const token = localStorage.getItem('token');
+const carrinhoStore = useCarrinhoStore();
+const carrinho = computed(() => carrinhoStore.equipamentos);
+const carrinhoCount = computed(() =>
+  carrinho.value.reduce((total, item) => total + (item.quantidade || 1), 0)
+);
 
-      try {
-        const res = await axios.get('/perfil', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+const router = useRouter();
+const equipamentos = ref([]);
+const user = ref(null);
+const favoritos = ref([]);
+const favoritosCarregados = ref(false);
+const favoritosMap = ref({});
+const carregando = ref(true);
 
-        this.user = {
-          ...res.data,
-          id: res.data._id || res.data.id
-        };
-      } catch (err) {
-        console.error('Erro ao carregar perfil:', err.response?.data || err.message);
-      }
-    },
 
-    async salvarAlteracoes() {
-      if (!this.user.id) {
-        alert('ID do utilizador ausente. Tente recarregar a página.');
-        return;
-      }
+const equipamentosDisponiveis = computed(() =>
+  (resultados.value.length ? resultados.value : equipamentos.value).filter(
+    e => e.disponivel !== false && e.quantidade !== 0
+  )
+);
 
-      if (!this.user.nome || !this.user.email) {
-        alert('Nome e email são obrigatórios.');
-        return;
-      }
 
-      try {
-        const res = await axios.put(`/utilizadores/${this.user.id}`, this.user, {
-          withCredentials: true
-        });
+const filtro = ref({
+  nome: '',
+  marca: '',
+  modelo: ''
+});
 
-        this.user = {
-          ...res.data,
-          id: res.data._id || res.data.id
-        };
+const resultados = ref([]);
+const marcasUnicas = computed(() => {
+  const marcas = equipamentos.value.map(e => e.marca);
+  return [...new Set(marcas)].filter(Boolean);
+});
 
-        this.editando = false;
-        alert('Informações atualizadas com sucesso!');
-      } catch (err) {
-        console.error('Erro ao atualizar perfil:', err.response?.data || err.message);
-        alert('Erro ao atualizar informações.');
-      }
-    },
+const modelosUnicos = computed(() => {
+  const modelos = equipamentos.value.map(e => e.modelo);
+  return [...new Set(modelos)].filter(Boolean);
+});
 
-    async apagarConta() {
-      if (!this.senhaConfirmacao) {
-        alert('Por favor, insira sua palavra-passe.');
-        return;
-      }
+function logout() {
+  // Chama API de logout para destruir sessão no backend, caso exista.
+  axios.post('/logout', {}, { withCredentials: true })
+    .then(() => {
+      user.value = null;
+      router.push('/login');
+    })
+    .catch(() => {
+      // Mesmo em erro, remove usuário local e redireciona
+      user.value = null;
+      router.push('/login');
+    });
+}
 
-      try {
-        const verificar = await axios.post(`/utilizadores/${this.user.id}/verificarSenha`, {
-          senha: this.senhaConfirmacao
-        });
+// Função para carregar todos os favoritos do usuário ao montar o componente
+async function carregarFavoritos() {
+  try {
+    const res = await axios.get('/favoritos', {
+      withCredentials: true
+    });
+   console.log(res.data);
+    favoritosMap.value = {};
+res.data.forEach(e => {
+  favoritosMap.value[e._id] = true;
+});
 
-        if (!verificar.data.valido) {
-          alert('Palavra-passe incorreta.');
-          return;
-        }
+    favoritos.value = res.data.map(e => String(e._id));
+     console.log(favoritos);
 
-        await axios.delete(`/utilizadores/${this.user.id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+  } catch (err) {
+    console.error('Erro ao carregar favoritos:', err);
+  } finally {
+    favoritosCarregados.value = true;
+  }
+}
 
-        alert('Conta apagada com sucesso.');
-        localStorage.removeItem('token');
-        this.$router.push('/inicio'); // ou '/login'
+async function alternarFavorito(idEquipamento) {
+  const favoritoAtual = favoritosMap.value[idEquipamento];
 
-      } catch (err) {
-        console.error('Erro ao apagar conta:', err.response?.data || err.message);
-        alert('Erro ao apagar conta.');
+  try {
+    if (favoritoAtual) {
+      await axios.post(
+        `/remover-favorito/${idEquipamento}`,
+        {},
+        { withCredentials: true }
+      );
+      favoritosMap.value[idEquipamento] = false;
+    } else {
+      await axios.post(
+        `/favoritar/${idEquipamento}`,
+        {},
+        { withCredentials: true }
+      );
+      favoritosMap.value[idEquipamento] = true;
+    }
+  } catch (err) {
+    console.error('Erro ao alternar favorito:', err);
+    alert('Erro ao atualizar favorito');
+  }
+}
+
+async function verificarFavorito(idEquipamento) {
+  try {
+    const res = await axios.get(`/favorito/${idEquipamento}`, {
+      withCredentials: true
+    });
+    favoritosMap.value[idEquipamento] = res.data.favorito;
+  } catch (err) {
+    console.error(`Erro ao verificar favorito para o equipamento ${idEquipamento}:`, err);
+  }
+}
+
+function getQuantidade(id) {
+  const item = carrinho.value.find(p => p._id === id);
+  return item ? item.quantidade : 0;
+}
+
+function finalizarCompra() {
+  router.push('/comprar');
+}
+
+function goTo(path) {
+  router.push(path);
+}
+
+async function filtrarEquipamentos() {
+  try {
+    const paramsObj = {};
+    Object.entries(filtro.value).forEach(([key, val]) => {
+      if (val) paramsObj[key] = val;
+    });
+
+    const res = await axios.get('/equipamentos/search', {
+      params: paramsObj
+    });
+
+    resultados.value = res.data;
+
+    // Atualizar favoritos para os resultados filtrados
+    if (user.value) {
+      for (const equipamento of resultados.value) {
+        await verificarFavorito(equipamento._id);
       }
     }
+  } catch (error) {
+    console.error('Erro ao filtrar equipamentos:', error);
   }
-};
+}
+
+onMounted(async () => {
+  try {
+    const resSessao = await axios.get('/session', { withCredentials: true });
+    console.log('Sessão ativa?', resSessao.data.authenticated);
+
+    // Pega equipamentos
+    const res = await axios.get('/equipamentos');
+    equipamentos.value = res.data;
+
+    // Busca usuário
+    const resUser = await axios.get('/perfil', {
+      withCredentials: true
+    });
+    user.value = resUser.data;
+
+    // Carrega favoritos depois de termos os equipamentos
+    if (user.value) {
+      await carregarFavoritos();
+    }
+
+  } catch (err) {
+    console.error('Erro ao buscar dados iniciais:', err);
+  } finally {
+    carregando.value = false;
+  }
+});
+
 </script>
 
 <style scoped>
