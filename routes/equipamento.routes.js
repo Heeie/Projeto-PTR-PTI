@@ -69,29 +69,30 @@ router.post('/vender', upload.single('imagem'), equipamentoController.venderEqui
 
 // Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
 router.get('/search', async (req, res) => {
-    try {
-      const filtros = {};
+  try {
+    const filtros = {};
 
-      // Se existir nome
-      if (req.query.nome) {
-        filtros.nome = new RegExp(req.query.nome, 'i'); // ou $regex
-      }
+    if (req.query.nome) {
+      filtros.nome = new RegExp(req.query.nome, 'i');
+    }
+    if (req.query.marca) filtros.marca = req.query.marca;
+    if (req.query.modelo) filtros.modelo = req.query.modelo;
 
-      // Marca e modelo
-      if (req.query.marca) filtros.marca = req.query.marca;
-      if (req.query.modelo) filtros.modelo = req.query.modelo;
+    filtros.estadoDisponibilidade = 'disponivel';
 
-      // 🔧 Adicione esta linha obrigatoriamente
-      filtros.estadoDisponibilidade = 'disponivel';
-      const equipamentos = await Equipamento.find(filtros);
+    console.log('🔍 Filtros usados:', filtros);
 
-        if (equipamentos.length === 0) {
-          return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
-        }
+    const equipamentos = await Equipamento.find(filtros);
 
-        res.json(equipamentos);
+    console.log('🔎 Resultados encontrados:', equipamentos.length);
+
+    if (equipamentos.length === 0) {
+      return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
+    }
+
+    res.json(equipamentos);
   } catch (error) {
-    console.error('Erro ao buscar equipamentos:', error);
+    console.error('❌ Erro no /search:', error);
     res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
   }
 });
