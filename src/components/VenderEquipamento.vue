@@ -39,8 +39,7 @@
 </template>
 
 <script>
-import { useRouter } from 'vue-router';
-const router = useRouter();
+
 import axios from 'axios';
 
 export default {

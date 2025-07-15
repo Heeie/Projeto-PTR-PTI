@@ -268,8 +268,7 @@
 </template>
 
 <script>
-import { useRouter } from 'vue-router';
-const router = useRouter();
+
 export default {
   name: "CriarEquipamento",
   data() {
@@ -383,8 +382,7 @@ export default {
       return;
     }
 
-    const data = await response.json();
-    this.mostrarMensagem('Equipamento registrado com sucesso!');
+  
 
     // Resetar o formulário
     this.form = {

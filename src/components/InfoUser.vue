@@ -119,9 +119,7 @@ res.data.forEach(e => {
 
 
 
-function goTo(path) {
-  router.push(path);
-}
+
 
 
 onMounted(async () => {
