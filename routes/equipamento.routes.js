@@ -99,6 +99,39 @@ router.get('/search', async (req, res) => {
 
 
 
+/*busca equipamentos por nome, marca ou modelo   (GET /api/equipamentos/search?nome=teste)
+router.get('/search', async (req, res) => {
+  try {
+    const filtros = {
+      estadoDisponibilidade: 'disponivel'
+    };
+
+    const termo = req.query.nome;
+
+    if (termo) {
+      const regex = new RegExp(termo, 'i'); // case-insensitive
+      filtros.$or = [
+        { nome: regex },
+        { marca: regex },
+        { modelo: regex }
+      ];
+    }
+
+    const equipamentos = await Equipamento.find(filtros);
+
+    if (equipamentos.length === 0) {
+      return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
+    }
+
+    res.json(equipamentos);
+  } catch (error) {
+    console.error('❌ Erro ao buscar equipamentos:', error);
+    res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
+  }
+});
+*/
+
+
 // Criar um novo equipamento
 router.post('/', upload.single('imagem'), async (req, res) => {
   try {
