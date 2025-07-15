@@ -85,7 +85,7 @@ router.get('/search', async (req, res) => {
       filtros.estadoDisponibilidade = 'disponivel';
       const equipamentos = await Equipamento.find(filtros);
 
-        if (resultados.length === 0) {
+        if (equipamentos.length === 0) {
           return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
         }
 
