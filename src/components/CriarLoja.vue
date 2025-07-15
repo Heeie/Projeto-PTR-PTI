@@ -2,11 +2,9 @@
   <header>
     <h1>FromU2Me</h1>
     <nav>
-      <ul>
-        <li><router-link to="/home">Início</router-link></li>
-        <li><a href="#produtos">Produtos</a></li>
-        <li><a href="#contato">Contato</a></li>
-      </ul>
+        <div class="voltar-container">
+              <button class="voltar-btn" @click="router.push('/home')">⬅ Voltar à Página Principal</button>
+            </div>
     </nav>
     <div class="nav-right">
           <button

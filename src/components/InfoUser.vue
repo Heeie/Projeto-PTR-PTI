@@ -154,7 +154,7 @@ const favoritos = ref([]);
 const favoritosCarregados = ref(false);
 const favoritosMap = ref({});
 const carregando = ref(true);
-
+const editando = ref(false);
 
 
 

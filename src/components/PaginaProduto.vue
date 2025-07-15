@@ -15,16 +15,25 @@
       <p><strong>Estado:</strong> {{ produto.estado }}</p>
       <p><strong>Preço:</strong> € {{ Number(produto.preco).toLocaleString('pt-PT', { minimumFractionDigits: 2 }) }}</p>
       <button
-  v-if="user"
-  class="favoritar-btn"
-  @click="favoritarEquipamento(produto._id)"
->
-  ❤️ Favoritar
-</button>
+      v-if="user"
+      class="favoritar-btn"
+      :class="{ favorito: favoritosMap[produto._id] }"
+      @click.stop.prevent="alternarFavorito(produto._id)"
+    >
+      {{ favoritosMap[produto._id] ? '★ Remover Favorito' : '☆ Favoritar' }}
+    </button>
 
 
-     <button class="comprar-btn" @click="comprarProduto">Adicionar ao Carrinho</button>
-     <button class="finalizar-btn" @click="finalizarCompra">Finalizar Compra</button>
+
+    <button class="comprar-btn" @click="comprarProduto">Adicionar ao Carrinho</button>
+    <button
+      v-if="carrinhoStore.equipamentos.length > 0"
+      id="carrinhoBtn"
+      @click="finalizarCompra"
+    >
+      🛒 Carrinho ({{ carrinhoStore.equipamentos.length }})
+    </button>
+    
 
 <p v-if="alertaVisivel" class="alerta-carrinho">
   Produto adicionado ao carrinho! Total: {{ carrinhoStore.equipamentos.length }} item(ns)
@@ -49,20 +58,27 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
-import { useCarrinhoStore } from '@/stores/carrinho'; // caminho pode variar
+import { useCarrinhoStore } from '@/stores/carrinho';
 
 const route = useRoute();
 const router = useRouter();
 const produto = ref(null);
 const user = ref(null);
-
-
 const carrinhoStore = useCarrinhoStore();
 const alertaVisivel = ref(false);
 
+// FAVORITOS MAP
+const favoritosMap = ref({});
+
+// Voltar à página anterior
 function voltar() {
   router.back();
 }
+
+function finalizarCompra() {
+  router.push('/comprar');
+}
+
 
 function comprarProduto() {
   carrinhoStore.adicionarAoCarrinho(produto.value);
@@ -73,21 +89,43 @@ function comprarProduto() {
   }, 2000);
 }
 
-function finalizarCompra() {
-  router.push('/comprar');
+
+async function carregarFavoritos() {
+  try {
+    const res = await axios.get('/utilizadores/favoritos', {
+      withCredentials: true
+    });
+    const favoritos = res.data;
+
+    favoritosMap.value = {};
+    favoritos.forEach(equip => {
+      favoritosMap.value[equip._id] = true;
+    });
+  } catch (err) {
+    console.error('Erro ao carregar favoritos:', err);
+  }
 }
 
-async function favoritarEquipamento(idEquipamento) {
+async function alternarFavorito(idEquipamento) {
   try {
-    await axios.post(
-      `/favoritar/${idEquipamento}`,
-      {},
-      { withCredentials: true }
-    );
-    alert('Equipamento adicionado aos favoritos!');
+    if (favoritosMap.value[idEquipamento]) {
+      await axios.post(
+        `/utilizadores/remover-favorito/${idEquipamento}`,
+        {},
+        { withCredentials: true }
+      );
+      favoritosMap.value[idEquipamento] = false;
+    } else {
+      await axios.post(
+        `/utilizadores/favoritar/${idEquipamento}`,
+        {},
+        { withCredentials: true }
+      );
+      favoritosMap.value[idEquipamento] = true;
+    }
   } catch (err) {
-    console.error('Erro ao favoritar:', err);
-    alert('Erro ao favoritar equipamento.');
+    console.error('Erro ao alternar favorito:', err);
+    alert('Erro ao atualizar favorito.');
   }
 }
 
@@ -97,20 +135,35 @@ onMounted(async () => {
     const res = await axios.get(`/equipamentos/${id}`);
     produto.value = res.data;
 
-    const resUser = await axios.get('/perfil', {
+    const resUser = await axios.get('/utilizadores/perfil', {
       withCredentials: true
     });
     user.value = resUser.data;
 
+    await carregarFavoritos();
   } catch (err) {
-    console.error('Erro ao carregar produto ou usuário:', err);
+    console.error('Erro ao carregar produto ou utilizador:', err);
   }
 });
 
 </script>
 
   
-  <style scoped>
+<style scoped>
+#carrinhoBtn {
+  padding: 10px 20px;
+  background-color: #198754;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 10px;
+}
+
+#carrinhoBtn:hover {
+  background-color: #157347;
+}
 
 .favoritar-btn {
   background-color: transparent;
@@ -139,6 +192,12 @@ onMounted(async () => {
   background-color: #084298;
 }
 
+.favoritar-btn.favorito {
+  background-color: #ffe066;
+  color: #d9480f;
+  border-color: #ffba08;
+  font-weight: bold;
+}
 
   .alerta-carrinho {
   margin-top: 1rem;
@@ -249,4 +308,3 @@ strong {
 }
 
   </style>
-  

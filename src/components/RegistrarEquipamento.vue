@@ -14,11 +14,9 @@
 
       <nav class="nav-container">
         <ul class="nav-center">
-          <li><a href="/home">Iníciu</a></li>
-          <li><a href="/home#produtos">Produtos</a></li>
-          <li><a href="/home#contato">Contato</a></li>
-          <li><a href="/addToCatalog">Adicionar Catálogo</a></li>
-          <li><a href="/registroEquipamento" style="cursor:pointer;">Registar Equipamento</a></li>
+          <div class="voltar-container">
+                <button class="voltar-btn" @click="router.push('/home')">⬅ Voltar à Página Principal</button>
+              </div>
         </ul>
         <div class="nav-right">
 

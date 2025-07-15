@@ -1,4 +1,7 @@
 <template>
+  <div class="voltar-container">
+      <button class="voltar-btn" @click="router.push('/home')">⬅ Voltar à Página Principal</button>
+    </div>
   <div class="container">
     <h2>📋 Histórico de Transações</h2>
 
