@@ -207,8 +207,16 @@
         <option value="avariado">Avariado</option>
       </select>
 
-      <label>Preço:</label>
-      <input type="number" v-model="equip.preco" />
+            <!-- Preço -->
+      <label for="preco">Preço</label>
+      <input
+        type="number"
+        placeholder="Introduza um preço"
+        v-model="form.preco"
+        required
+        min="0"
+      />
+
 
       <label>Categoria:</label>
       <select v-model="equip.categoria_id">
@@ -341,12 +349,18 @@ export default {
 
     },
     async submitForm() {
-    
   try {
+    // Validação: preço negativo
+    if (this.form.preco < 0) {
+      this.mostrarMensagem('O preço não pode ser negativo.');
+      return;
+    }
+
     const formData = new FormData();
     Object.keys(this.form).forEach(key => {
       formData.append(key, this.form[key]);
     });
+
     if (this.imagem) {
       formData.append('imagem', this.imagem);
     }
@@ -357,21 +371,19 @@ export default {
     });
 
     if (!response.ok) {
-      // Tenta ler a mensagem de erro da resposta JSON
       const errorData = await response.json();
       if (response.status === 409) {
-         this.mostrarMensagem(errorData.message || 'Equipamento já existe.');
+        this.mostrarMensagem(errorData.message || 'Equipamento já existe.');
       } else {
-         this.mostrarMensagem(errorData.message || 'Erro ao registrar equipamento');
+        this.mostrarMensagem(errorData.message || 'Erro ao registrar equipamento');
       }
-      return; // Sai da função para não continuar
+      return;
     }
 
     const data = await response.json();
-    console.log('Equipamento registrado:', data);
     this.mostrarMensagem('Equipamento registrado com sucesso!');
 
-    // Opcional: resetar o formulário
+    // Resetar o formulário
     this.form = {
       nome: '',
       marca: '',
@@ -474,6 +486,12 @@ async carregarCatalogos() {
 
 async salvarAlteracoes(equip) {
   try {
+    // Validação de preço negativo
+    if (equip.preco < 0) {
+      this.mostrarMensagem('O preço não pode ser negativo.');
+      return;
+    }
+
     const res = await fetch(`/api/equipamentos/${equip._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
