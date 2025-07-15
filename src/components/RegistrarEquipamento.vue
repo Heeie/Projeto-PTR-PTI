@@ -153,7 +153,8 @@
 
             <!-- Preço -->
             <label for="preco">Preço</label>
-            <input type="number" placeholder="Introduza um preço" v-model="form.preco" required />
+            <input type="number" placeholder="Introduza um preço" v-model="form.preco" required min="0" />
+
 
             <!-- Loja ID -->
 
@@ -267,6 +268,8 @@
 </template>
 
 <script>
+import { useRouter } from 'vue-router';
+const router = useRouter();
 export default {
   name: "CriarEquipamento",
   data() {

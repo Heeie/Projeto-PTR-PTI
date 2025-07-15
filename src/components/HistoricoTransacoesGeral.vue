@@ -25,9 +25,11 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import axios from 'axios'
 
+const router = useRouter()
 const transacoes = ref([])
 const loading = ref(true)
 

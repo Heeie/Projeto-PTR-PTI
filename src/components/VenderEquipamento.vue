@@ -1,6 +1,7 @@
 <template>
   <div class="vender-container">
     <h2>Vender Equipamento à Loja</h2>
+    
     <form @submit.prevent="submeterEquipamento" enctype="multipart/form-data">
 
          <h2>Nome do Equipamento</h2>
@@ -28,10 +29,18 @@
     </form>
 
     <p v-if="mensagem" class="mensagem">{{ mensagem }}</p>
+
+    <ul class="nav-center">
+          <div class="voltar-container">
+                <button class="voltar-btn" @click="router.push('/home')">⬅ Voltar à Página Principal</button>
+              </div>
+        </ul>
   </div>
 </template>
 
 <script>
+import { useRouter } from 'vue-router';
+const router = useRouter();
 import axios from 'axios';
 
 export default {
