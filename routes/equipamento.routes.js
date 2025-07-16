@@ -67,7 +67,7 @@ router.post('/vender', upload.single('imagem'), equipamentoController.venderEqui
 
 
 
-// Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
+/* Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
 router.get('/search', async (req, res) => {
   try {
     const filtros = {};
@@ -96,10 +96,10 @@ router.get('/search', async (req, res) => {
     res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
   }
 });
+*/
 
 
-
-/*busca equipamentos por nome, marca ou modelo   (GET /api/equipamentos/search?nome=teste)
+//busca equipamentos por nome, marca ou modelo   (GET /api/equipamentos/search?nome=teste)
 router.get('/search', async (req, res) => {
   try {
     const filtros = {
@@ -129,7 +129,7 @@ router.get('/search', async (req, res) => {
     res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
   }
 });
-*/
+
 
 
 // Criar um novo equipamento
