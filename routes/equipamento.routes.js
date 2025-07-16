@@ -35,11 +35,50 @@ const upload = multer({
   }
 });
 
+// Nova versão de /search que efetua pesquisa em nome, marca ou modelo
+router.get('/search', async (req, res) => {
+  try {
+    const filtros = {
+      estadoDisponibilidade: 'disponivel'
+    };
+
+    const termo = req.query.nome;
+
+    if (termo) {
+      const regex = new RegExp(termo, 'i'); // 'i' = case-insensitive
+      filtros.$or = [
+        { nome: regex },
+        { marca: regex },
+        { modelo: regex }
+      ];
+    }
+
+    if (req.query.marca && !termo) {
+      filtros.marca = req.query.marca;
+    }
+
+    if (req.query.modelo && !termo) {
+      filtros.modelo = req.query.modelo;
+    }
+
+    console.log('🔍 Filtros usados:', filtros);
+
+    const equipamentos = await Equipamento.find(filtros);
+
+    if (equipamentos.length === 0) {
+      return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
+    }
+
+    res.json(equipamentos);
+  } catch (error) {
+    console.error('❌ Erro ao buscar equipamentos:', error);
+    res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
+  }
+});
 
 
-
-
-// Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
+/*
+Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
 router.get('/search', async (req, res) => {
   try {
     const filtros = {};
@@ -68,8 +107,7 @@ router.get('/search', async (req, res) => {
     res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
   }
 });
-
-
+*/
 
 /*busca equipamentos por nome, marca ou modelo   (GET /api/equipamentos/search?nome=teste)
 router.get('/search', async (req, res) => {
