@@ -37,15 +37,7 @@ const upload = multer({
 
 
 
-// Rota que retorna todos equipamentos — deve ficar antes
-router.get('/todos', async (req, res) => {
-  try {
-    const equipamentos = await Equipamento.find({});
-    res.json(equipamentos);
-  } catch (err) {
-    res.status(500).json({ erro: 'Erro ao buscar equipamentos' });
-  }
-});
+
 
 /* Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
 router.get('/search', async (req, res) => {
@@ -118,6 +110,15 @@ router.get('/search', async (req, res) => {
 router.post('/vender', upload.single('imagem'), equipamentoController.venderEquipamento);
 
 
+// Rota que retorna todos equipamentos — deve ficar antes
+router.get('/todos', async (req, res) => {
+  try {
+    const equipamentos = await Equipamento.find({});
+    res.json(equipamentos);
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao buscar equipamentos' });
+  }
+});
 
 
 
