@@ -47,26 +47,6 @@ router.get('/todos', async (req, res) => {
   }
 });
 
-// Rota para buscar equipamento por ID — fica depois
-router.get('/:id', async (req, res, next) => {
-  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) return next();
-  try {
-    const equipamento = await Equipamento.findById(req.params.id);
-    if (!equipamento) {
-      return res.status(404).send('Equipamento não encontrado');
-    }
-    res.json(equipamento);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erro no servidor');
-  }
-});
-
-
-router.post('/vender', upload.single('imagem'), equipamentoController.venderEquipamento);
-
-
-
 /* Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
 router.get('/search', async (req, res) => {
   try {
@@ -129,6 +109,30 @@ router.get('/search', async (req, res) => {
     res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
   }
 });
+
+
+
+// Rota para buscar equipamento por ID — fica depois
+router.get('/:id', async (req, res, next) => {
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) return next();
+  try {
+    const equipamento = await Equipamento.findById(req.params.id);
+    if (!equipamento) {
+      return res.status(404).send('Equipamento não encontrado');
+    }
+    res.json(equipamento);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erro no servidor');
+  }
+});
+
+
+router.post('/vender', upload.single('imagem'), equipamentoController.venderEquipamento);
+
+
+
+
 
 
 
