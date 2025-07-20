@@ -47,6 +47,23 @@ router.get('/todos', async (req, res) => {
   }
 });
 
+router.get('/todosN', async (req, res) => {
+  let t = 0;
+  try {
+    const equipamentos = await Equipamento.find({});
+    
+    for (let i = 0; i < equipamentos.length; i++) {
+      if (equipamentos[i].estadoDisponibilidade === "disponivel") {
+        t++;
+      }
+    }
+
+    res.json({ disponiveis: t }); 
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao buscar equipamentos' });
+  }
+});
+
 // Rota para buscar equipamento por ID — fica depois
 router.get('/:id', async (req, res) => {
   try {
@@ -65,35 +82,59 @@ router.get('/:id', async (req, res) => {
 router.post('/vender', upload.single('imagem'), equipamentoController.venderEquipamento);
 
 
-
+/*
 // Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
 router.get('/search', async (req, res) => {
-    try {
-      const filtros = {};
+  try {
+    const { nome, marca, modelo } = req.query;
 
-      // Se existir nome
-      if (req.query.nome) {
-        filtros.nome = new RegExp(req.query.nome, 'i'); // ou $regex
-      }
+    // Monta o filtro dinamicamente conforme query params enviados
+    let filtro = {};
 
-      // Marca e modelo
-      if (req.query.marca) filtros.marca = req.query.marca;
-      if (req.query.modelo) filtros.modelo = req.query.modelo;
+    if (nome) filtro.nome = { $regex: nome, $options: 'i' };       // busca case-insensitive parcial
+    if (marca) filtro.marca = { $regex: marca, $options: 'i' };
+    if (modelo) filtro.modelo = { $regex: modelo, $options: 'i' };
 
-      // 🔧 Adicione esta linha obrigatoriamente
-      filtros.estadoDisponibilidade = 'disponivel';
-      const equipamentos = await Equipamento.find(filtros);
+    const equipamentos = await Equipamento.find(filtro);
 
-        if (resultados.length === 0) {
-          return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
-        }
+    if (equipamentos.length === 0) {
+      return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
+    }
 
-        res.json(equipamentos);
+    res.json(equipamentos);
   } catch (error) {
     console.error('Erro ao buscar equipamentos:', error);
     res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
   }
 });
+*/
+
+
+// Busca equipamentos com filtros (ex: /api/equipamentos/search?nome=nokia&marca=samsung)
+router.get('/search', async (req, res) => {
+  try {
+    const { nome, marca, modelo } = req.query;
+
+    // Monta o filtro dinamicamente conforme query params enviados
+    let filtro = {};
+
+    if (nome) filtro.nome = { $regex: nome, $options: 'i' };       // busca case-insensitive parcial
+    if (marca) filtro.marca = { $regex: marca, $options: 'i' };
+    if (modelo) filtro.modelo = { $regex: modelo, $options: 'i' };
+
+    const equipamentos = await Equipamento.find(filtro);
+
+    if (equipamentos.length === 0) {
+      return res.status(404).json({ message: 'Nenhum equipamento encontrado com esses critérios' });
+    }
+
+    res.json(equipamentos);
+  } catch (error) {
+    console.error('Erro ao buscar equipamentos:', error);
+    res.status(500).json({ message: 'Erro ao buscar equipamentos', error: error.message });
+  }
+});
+
 
 
 

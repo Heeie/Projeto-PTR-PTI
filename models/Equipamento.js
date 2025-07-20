@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const EquipamentoSchema = new mongoose.Schema({
   nome: { type: String, required: true },
   marca: { type: String, required: true },

@@ -1,14 +1,10 @@
 <template>
   <div>
     <header>
-      <h1>FromU2Me</h1> 
-      <nav>
-        <ul>
-          <li><router-link to="/home">Início</router-link></li>
-          <li><a href="#produtos">Produtos</a></li>
-          <li><a href="#contato">Contato</a></li>
-        </ul>
-      </nav>
+      <h1>FromU2Me</h1>
+      <button class="top-create-btn" @click="$router.push('/home')">
+        Voltar ao Home
+      </button>
     </header>
 
     <section class="banner">
@@ -18,10 +14,16 @@
     <section class="perfil">
       <h2>Perfil do Utilizador</h2>
 
+      <div v-if="mensagem.texto" :class="['mensagem', mensagem.tipo]">
+        {{ mensagem.texto }}
+      </div>
+
+      <!-- VISUALIZAÇÃO -->
       <div v-if="!editando">
         <p><strong>Nome:</strong> {{ user.nome }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
         <p><strong>Telefone:</strong> {{ user.telefone }}</p>
+        <p><strong>Data de Nascimento:</strong> {{ formatarData(user.dataNascimento) }}</p>
         <p><strong>NIF:</strong> {{ user.nif }}</p>
         <p><strong>NIC:</strong> {{ user.nic }}</p>
         <p><strong>Morada:</strong> {{ user.morada }}</p>
@@ -31,14 +33,42 @@
         <button id="regisbtn" @click="editando = true">Editar</button>
       </div>
 
+      <!-- EDIÇÃO -->
       <div v-else>
         <label>Nome: <input v-model="user.nome" /></label><br>
         <label>Email: <input v-model="user.email" /></label><br>
         <label>Telefone: <input v-model="user.telefone" /></label><br>
         <label>NIF: <input v-model="user.nif" /></label><br>
         <label>NIC: <input v-model="user.nic" /></label><br>
-        <label>Morada: <input v-model="user.morada" /></label><br>
-        <label>Gênero: 
+        <label>Data de Nascimento: <input type="date" v-model="user.dataNascimento" /></label><br>
+
+        <h3>Alterar Palavra-passe</h3>
+        <label>Palavra-passe atual: <input type="password" v-model="senhaAntiga" /></label><br>
+        <label>Nova Palavra-passe: <input type="password" v-model="novaSenha" /></label><br>
+        <label>Confirmar Palavra-passe: <input type="password" v-model="confirmarSenha" /></label><br>
+        <button @click="alterarSenha">Alterar Palavra-passe</button>
+
+        <label>Morada: <input v-model="user.morada" @blur="atualizarMapa" /></label><br>
+
+        <!-- Google Maps -->
+        <div v-if="user.morada && mapUrl">
+          <iframe
+            :src="mapUrl"
+            width="100%"
+            height="300"
+            style="border:0; border-radius: 10px; margin-top: 10px;"
+            allowfullscreen
+            loading="lazy"
+          ></iframe>
+          <p style="margin-top: 8px;">
+            <a :href="mapLinkUrl" target="_blank" rel="noopener noreferrer">Ver no Google Maps</a>
+          </p>
+        </div>
+        <p v-if="!mapUrl" style="color: red; font-weight: bold;">
+          API Key do Google Maps inválida.
+        </p>
+
+        <label>Gênero:
           <select v-model="user.genero">
             <option>Masculino</option>
             <option>Feminino</option>
@@ -48,11 +78,10 @@
 
         <button id="regisbtn" @click="salvarAlteracoes">Guardar</button>
         <button id="regisbtn" @click="editando = false">Cancelar</button>
-        <button id="regisbtn" @click="mostrarConfirmacao = true" style="background-color: crimson; color: white;">
-          Apagar Conta
-        </button>
+        <button id="regisbtn" @click="mostrarConfirmacao = true" style="background-color: crimson; color: white;">Apagar Conta</button>
       </div>
 
+      <!-- Confirmação Apagar Conta -->
       <div v-if="mostrarConfirmacao" class="confirm-box">
         <h3>⚠️ Confirmar Exclusão da Conta</h3>
         <p>Digite sua palavra-passe para confirmar:</p>
@@ -90,96 +119,153 @@ export default {
         morada: '',
         genero: '',
         role: '',
-        id: ''
+        id: '',
+        dataNascimento: ''
       },
       editando: false,
       mostrarConfirmacao: false,
-      senhaConfirmacao: ''
+      senhaConfirmacao: '',
+      senhaAntiga: '',
+      novaSenha: '',
+      confirmarSenha: '',
+      mensagem: {
+        texto: '',
+        tipo: ''
+      },
+      mapUrl: ''
     };
   },
 
-  async mounted() {
-    await this.recuperarInfo();
+  computed: {
+    mapLinkUrl() {
+      const morada = encodeURIComponent(this.user.morada || '');
+      return `https://www.google.com/maps/search/?api=1&query=${morada}`;
+    }
+  },
+
+  mounted() {
+    this.recuperarInfo();
   },
 
   methods: {
-    async recuperarInfo() {
-      const token = localStorage.getItem('token');
+    atualizarMapa() {
+      const key = 'AIzaSyD1ExzCG0BiDRv3fQEu4XimkLHERysDxL8';
+      if (!this.user.morada || !key) return this.mapUrl = null;
+      const moradaFormatada = encodeURIComponent(this.user.morada);
+      this.mapUrl = `https://www.google.com/maps/embed/v1/place?key=${key}&q=${moradaFormatada}`;
+    },
 
+    mostrarMensagem(texto, tipo = 'sucesso') {
+      this.mensagem = { texto, tipo };
+      setTimeout(() => { this.mensagem.texto = ''; }, 4000);
+    },
+
+    formatarParaInputDate(data) {
+      const d = new Date(data);
+      return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+    },
+
+    formatarData(data) {
+      return new Date(data).toLocaleDateString();
+    },
+
+    async recuperarInfo() {
       try {
+<<<<<<< Updated upstream
         const res = await axios.get('/perfil', {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
 
+=======
+        const res = await axios.get('http://localhost:3000/api/perfil', { withCredentials: true });
+>>>>>>> Stashed changes
         this.user = {
           ...res.data,
-          id: res.data._id || res.data.id
+          id: res.data._id || res.data.id,
+          dataNascimento: this.formatarParaInputDate(res.data.dataNascimento)
         };
-      } catch (err) {
-        console.error('Erro ao carregar perfil:', err.response?.data || err.message);
+        this.atualizarMapa();
+      } catch {
+        this.mostrarMensagem('Erro ao carregar perfil. Faça login novamente.', 'erro');
+        this.$router.push('/login');
       }
     },
 
     async salvarAlteracoes() {
-      if (!this.user.id) {
-        alert('ID do utilizador ausente. Tente recarregar a página.');
-        return;
-      }
-
-      if (!this.user.nome || !this.user.email) {
-        alert('Nome e email são obrigatórios.');
-        return;
-      }
-
       try {
+<<<<<<< Updated upstream
         const res = await axios.put(`/utilizadores/${this.user.id}`, this.user, {
+=======
+        const dadosAtualizados = {
+          ...this.user,
+          dataNascimento: new Date(this.user.dataNascimento).toISOString()
+        };
+        const res = await axios.put(`http://localhost:3000/api/utilizadores/${this.user.id}`, dadosAtualizados, {
+>>>>>>> Stashed changes
           withCredentials: true
         });
-
         this.user = {
           ...res.data,
-          id: res.data._id || res.data.id
+          id: res.data._id || res.data.id,
+          dataNascimento: this.formatarParaInputDate(res.data.dataNascimento)
         };
-
         this.editando = false;
-        alert('Informações atualizadas com sucesso!');
-      } catch (err) {
-        console.error('Erro ao atualizar perfil:', err.response?.data || err.message);
-        alert('Erro ao atualizar informações.');
+        this.atualizarMapa();
+        this.mostrarMensagem('Informações atualizadas com sucesso!');
+      } catch {
+        this.mostrarMensagem('Erro ao atualizar informações.', 'erro');
+      }
+    },
+
+    async alterarSenha() {
+      if (!this.senhaAntiga || !this.novaSenha || !this.confirmarSenha)
+        return this.mostrarMensagem('Preencha todos os campos.', 'erro');
+
+      if (this.novaSenha !== this.confirmarSenha)
+        return this.mostrarMensagem('As palavras-passe não coincidem.', 'erro');
+
+      try {
+        await axios.put(`http://localhost:3000/api/utilizadores/alterarSenha`, {
+          senhaAntiga: this.senhaAntiga,
+          novaSenha: this.novaSenha
+        }, { withCredentials: true });
+
+        this.mostrarMensagem('Palavra-passe alterada com sucesso.');
+        this.senhaAntiga = this.novaSenha = this.confirmarSenha = '';
+      } catch {
+        this.mostrarMensagem('Erro ao alterar palavra-passe.', 'erro');
       }
     },
 
     async apagarConta() {
-      if (!this.senhaConfirmacao) {
-        alert('Por favor, insira sua palavra-passe.');
-        return;
-      }
+      if (!this.senhaConfirmacao)
+        return this.mostrarMensagem('Por favor, insira sua palavra-passe.', 'erro');
 
       try {
         const verificar = await axios.post(`/utilizadores/${this.user.id}/verificarSenha`, {
           senha: this.senhaConfirmacao
-        });
+        }, { withCredentials: true });
 
-        if (!verificar.data.valido) {
-          alert('Palavra-passe incorreta.');
-          return;
-        }
+        if (!verificar.data.valido)
+          return this.mostrarMensagem('Palavra-passe incorreta.', 'erro');
 
+<<<<<<< Updated upstream
         await axios.delete(`/utilizadores/${this.user.id}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
+=======
+        await axios.delete(`http://localhost:3000/api/utilizadores/${this.user.id}`, {
+          withCredentials: true
+>>>>>>> Stashed changes
         });
 
-        alert('Conta apagada com sucesso.');
-        localStorage.removeItem('token');
-        this.$router.push('/inicio'); // ou '/login'
-
-      } catch (err) {
-        console.error('Erro ao apagar conta:', err.response?.data || err.message);
-        alert('Erro ao apagar conta.');
+        this.mostrarMensagem('Conta apagada com sucesso.');
+        this.$router.push('/inicio');
+      } catch {
+        this.mostrarMensagem('Erro ao apagar conta.', 'erro');
       }
     }
   }
@@ -195,26 +281,31 @@ export default {
   border-radius: 8px;
 }
 
+.mensagem {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.mensagem.sucesso {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.mensagem.erro {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
 header {
   background: #0d6efd;
   color: #fff;
   padding: 20px;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-#regisbtn {
-  padding: 10px 20px;
-  background-color: lightblue;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-#regisbtn:hover {
-  background-color: #0d6efd;
-  color: white;
 }
 
 nav ul {
@@ -238,43 +329,6 @@ nav ul li a {
   color: #fff;
 }
 
-.produtos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 40px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.produto {
-  background: #fff;
-  padding: 15px;
-  text-align: center;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.produto img {
-  max-width: 100%;
-  border-radius: 5px;
-}
-
-.contato {
-  text-align: center;
-  padding: 40px 20px;
-  background-color: #f8f9fa;
-}
-
-footer {
-  background: #0d6efd;
-  color: #fff;
-  text-align: center;
-  padding: 20px;
-  margin-top: 40px;
-  font-size: 14px;
-}
-
 .perfil {
   padding: 40px;
   text-align: center;
@@ -293,4 +347,33 @@ footer {
   border-radius: 4px;
 }
 
+#regisbtn {
+  padding: 10px 20px;
+  background-color: lightblue;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  margin: 5px;
+  transition: background-color 0.3s;
+}
+
+#regisbtn:hover {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.contato {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #f8f9fa;
+}
+
+footer {
+  background: #0d6efd;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+  font-size: 14px;
+}
 </style>

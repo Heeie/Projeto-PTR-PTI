@@ -4,6 +4,17 @@ exports.criarLoja = async (req, res) => {
   try {
     const { nome, endereco, telemovel, email, responsavel_id } = req.body;
 
+    // Verifica duplicações
+    const lojaComMesmoEmail = await Loja.findOne({ email });
+    if (lojaComMesmoEmail) {
+      return res.status(409).json({ error: 'Já existe uma loja com este email.' });
+    }
+
+    const lojaComMesmoNome = await Loja.findOne({ nome });
+    if (lojaComMesmoNome) {
+      return res.status(409).json({ error: 'Já existe uma loja com este nome.' });
+    }
+
     const novaLoja = new Loja({ nome, endereco, telemovel, email, responsavel_id });
     await novaLoja.save();
 
@@ -12,14 +23,17 @@ exports.criarLoja = async (req, res) => {
     res.status(500).json({ error: "Erro ao criar loja", detalhes: error.message });
   }
 };
+
+
 exports.listarLojas = async (req, res) => {
   try {
-    const lojas = await Loja.find().select('nome'); // ou sem .select()
+    const lojas = await Loja.find(); // traz todos os campos
     res.json(lojas);
   } catch (err) {
     res.status(500).json({ error: 'Erro ao buscar lojas' });
   }
 };
+
 
 exports.atualizarLoja = async (req, res) => {
   try {

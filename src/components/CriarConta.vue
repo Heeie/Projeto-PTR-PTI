@@ -1,13 +1,23 @@
+/* eslint-disable no-undef */
 <template>
   <div>
+<<<<<<< Updated upstream
       <header>
   <h1 @click="$router.push('/login')" style="cursor:pointer;">FromU2Me</h1>
 
+=======
+  <header>
+>>>>>>> Stashed changes
   <!-- Botão fora do retângulo -->
   <button class="top-create-btn" @click="$router.push('/login')">
     Login
   </button>
+<<<<<<< Updated upstream
   </header>
+=======
+
+</header>
+>>>>>>> Stashed changes
 
     <section>
       <div id="login">
@@ -40,6 +50,8 @@
               v-model="form.senha"
               required
             />
+            <span v-if="errors.senha" class="error">{{ errors.senha }}</span>
+
 
             <label for="email"><b>Email</b></label>
             <input
@@ -91,6 +103,37 @@
             />
             <span v-if="errors.morada" class="error">{{ errors.morada }}</span>
 
+              
+            <div id="map" style="height: 400px;" v-if="form.morada && mapUrl && googleMapsLoaded">
+            <iframe
+              :src="mapUrl"
+              width="100%"
+              height="300"
+              style="border:0; border-radius: 10px; margin-top: 10px;"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+            <p style="margin-top: 8px;">
+              <a :href="mapLinkUrl" target="_blank" rel="noopener noreferrer">Ver no Google Maps</a>
+            </p>
+            <p>URL do iframe: {{ mapUrl }}</p>
+            <p>URL do link: {{ mapLinkUrl }}</p>
+          </div>
+
+           
+
+
+            <label for="dataNascimento"><b>Data de Nascimento</b></label>
+            <input
+              type="date"
+              name="dataNascimento"
+              v-model="form.dataNascimento"
+              required
+            />
+            <span v-if="errors.dataNascimento" class="error">{{ errors.dataNascimento }}</span>
+
+
             <label for="genero">Gênero</label>
             <select id="genero" name="genero" v-model="form.genero">
               <option value="Masculino">Masculino</option>
@@ -117,6 +160,8 @@
 </template>
 
 <script>
+/* global google */
+
 export default {
   name: "CriarConta",
   data() {
@@ -130,13 +175,78 @@ export default {
         nic: "",
         morada: "",
         genero: "Masculino",
+        dataNascimento: "",
       },
       errors: {},
       successMessage: "",
       errorMessage: "",
+      mapUrl: "",
+      mapLinkUrl: "",
+
+      map: null,
+    marker: null,
+    geocoder: null,
+        googleMapsLoaded: false,
+
     };
   },
-  methods: {
+  mounted() {
+  // Carrega o script do Google Maps
+  const script = document.createElement('script');
+  script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyD1ExzCG0BiDRv3fQEu4XimkLHERysDxL8&libraries=places';
+  script.async = true;
+  script.defer = true;
+  script.crossOrigin = "anonymous"; // Adicionado
+  script.onload = () => {
+    this.googleMapsLoaded = true;
+    this.tryInitMap();
+  };
+
+    document.head.appendChild(script);
+  },
+    methods: {
+
+      tryInitMap() {
+        this.$nextTick(() => {
+          const mapDiv = document.getElementById("map");
+          if (this.googleMapsLoaded && mapDiv && !this.map) {
+            this.initMap();
+          }
+        });
+      },
+
+
+
+    initMap() {
+  this.geocoder = new google.maps.Geocoder();
+
+  this.map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 38.736946, lng: -9.142685 }, // Centro em Lisboa
+    zoom: 8,
+  });
+
+  this.marker = new google.maps.Marker({
+    map: this.map,
+    draggable: false,
+  });
+
+  this.map.addListener("click", (e) => {
+    const latLng = e.latLng;
+
+    this.marker.setPosition(latLng);
+    this.map.panTo(latLng);
+
+    this.geocoder.geocode({ location: latLng }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        this.form.morada = results[0].formatted_address;
+      } else {
+        console.error("Geocoder falhou: " + status);
+      }
+    });
+  });
+},
+
+
     limitarNumeros(field) {
       this.form[field] = this.form[field].replace(/\D/g, "").slice(0, 9);
     },
@@ -145,6 +255,15 @@ export default {
       this.errors = {};
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!this.form.nome || this.form.nome.trim().length === 0) {
+        this.errors.nome = "Nome é obrigatório.";
+      }
+
+      if (!this.form.senha || this.form.senha.length < 6) {
+        this.errors.senha = "A senha deve ter no mínimo 6 caracteres.";
+      }
+
       if (!this.form.email || !emailRegex.test(this.form.email)) {
         this.errors.email = "Email inválido. Ex: nome@dominio.com";
       }
@@ -153,8 +272,33 @@ export default {
         this.errors.telefone = "Telefone deve conter exatamente 9 dígitos.";
       }
 
+      if (!this.form.nif || !/^\d{9}$/.test(this.form.nif)) {
+        this.errors.nif = "NIF deve conter exatamente 9 dígitos.";
+      }
+
+      if (!this.form.nic || isNaN(this.form.nic)) {
+        this.errors.nic = "NIC é obrigatório e deve ser numérico.";
+      }
+
       if (!this.form.morada || this.form.morada.trim().length === 0) {
         this.errors.morada = "Morada não pode estar vazia.";
+      }
+
+      if (!this.form.dataNascimento) {
+        this.errors.dataNascimento = "Data de nascimento é obrigatória.";
+      } else {
+        const hoje = new Date();
+        const nascimento = new Date(this.form.dataNascimento);
+        let idade = hoje.getFullYear() - nascimento.getFullYear();
+        const m = hoje.getMonth() - nascimento.getMonth();
+
+        if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+          idade--;
+        }
+
+        if (idade < 16) {
+          this.errors.dataNascimento = "O utilizador deve ter pelo menos 16 anos.";
+        }
       }
 
       return Object.keys(this.errors).length === 0;
@@ -226,6 +370,37 @@ export default {
       this.errors = {};
     },
   },
+  watch: {
+  'form.morada'(novaMorada) {
+    if (!novaMorada || novaMorada.trim().length === 0) {
+      this.mapUrl = "";
+      this.mapLinkUrl = "";
+      return;
+    }
+
+    const encodedAddress = encodeURIComponent(novaMorada + ", Portugal");
+    this.mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyD1ExzCG0BiDRv3fQEu4XimkLHERysDxL8&q=${encodedAddress}`;
+    this.mapLinkUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+
+    this.$nextTick(() => {
+      this.tryInitMap();
+
+      if (this.geocoder && this.map) {
+        this.geocoder.geocode({ address: novaMorada }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            const location = results[0].geometry.location;
+            this.map.setCenter(location);
+            this.marker.setPosition(location);
+          }
+        });
+      }
+    });
+  }
+}
+
+
+
+
 };
 </script>
 

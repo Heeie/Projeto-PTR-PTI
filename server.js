@@ -64,7 +64,11 @@ app.use('/api/categorias', categoriaRoutes);
 app.use('/api/tipos', tipoRoutes);
 app.use('/api/projetos', projetoBeneficenteRoutes);
 app.use('/api/avaliacoes', avaliacaoRoutes);
+<<<<<<< Updated upstream
 app.use('/api/transacoes', transacoesRouter);
+=======
+app.use('/api/transacoes', transacoesRouter); // <<<<<<<<<<
+>>>>>>> Stashed changes
 app.use('/api/lojas', lojaRoutes);
 
 // Verificação de sessão

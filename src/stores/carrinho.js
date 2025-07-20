@@ -17,11 +17,16 @@ export const useCarrinhoStore = defineStore('carrinho', () => {
     localStorage.removeItem('carrinho');
   }
 
+ function removerEquipamento(index) {
+  this.equipamentos.splice(index, 1);
+}
+
 
   return {
     equipamentos,
     adicionarAoCarrinho,
     contar,
-    limparCarrinho
+    limparCarrinho,
+    removerEquipamento
   };
 });

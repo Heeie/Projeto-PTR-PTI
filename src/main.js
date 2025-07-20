@@ -18,6 +18,7 @@ import RecuperarSenha from './components/RecuperarSenha.vue';
 import TransacoesGeral  from './components/HistoricoTransacoesGeral.vue';
 import VenderEquipamento  from './components/VenderEquipamento.vue';
 import GestaoProjeto  from './components/GestaoProjetos.vue';
+import RegistoTransacao  from './components/RegistrarTransacaoFisica.vue';
 
 
 import { createPinia } from 'pinia';
@@ -44,6 +45,9 @@ const router = createRouter({
     { path: '/historicoTransaccoesGeral', component: TransacoesGeral },
     { path: '/vender', component: VenderEquipamento }, 
     { path: '/gestao-projetos', component: GestaoProjeto }, 
+     { path: '/registo-transacao', component: RegistoTransacao }, 
+
+
 
   ],
 });

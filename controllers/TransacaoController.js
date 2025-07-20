@@ -1,21 +1,48 @@
 const Transacao = require("../models/Transacao");
 
 exports.criarTransacao = async (req, res) => {
-  try {
-    const { tipo, cliente_id, loja_id, equipamentos, total } = req.body;
+ console.log('🔍 Sessão ativa:', req.session);
+  console.log('🔍 Utilizador autenticado:', req.user);
 
-    const novaTransacao = new Transacao({ tipo, cliente_id, loja_id, equipamentos, total });
-    await novaTransacao.save();
+  try {
+    const {
+      tipo = 'compra',
+      loja_id,
+      equipamentos,
+      total,
+      canal,
+      vendedor_id
+    } = req.body;
+
+    // Usa req.user.id conforme definido no middleware de autenticação
+    const transacao = await Transacao.create({
+      tipo,
+      cliente_id: req.user.id,
+      loja_id,
+      equipamentos,
+      total,
+      canal,
+      vendedor_id
+    });
+
+    await transacao.populate('equipamentos');
+    await transacao.populate('loja_id');
+    await transacao.populate('vendedor_id');
+
+    // 🔽 Marcar equipamentos como indisponíveis após compra
+    const Equipamento = require('../models/Equipamento');
+    await Equipamento.updateMany(
+      { _id: { $in: equipamentos } },
+      { $set: { estadoDisponibilidade: 'indisponivel' } }
+    );
 
     res.status(201).json({
-      message: "Transação registrada com sucesso!",
-      transacao: novaTransacao
+      message: 'Transação criada com sucesso',
+      transacao
     });
   } catch (error) {
-    res.status(500).json({
-      error: "Erro ao registrar transação",
-      detalhes: error.message
-    });
+    console.error('Erro ao criar transação:', error);
+    res.status(500).json({ error: 'Erro ao criar transação' });
   }
 };
 
@@ -36,7 +63,7 @@ exports.obterTodasTransacoes = async (req, res) => {
 
 exports.obterTransacoesPorUtilizador = async (req, res) => {
   try {
-    const userId = req.user.id;  // definido pelo middleware de autenticação
+    const userId = req.user.id;  // também compatível com o middleware
 
     const transacoes = await Transacao.find({ cliente_id: userId })
       .populate('loja_id', 'nome')
@@ -49,5 +76,3 @@ exports.obterTransacoesPorUtilizador = async (req, res) => {
     res.status(500).json({ error: 'Erro ao obter histórico de transações.' });
   }
 };
-
-

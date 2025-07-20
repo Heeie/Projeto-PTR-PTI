@@ -2,16 +2,16 @@
   <header>
     <h1>FromU2Me</h1>
     <nav>
-      <ul>
-        <li><router-link to="/home">Início</router-link></li>
-        <li><a href="#produtos">Produtos</a></li>
-        <li><a href="#contato">Contato</a></li>
-      </ul>
+      <button class="top-create-btn" @click="$router.push('/home')">
+    Voltar ao Home
+  </button>
     </nav>
+
   </header>
 
   <div class="form-container">
-    <h2>Criar Nova Loja</h2>
+    <h2>{{ editandoId ? 'Atualizar Loja' : 'Criar Nova Loja' }}</h2>
+
     <form @submit.prevent="criarLoja">
       <div class="form-group">
         <label for="nome">Nome da Loja</label>
@@ -55,8 +55,6 @@
 
 
 <script>
-import axios from 'axios';
-
 export default {
   data() {
     return {
@@ -85,8 +83,14 @@ export default {
   },
   methods: {
     async carregarLojas() {
-      const res = await axios.get('/lojas');
-      this.lojas = res.data;
+      try {
+        const response = await fetch('http://localhost:3000/api/lojas');
+        if (!response.ok) throw new Error('Erro ao carregar lojas');
+        this.lojas = await response.json();
+      } catch (error) {
+        console.error(error);
+        this.mensagem = 'Erro ao carregar lojas.';
+      }
     },
 
     async criarLoja() {
@@ -94,11 +98,29 @@ export default {
         const user = JSON.parse(localStorage.getItem('user'));
         const responsavel_id = user?._id;
 
+        let url = 'http://localhost:3000/api/lojas';
+        let method = 'POST';
         if (this.editandoId) {
-          await axios.put(`/lojas/${this.editandoId}`, this.loja);
+          url = `http://localhost:3000/api/lojas/${this.editandoId}`;
+          method = 'PUT';
+        }
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ...this.loja, responsavel_id }),
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Erro ao salvar loja');
+        }
+
+        if (this.editandoId) {
           this.mensagem = 'Loja atualizada com sucesso!';
         } else {
-          await axios.post('/lojas', { ...this.loja, responsavel_id });
           this.mensagem = 'Loja criada com sucesso!';
         }
 
@@ -107,7 +129,7 @@ export default {
         this.carregarLojas();
       } catch (error) {
         console.error(error);
-        this.mensagem = 'Erro ao salvar loja.';
+        this.mensagem = error.message || 'Erro ao salvar loja.';
       }
     },
 
@@ -120,17 +142,25 @@ export default {
     async apagarLoja(id) {
       if (confirm('Tem certeza que deseja apagar esta loja?')) {
         try {
-          await axios.delete(`/lojas/${id}`);
+          const response = await fetch(`http://localhost:3000/api/lojas/${id}`, {
+            method: 'DELETE',
+          });
+          if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.error || 'Erro ao apagar loja');
+          }
+
           this.mensagem = 'Loja apagada com sucesso!';
           this.carregarLojas();
         } catch (error) {
           console.error(error);
-          this.mensagem = 'Erro ao apagar loja.';
+          this.mensagem = error.message || 'Erro ao apagar loja.';
         }
       }
     }
   }
 };
+
 </script>
 
 

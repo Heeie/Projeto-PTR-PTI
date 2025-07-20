@@ -1,5 +1,8 @@
 <template>
   <div class="carrinho-page">
+    <button class="top-create-btn" @click="$router.push('/home')">
+        Voltar ao Home
+      </button>
     <h1>🛒 Carrinho de Compras</h1>
 
     <div v-if="carrinho.length === 0" class="vazio">
@@ -13,14 +16,23 @@
         :key="index"
         class="item-carrinho"
       >
-        <img :src="item.imagem || '/images/default.jpg'" alt="Imagem do produto" />
-        <div>
+        <img
+          :src="item.imagem || '/images/default.jpg'"
+          alt="Imagem do produto"
+          @click="irParaDetalhes(item._id)"
+          style="cursor: pointer;"
+        />
+        <div @click="irParaDetalhes(item._id)" style="cursor: pointer;">
           <h3>{{ item.nome }}</h3>
           <p>Preço: € {{ Number(item.preco).toFixed(2) }}</p>
+        </div>
+        <div>
           <p>Quantidade: {{ item.quantidade }}</p>
-          <button @click="removerItem(index)">Remover</button>
+          <button @click="diminuirQuantidade(index)">➖</button>
+          <button @click="removerItem(index)">🗑️</button>
         </div>
       </div>
+
 
       <div class="total">
         <h2>Total: € {{ totalCarrinho.toFixed(2) }}</h2>
@@ -42,9 +54,26 @@ function carregarCarrinho() {
   carrinho.value = dados
 }
 
+function salvarCarrinho() {
+  localStorage.setItem('carrinho', JSON.stringify(carrinho.value))
+}
+
 function removerItem(index) {
   carrinho.value.splice(index, 1)
-  localStorage.setItem('carrinho', JSON.stringify(carrinho.value))
+  salvarCarrinho()
+}
+
+function diminuirQuantidade(index) {
+  if (carrinho.value[index].quantidade > 1) {
+    carrinho.value[index].quantidade--
+  } else {
+    carrinho.value.splice(index, 1)
+  }
+  salvarCarrinho()
+}
+
+function irParaDetalhes(id) {
+  router.push(`/produto/${id}`)
 }
 
 const totalCarrinho = computed(() =>
@@ -60,7 +89,12 @@ onMounted(() => {
 })
 </script>
 
+
 <style scoped>
+.item-carrinho button {
+  margin-right: 5px;
+}
+
 .carrinho-page {
   max-width: 900px;
   margin: 0 auto;

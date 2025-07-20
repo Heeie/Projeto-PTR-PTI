@@ -1,17 +1,17 @@
 const express = require('express');
 const Transacao = require('../models/Transacao');
-const auth = require('../middlewares/authMiddleware');
 const transacaoController = require('../controllers/TransacaoController.js');
 const router = express.Router();
+const authMiddleware = require('../middlewares/authMiddleware');
 
 // Criar transação
-router.post('/', auth, transacaoController.criarTransacao);
+router.post('/', authMiddleware, transacaoController.criarTransacao);
 
 // Obter transações do utilizador autenticado
-router.get('/', auth, transacaoController.obterTransacoesPorUtilizador);
+router.get('/', authMiddleware, transacaoController.obterTransacoesPorUtilizador);
 
 // Obter todas as transações (talvez admin)
-router.get('/todas', auth, transacaoController.obterTodasTransacoes);
+router.get('/todas', authMiddleware, transacaoController.obterTodasTransacoes);
 
 
 

@@ -2,12 +2,9 @@
   <div>
     <header>
       <h1>Finalizar Compra</h1>
-      <nav>
-        <ul>
-          <li class="homebar"><router-link to="/home">Início</router-link></li>
-          <li class="homebar"><router-link to="/">Produtos</router-link></li>
-        </ul>
-      </nav>
+      <button class="top-create-btn" @click="$router.push('/home')">
+        Voltar ao Home
+      </button>
     </header>
 
     <section class="compra">
@@ -15,9 +12,16 @@
       <div v-if="carrinho.length > 0">
         <ul>
           <li v-for="(item, index) in carrinho" :key="index">
-            {{ item.nome }} - € {{ Number(item.preco).toFixed(2) }}
+            <span @click="irParaDetalhes(item._id)" style="cursor: pointer; color: #0d6efd; font-weight: bold;">
+              {{ item.nome }}
+            </span>
+            – € {{ Number(item.preco).toFixed(2) }}
+            <button @click="removerItem(index)" style="margin-left: 10px; background-color: #dc3545;">
+              Remover
+            </button>
           </li>
         </ul>
+
         <p><strong>Total:</strong> € {{ total.toFixed(2) }}</p>
 
         <form @submit.prevent="finalizarCompra">
@@ -25,11 +29,12 @@
           <input
             type="tel"
             id="mbway"
-            v-model="numeroMBWay"
+            v-model="telefone"
             placeholder="912345678"
             required
             pattern="[9][1236][0-9]{7}"
           />
+
           <button type="submit">Pagar com MBWay</button>
         </form>
 
@@ -52,10 +57,15 @@
 import { ref, computed } from 'vue';
 import { useCarrinhoStore } from '@/stores/carrinho';
 import { useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+
+
 
 // Store e router
 const carrinhoStore = useCarrinhoStore();
 const router = useRouter();
+
+const telefone = ref(''); // número de telemóvel que vai preencher o input
 
 // Referências reativas
 const numeroMBWay = ref('');
@@ -67,8 +77,16 @@ const total = computed(() =>
   carrinho.value.reduce((soma, item) => soma + Number(item.preco), 0)
 );
 
+function removerItem(index) {
+  carrinhoStore.removerEquipamento(index)
+}
+
+function irParaDetalhes(id) {
+  router.push(`/produto/${id}`)
+}
+
 async function finalizarCompra() {
-  if (!numeroMBWay.value.match(/^9[1236][0-9]{7}$/)) {
+  if (!telefone.value.match(/^9[1236][0-9]{7}$/)) {
     mensagem.value = 'Número MBWay inválido.';
     return;
   }
@@ -79,6 +97,7 @@ async function finalizarCompra() {
     // Simulação: substitui por ID real
     const lojaId = '6650dd0f26e3b38b9260b9f7';
 
+<<<<<<< Updated upstream
     const response = await fetch('/api/transacoes', {
       method: 'POST',
       headers: {
@@ -91,6 +110,24 @@ async function finalizarCompra() {
         total: total.value
       })
     });
+=======
+    const response = await fetch('http://localhost:3000/api/transacoes/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', // necessário para sessões/
+        body: JSON.stringify({
+          loja_id: lojaId,
+          equipamentos: carrinho.value.map(item => item._id),
+          total: total.value,
+          canal: 'online',
+          vendedor_id: null
+        })
+      });
+
+
+>>>>>>> Stashed changes
 
     if (!response.ok) throw new Error('Erro ao criar transação');
 
@@ -109,9 +146,40 @@ async function finalizarCompra() {
   }
 }
 
+async function carregarPerfil() {
+  try {
+    const res = await fetch('http://localhost:3000/api/utilizadores/perfil', {
+        credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    if (!res.ok) throw new Error('Não foi possível carregar perfil');
+
+    const dados = await res.json();
+    console.log('Perfil carregado:', dados); //
+
+    telefone.value = dados.telefone || '';
+    console.log('telefone:', telefone.value); //
+  } catch (error) {
+    console.error('Erro ao carregar perfil:', error);
+  }
+}
+
+onMounted(() => {
+  carregarPerfil();
+});
 </script>
 
 <style scoped>
+
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+li button:hover {
+  background-color: #bb2d3b;
+}
 
 .homebar{
   color: black;

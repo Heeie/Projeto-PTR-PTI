@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+     <button class="voltar-btn" @click="this.$router.push('/home')">⬅ Voltar à Página Principal</button>
     <h2>📋 Histórico de Transações</h2>
 
     <div v-if="loading">Carregando transações...</div>
@@ -10,6 +11,9 @@
         <h3>{{ transacao.tipo.toUpperCase() }} - {{ formatarData(transacao.createdAt) }}</h3>
         <p><strong>Loja:</strong> {{ transacao.loja_id?.nome || 'Desconhecida' }}</p>
         <p><strong>Total:</strong> €{{ transacao.total.toFixed(2) }}</p>
+        <p><strong>Canal:</strong> {{ transacao.canal === 'online' ? 'Online' : 'Loja Física' }}</p>
+          <p><strong>Vendedor:</strong> {{ transacao.vendedor_id?.nome || 'Não atribuído' }}</p>
+
 
         <ul>
           <li v-for="eq in transacao.equipamentos" :key="eq._id">
@@ -62,4 +66,19 @@ onMounted(async () => {
   border-radius: 10px;
   background: #f9f9f9;
 }
+button {
+  width: fit-content;
+  padding: 8px 16px;
+  margin-right: 8px;
+  background-color: #0d6efd;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0b5ed7;
+}
+
 </style>

@@ -16,6 +16,18 @@ const TransacaoSchema = new mongoose.Schema({
     ref: 'Loja',
     required: true
   },
+
+  vendedor_id: { // <-- Novo campo
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Utilizador',
+    required: false // opcional, dependendo da lógica de negócio
+  },
+  canal: { // <-- Novo campo
+    type: String,
+    enum: ['online', 'loja_fisica'],
+    required: true,
+    default: 'online',
+  },
   equipamentos: [
     {
       type: mongoose.Schema.Types.ObjectId,
